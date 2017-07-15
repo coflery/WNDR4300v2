@@ -1,0 +1,16 @@
+Source-Makefile: package/libexif/Makefile
+Package: libexif
+Version: 0.6.17-1
+Depends: 
+Provides: 
+Section: libs
+Category: Libraries
+Title: library for jpeg files with exif tags
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: libexif-0.6.17.tar.bz2
+Type: ipkg
+Description: library for jpeg files with exif tags
+http://libexif.sourceforge.net/
+@@
+
+

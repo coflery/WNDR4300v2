@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<!--link rel="stylesheet" type="text/css" href="hdd_cd_less.css" /-->
+<link rel="stylesheet" type="text/css" href="style/hijack_style.css" />
+<link rel="stylesheet" type="text/css" href="style/form.css" />
+</head>
+<body>
+<form method="post" action="">
+<script language="javascript" type="text/javascript">
+var ts = "<% hijack_get_timestamp("format_hdd") %>";
+<% cfg_set("hddnofind", "0") %>
+<% commit() %>
+</script>
+<input type="hidden" name="submit_flag" value="" />
+
+<div class="wizard_content_div">
+	<!--div id="WLinfo" align=center style="width:80%"-->
+	<TABLE align=center width="640px"; style="border:0px solid #000000;">
+		<TR><TD  width=40px; height=40px;><img style="float:left;" width=40px; src="/image/hdd/Download_Error_Icon.jpg"></TD>
+		<TD><p class="case_red_big">$not_recog_or_format</p></TD></TR>
+		<TR><TD></TD>
+		<TD colspan=2 align="left" class="success_font">$hdd_new_not_format_continue</TD></TR>
+	</TABLE>
+		
+	<div id="buttons_div_02" class="wizard_buttons_div" align="center">
+		<TABLE align=center width="90%" border=0 cellpadding=0 cellspacing=2>
+         <TR>
+		 <TD nowrap colspan=2 align=left>
+		<INPUT  class="short_common_hdd" type='button' name="exit" value='$exit_mark' onClick='click_exit()'></TD>
+	   <TD nowrap colspan=2 align=right>
+		  <INPUT class="long_common_hdd" type='button' name="Next" value='$skip_mark' onClick='goto_skip()'>&nbsp;&nbsp;&nbsp;&nbsp;
+	      <INPUT class="short_common_hdd" type='button' name="Next" value='$next_mark >' onClick='click_next( document.forms[0])'>
+	       </TD>
+       </TR>
+
+      </TABLE>
+	</div>	
+</div>	
+	
+<!--/div-->
+<script>
+function click_exit(cf)
+{
+ 
+	    location.href="BRS_hdd_success.htm"; 
+}
+
+function goto_skip()
+{
+   location.href="BRS_hdd_download.htm";
+}
+
+function click_next(cf)
+{
+   /*if(cf.help_choice[0].checked == true )
+	     location.href="InternetSupport_CheckNet.htm";
+   else
+	   top.location.href="http://www.routerlogin.net"; */
+	   cf.action="apply_noauth.cgi?/BRS_hdd_formt_wait.htm timestamp=" + ts;
+	   cf.submit_flag.value = "format_hdd";
+	  // location.href="BRS_hdd_formt_wait.htm";
+	  cf.submit();
+}
+</script>
+</form>
+</body>
+</html>

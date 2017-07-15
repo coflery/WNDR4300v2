@@ -1,0 +1,36 @@
+#!/bin/sh
+#########################################################################
+##  Network Configuration
+##
+##  This script sets up the WAN/LAN ports to the appropriate configuration
+##
+#########################################################################
+
+. /etc/ath/apcfg
+
+##
+## Enable the loopback interface
+##
+
+ifconfig lo 127.0.0.1 up
+
+##
+## only bridge mode is supported
+## TODO: check WAN_MODE and bring WAN up accordingly
+##
+ifconfig $WAN_IF up
+ifconfig $LAN_IF up
+
+if [ "$BOARD_TYPE" != "ap136_bootrom" ];
+then
+ifconfig eth1 mtu 2000
+. /etc/s17_vlan_config.sh
+else
+	ifconfig $LAN_IF mtu 2000
+fi
+
+##
+## Bring up the 4 port interface
+##
+
+

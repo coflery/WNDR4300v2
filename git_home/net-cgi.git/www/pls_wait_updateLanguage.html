@@ -1,0 +1,138 @@
+<html>
+<head>
+<title></title>
+<meta http-equiv="content-type" content="text/html; charset=<% lang_charset() %>" />
+<% hijack_language() %>
+<link rel="stylesheet" href="style/form.css" />
+<script language="javascript" type="text/javascript" src="funcs.js"></script>
+<style type="text/css"> 
+.prgbar1 { font-family:Arial; padding:0px; height: 20px; width: 280px; font-weight: bolder; font-size: 10pt; border: 1px solid; border-color: #09c; color: #0000FF}  
+</style>
+<script language="javascript" type="text/javascript">
+/* qutoe the script file funcs.js will increase the page loading time, and the page will show blank, so copy the 
+function goto_home_page() here */
+function goto_home_page()
+{
+	if( top.location.href.indexOf("adv_index.htm") != -1 )
+	{
+		top.location.href="adv_index.htm";	
+	}
+	else if ( top.location.href.indexOf("BRS_index.htm") > -1 )
+		top.location.href="to_internet_no_auth.htm";
+	else{
+		top.location.href="index.htm";	
+	}
+}
+
+var pchar = "||"; // progress char
+var maxchars = 25; 
+var delay_time = 500; // msecs
+var charcount = 0; 
+
+function makeStr(strSize, fillChar)
+{
+	var temp = "";
+	for (i=0; i < strSize ; i ++)
+		temp = temp + fillChar;
+	return temp;
+}
+
+function updateProgress()
+{
+	var cf = document.forms[0];
+	if (charcount < maxchars)
+	{
+		charcount ++;
+		cf.progress.value = makeStr(charcount,pchar);
+		setTimeout("updateProgress()",delay_time);
+	}
+	else
+		goto_home_page();
+}
+
+var multi_lang_router_flag = parent.multi_lang_router_flag;
+var dis_lang_crl = "<% cfg_get("Enable_GUIStringTable") %>";
+var jp_multiPPPoE = "<% cfg_get("jp_multiPPPoE") %>";
+var language_change_status="<% lang_change_status() %>";
+function loadvalue()
+{
+	var downloading_div = document.getElementById("downloading_div");
+	var download_error_div = document.getElementById("download_error_div");
+	var pls_wait_div = document.getElementById("pls_wait_div");
+
+	if(top.topframe.location.href.indexOf("top_submit.html") != -1)
+	{
+		pls_wait_div.style.display = "block";
+		setTimeout("this.location.reload();", "3000");
+	}
+	else
+	{
+		if(multi_lang_router_flag=='1' && dis_lang_crl=='1')
+		{
+			if(jp_multiPPPoE=="1" && language_change_status=="1")
+			{
+				if (language_change_status == "1") // 1:No Internet Connection
+					alert(getText(bh_ml_noInternet, "$ml_noInternet"));
+				goto_home_page();
+			}
+		}
+
+		//for Bug 24633, pop up the alert dialog box, not just show the message.
+		/*if(language_change_status=="1" || language_change_status=="2")
+		{
+			download_error_div.style.display = "block";
+			setTimeout("goto_home_page()", "5000");
+		}
+		else 
+		{
+			downloading_div.style.display = "block";
+			updateProgress();
+		}*/
+		downloading_div.style.display = "block";
+		updateProgress();
+
+		if(language_change_status == "1" && jp_multiPPPoE !="1") // 1:No Internet Connection
+		{
+			alert(getText(bh_auto_upg_nowan_head, "$auto_upg_nowan_head"));
+			goto_home_page();
+		}
+		else if(language_change_status == "2") // 2:download failed
+		{
+			alert(getText(bh_ml_failDownload, "$ml_failDownload"));
+			goto_home_page();
+		}
+	}
+}
+</script>
+</head>
+<body bgcolor="#ffffff" onload="loadvalue()">
+<div id="main" class="main">
+<form>
+	<div id="pls_wait_div" style="display:none">
+		<div><img src="liteblue.gif" width=100% height="12" /></div><br />
+		<div align="left"><script>printText(bh_plz_wait_moment, "$wizard_pls_wait");</script></div><br />
+		<div><img src="liteblue.gif" width=100% height="12" /></div>
+	</div>
+	<div id="downloading_div" style="display:none">
+		<div><img src="liteblue.gif" width=100% height="12" /></div><br />
+		<div align="left"><script>printText(bh_wait_update_lang, "$wait_update_lang");</script></div><br />
+		<div align="center"><input type="text" name="progress" class="prgbar1" value="" /></div><br />
+		<div><img src="liteblue.gif" width=100% height="12" /></div>
+	</div>
+	<div id="download_error_div" style="display:none">
+		<div><img src="liteblue.gif" width=100% height="12" /></div><br />
+		<div align="center">
+			<script language="javascript" type="text/javascript">
+			if(language_change_status == "1") // 1:No Internet Connection
+				document.write("<b>"+getText(bh_auto_upg_nowan_head, "$auto_upg_nowan_head")+"</b>");
+			else if(language_change_status == "2") // 2:download failed
+				printText(bh_ml_failDownload, "$ml_failDownload");
+			</script>
+		</div>
+		<div><img src="liteblue.gif" width=100% height="12" /></div>
+		<div align="center"><script>printText(bh_few_second, "$few_second");</script></div>
+	</div>
+</form>
+</div>
+</body>
+</html>

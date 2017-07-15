@@ -1,0 +1,22 @@
+Source-Makefile: package/kmod-dnih323/Makefile
+Package: kmod-dnih323
+Submenu: DNI Kernel Module
+Version: <LINUX_VERSION>--1
+Depends: @TARGET_dniwndr3700u2631||TARGET_wndr4500v3
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: DNI H323 ALG
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: DNI H323 ALG
+@@
+Config:
+	menu "Configurations"
+		depends on PACKAGE_kmod-dnih323
+		source "package/kmod-dnih323/Config.in"
+	endmenu
+@@
+
+

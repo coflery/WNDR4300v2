@@ -1,0 +1,20 @@
+#!/bin/sh
+
+. /etc/failover/failover.common
+
+setup_interface_static(){
+    local mtu
+
+    mtu=$($CONFIG get wan_dhcp_mtu)
+    
+    ifconfig $WAN_IF down
+    ifconfig $WAN_IF mtu ${mtu:-1500}
+    ifconfig $WAN_IF up
+    
+    ifconfig $WAN_IF $($CONFIG get wan_ipaddr) netmask $($CONFIG get wan_netmask)
+
+	echo "nameserver $($CONFIG get wan_ether_dns1)" > $FAILOVER_RESOLVE
+	echo "nameserver $($CONFIG get wan_ether_dns2)" >> $FAILOVER_RESOLVE
+}
+
+setup_interface_static

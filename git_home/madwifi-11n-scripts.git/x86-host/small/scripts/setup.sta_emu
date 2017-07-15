@@ -1,0 +1,64 @@
+#!/bin/bash
+
+WIFIDEVID=0
+SSID=0
+DHCP=0
+KEEPAWAKE=0
+FIXCHANNEL=0
+
+function usage ()
+{
+  echo usage: $1 "-s <essid> -a <wifi dev id> [-fc]" 
+  exit 1;
+} 
+
+args=($*)
+i=0
+while [ $i -lt  $# ]
+do
+case ${args[$i]} in
+        -s)  let i=$i+1;
+             if [ $i -eq $# ]
+             then
+                usage;
+             fi
+             SSID=${args[$i]};;
+        -a)  let i=$i+1;
+             if [ $i -eq $# ]
+             then
+                usage;
+             fi
+             WIFIDEVID=${args[$i]};;
+        -ka) let i=$i+1;
+             KEEPAWAKE=1;;
+        -fc) FIXCHANNEL=1;;
+        *)   usage;
+esac
+     let i=$i+1;
+
+done
+
+
+WIFIDEV=wifi$WIFIDEVID
+if [ $SSID == 0 ]
+then
+ usage;
+fi
+
+echo SSID=$SSID
+
+WLANDEV=`sudo wlanconfig wlan create wlandev wifi0 wlanmode sta` 
+
+if [ $KEEPAWAKE == 1 ]
+then
+sudo iwpriv $WLANDEV powersave 0
+fi
+if [ $FIXCHANNEL == 1 ]
+then
+sudo iwpriv $WLANDEV vap_ind 1
+sudo iwconfig $WLANDEV channel 1
+fi
+sudo iwconfig $WLANDEV essid $SSID 
+sudo iwpriv $WLANDEV dbgLVL 0x90e80040
+sudo ifconfig $WLANDEV 192.168.13.20 up
+sleep 1

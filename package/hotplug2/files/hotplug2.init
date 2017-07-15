@@ -1,0 +1,8 @@
+#!/bin/sh /etc/rc.common
+START=65
+
+boot() {
+	#hotplug2 --persistent --coldplug &
+	
+	/sbin/usb-function-enable.sh &
+}

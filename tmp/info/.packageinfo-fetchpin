@@ -1,0 +1,15 @@
+Source-Makefile: package/fetchpin/Makefile
+Package: fetchpin
+Version: 1
+Depends: @TARGET_WNDR3700U||TARGET_wndr4500v3
+Provides: 
+Section: utils
+Category: Base system
+Title: Write PIN file for WPS
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: Write PIN file for WPS
+@@
+
+

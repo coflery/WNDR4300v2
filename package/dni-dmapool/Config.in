@@ -1,0 +1,21 @@
+# dni-dmapool configuration
+config DNIDMAPOOL_GIT_TREEISH
+	string
+	prompt "treeish of dni-dmapoll git repository"
+	default "877466ae28d7706e35a73b75a11931d6adfaaf9f"
+	help
+           Input the treeish of dni-dmapoll git repository which you want to build
+
+config DNIDMAPOLL_GIT_REPOSITORY
+        string
+        prompt "name of dni-dmapool git repository"
+        default "dni-dmapool.git"
+        help
+           Input the name of dni-dmapool git repository which you want to build
+
+config DNIDMAPOLL_GIT_URL
+        string
+        prompt "url of dni-dmapool git repository"
+        default "ssh://dniserver/scm/dnigit/common/kmods/dni-dmapool.git"
+        help
+           Input the url of dni-dmapool git repository which you want to build

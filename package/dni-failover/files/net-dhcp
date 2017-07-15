@@ -1,0 +1,28 @@
+#!/bin/sh
+
+. /etc/failover/failover.common
+
+setup_interface_dhcp(){
+    local mtu
+
+    mtu=$($CONFIG get wan_dhcp_mtu)
+
+    ifconfig $WAN_IF down
+    ifconfig $WAN_IF mtu ${mtu:-1500}
+    ifconfig $WAN_IF up
+
+    if [ "x$($CONFIG get wan_domain)" = "x" ];then
+    	udhcpc -b -i $WAN_IF -h "$($CONFIG get wan_hostname)" -r $($CONFIG get wan_dhcp_ipaddr) -N $($CONFIG get wan_dhcp_oldip)  -s $FAILOVER_DHCPC_SCRIPT
+    else
+    	udhcpc -b -i $WAN_IF -h "$($CONFIG get wan_hostname)" -r $($CONFIG get wan_dhcp_ipaddr) -N $($CONFIG get wan_dhcp_oldip) -d $($CONFIG get wan_domain) -s $FAILOVER_DHCPC_SCRIPT
+    fi
+
+	if [ "$($CONFIG get wan_ether_dns_assign)" = "1" ]; then
+		echo "nameserver $($CONFIG get wan_ether_dns1)" > $FAILOVER_RESOLVE
+		echo "nameserver $($CONFIG get wan_ether_dns2)" >> $FAILOVER_RESOLVE
+		echo "nameserver $($CONFIG get wan_ether_dns3)" >> $FAILOVER_RESOLVE
+	fi
+}
+
+setup_interface_dhcp
+

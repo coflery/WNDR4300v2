@@ -1,0 +1,320 @@
+<!doctype linuxdoc system>
+
+<!-- Here's an SGML example file. Format it and print out the source, and
+     use it as a model for your own SGML files. As you can see this is a
+     comment. 
+ -->
+
+<article>
+
+<!-- Title information -->
+
+<title> Openwrt Kamikaze developer's guide
+<author> Linux team
+<!-- XYZPPCGEFXDJDL -->
+<date> Wed Jun 19 13:19:31 CST 2008
+<!--
+v1.0, 19 June 2008
+-->
+<abstract>
+This is the abstract.
+</abstract>
+
+<!-- Table of contents -->
+<toc>
+
+<!-- Begin the document -->
+
+<sect> Prerequisite
+
+<p>
+A desktop computer with Intel Pentium level CPU, and GNU/Linux
+operation system. Debian GNU/Linux is recommended.
+
+<p> Also, add the following line into your <tt>/etc/hosts</tt>.
+<tscreen><verb>
+172.16.5.231    itgserver.addsra.nat    itgserver
+172.16.5.238    dbdell
+</verb></tscreen>
+
+<sect> CB3000 Installation guide
+<sect1> Checkout the source from GIT server
+<p>
+<enum>
+<item> Clone buildtool. buildtool can be placed at any place that you want.
+<tscreen><verb>
+git-clone ssh://itgserver/pub/scm/openwrt/spencer/openwrt.git openwrt.git
+</verb></tscreen>
+This will create a directory called <tt>openwrt.git</tt> in the current directory. 
+<item> Enter the local GIT repository.
+<tscreen><verb>
+cd openwrt.git
+</verb></tscreen>
+<item> Change to the working branch for project kamikaze_7.09
+<tscreen><verb>
+git-checkout kamikaze_7.09
+</verb></tscreen>
+</enum>
+
+<sect1> Build the firmware
+
+<sect2> Preparations
+<p>
+<enum>
+<item> Install the package "fakeroot" in your development environment (the PC linux system). 
+<!--
+<item> Notes: default bootloader is Nucleus. Therefore, Only using the command for RedBoot bootloader when you are sure your bootloader is RedBoot.
+-->
+</enum>
+
+<sect2> Building Firmware Image (Linux 2.6.x)
+
+<p>
+<enum>
+<item> Change directory into the openwrt.git
+<item> Copy <tt>defconfig-cb3000</tt> into <tt>.config</tt>
+<item> Build all in one step (assuming the GIT_HOME is /home/spencer/git-home)
+<tscreen<verb>
+	$ GIT_HOME=/home/spencer/git-home fakeroot make V=99 FORCE=1
+
+</verb></tscreen> 
+<item> Finally you can find the kernel image, <tt>openwrt-cb3000-2.6-vmlinux.gz</tt>, and rootfs image, <tt>openwrt-cb3000-2.6-root.squashfs</tt>, in directory <tt>bin</tt>.
+</enum>
+
+<sect1> Install the firmware
+
+<sect2> Installing Firmware Image (Linux 2.6.x)
+
+<p> Assuming the bootloader is RedBoot, please configure the RedBoot as following (The <tt>Default server IP address</tt> must be changed to your tftp server ip address):
+<tscreen<verb>
+Run script at boot: true
+Boot script: 
+.. fis load -d vmlinux
+.. go
+
+Boot script timeout (1000ms resolution): 2
+Use BOOTP for network configuration: false
+Gateway IP address: 192.168.1.88
+Local IP address: 192.168.1.1
+Local IP address mask: 255.255.255.0
+Default server IP address: 192.168.1.88
+Console baud rate: 9600
+GDB connection port: 9000
+Force console for special debug messages: false
+Network debug at boot time: false
+</verb></tscreen>
+<p> Buring the kernel image:
+<tscreen<verb>
+Redboot> load -r -b %{FREEMEMLO} openwrt-cb3000-2.6-vmlinux.gz
+Redboot> fis create -l 0x100000 -f 0xBFC30000 -e 0x80002000 -r 0x80002000 vmlinux
+</verb></tscreen>
+
+<p> Buring the root file system:
+<tscreen<verb>
+Redboot> load -r -b %{FREEMEMLO} openwrt-cb3000-2.6-root.squashfs
+Redboot> fis create -l 0x280000 -f 0xBFD30000 -e 0 rootfs
+</verb></tscreen>
+
+
+<sect1> Re-build all without building toolchain
+
+<p>
+The steps are:
+<enum>
+<item> Remove the directory, bin:
+<tscreen<verb>
+$ rm -rf bin
+</verb></tscreen>
+<item> Remove all directories and files in <tt>build_mips/</tt>
+</enum>
+
+<sect> WGT634U Installation guide
+<sect1> Checkout the source from GIT server
+<p>
+<enum>
+<item> Clone buildtool. buildtool can be placed at any place that you want.
+<tscreen><verb>
+git-clone ssh://itgserver/pub/scm/openwrt/spencer/openwrt.git openwrt.git
+</verb></tscreen>
+This will create a directory called <tt>openwrt.git</tt> in the current directory. 
+<item> Enter the local GIT repository.
+<tscreen><verb>
+cd openwrt.git
+</verb></tscreen>
+<item> Change to the working branch for project kamikaze_7.09
+<tscreen><verb>
+git-checkout kamikaze_7.09
+</verb></tscreen>
+</enum>
+
+<sect1> Build the firmware
+
+<sect2> Preparations
+<p>
+<enum>
+<item> Install the package "fakeroot" in your development environment (the PC linux system). 
+<!--
+<item> Notes: default bootloader is Nucleus. Therefore, Only using the command for RedBoot bootloader when you are sure your bootloader is RedBoot.
+-->
+</enum>
+
+<sect2> Building Firmware Image
+
+<p>
+<enum>
+<item> Change directory into the openwrt.git
+<item> Copy <tt>defconfig-wgt634u</tt> into <tt>.config</tt>
+<item> Build all in one step (assuming the GIT_HOME is /home/spencer/git-home)
+<tscreen<verb>
+	$ GIT_HOME=/home/spencer/git-home fakeroot make V=99 FORCE=1
+
+</verb></tscreen> 
+<item> Finally you can find firmware image, <tt>openwrt-wgt634u-2.6-squashfs.bin</tt>, in directory <tt>bin</tt>.
+</enum>
+
+<sect1> Install the firmware
+
+<sect2> Installing Firmware Image via Serial Console
+<p>
+Following instruction is copied from http://wiki.openwrt.org/OpenWrtDocs/Hardware/Netgear/WGT634U.
+<p>
+Images smaller than 4MB can be flashed via TFTP. You need to run a TFTP server on your local PC.
+
+<enum>
+<item> attach a serial console cable to the WGT634U
+<item> attach ethernet to the WAN port (next to the USB socket)
+<item> run 'minicom' on your computer (if you've never ran minicom, then run 'minicom -s' once and configure it as described at http://matthewcorr.googlepages.com/cfeminicomsettings)
+<item> hold down CTRL-C while inserting power to enter CFE
+<item> configure ethernet from CFE (e.g. with a local DHCP server):
+<tscreen<verb>
+      CFE> ifconfig eth0 -auto
+      Device eth0:  hwaddr 00-0F-B5-97-1C-3D, ipaddr 192.168.1.250, mask 255.255.255.0
+              gateway 192.168.1.1, nameserver 192.168.1.1, domain foo.com
+      *** command status = 0
+</verb></tscreen>
+
+<item> for manual configuration use something like this:
+<tscreen<verb>
+      ifconfig eth0 -addr=192.168.1.250 -mask=255.255.255.0
+</verb></tscreen>
+
+<item> then, flash the new openwrt-wgt634u-2.6-{squashfs,jffs2}.bin image:
+<tscreen<verb>
+      CFE> flash -noheader 192.168.1.3:openwrt-wgt634u-2.6-squashfs.bin flash0.os
+      Reading 192.168.1.3:openwrt-wgt634u-2.6-squashfs.bin: Done. 1892352 bytes read
+      Programming...done. 1892352 bytes written
+      *** command status = 0
+</verb></tscreen>
+
+<item> reboot with
+
+<tscreen<verb>
+      CFE> reboot
+</verb></tscreen>
+</enum>
+
+Flashing may take over a minute or more. After that you can use reboot to start OpenWrt.
+
+<sect1> Re-build all without building toolchain
+
+<p>
+The steps are:
+<enum>
+<item> Remove the directory, bin:
+<tscreen<verb>
+$ rm -rf bin
+</verb></tscreen>
+<item> Remove all directories and files in <tt>build_mipsel/</tt>
+</enum>
+
+
+<sect> Fonera2 Installation guide
+<sect1> Checkout the source from GIT server
+<p>
+<enum>
+<item> Clone buildtool. buildtool can be placed at any place that you want.
+<tscreen><verb>
+git-clone ssh://itgserver/pub/scm/openwrt/spencer/openwrt.git openwrt.git
+</verb></tscreen>
+This will create a directory called <tt>openwrt.git</tt> in the current directory. 
+<item> Enter the local GIT repository.
+<tscreen><verb>
+cd openwrt.git
+</verb></tscreen>
+<item> Change to the working branch for project kamikaze_7.09
+<tscreen><verb>
+git-checkout kamikaze_7.09
+</verb></tscreen>
+</enum>
+
+<sect1> Build the firmware
+
+<sect2> Preparations
+<p>
+<enum>
+<item> Install the package "fakeroot" in your development environment (the PC linux system). 
+<!--
+<item> Notes: default bootloader is Nucleus. Therefore, Only using the command for RedBoot bootloader when you are sure your bootloader is RedBoot.
+-->
+</enum>
+
+<sect2> Building Firmware Image (Linux 2.6.x)
+
+<p>
+<enum>
+<item> Change directory into the openwrt.git
+<item> Copy <tt>defconfig-fonera2</tt> into <tt>.config</tt>
+<item> Build all in one step (assuming the GIT_HOME is /home/spencer/git-home)
+<tscreen<verb>
+	$ GIT_HOME=/home/spencer/git-home fakeroot make V=99 FORCE=1
+
+</verb></tscreen> 
+<item> Finally you can find the kernel image, <tt>openwrt-fonera2-2.6-vmlinux.lzma</tt>, and rootfs image, <tt>openwrt-fonera2-2.6-root.squashfs</tt>, in directory <tt>bin</tt>.
+</enum>
+
+<sect1> Install the firmware
+
+<sect2> Installing Firmware Image (Linux 2.6.x)
+
+<p> Assuming the bootloader is RedBoot, please configure the RedBoot as following (The <tt>Default server IP address</tt> must be changed to your tftp server ip address):
+<tscreen<verb>
+Run script at boot: true
+Boot script: 
+.. fis load -l kernel ; exec
+
+Boot script timeout (1000ms resolution): 2
+Use BOOTP for network configuration: false
+Gateway IP address: 192.168.1.88
+Local IP address: 192.168.1.1
+Local IP address mask: 255.255.255.0
+Default server IP address: 192.168.1.88
+Console baud rate: 9600
+GDB connection port: 9000
+Force console for special debug messages: false
+Network debug at boot time: false
+</verb></tscreen>
+<p> Buring the kernel image:
+<tscreen<verb>
+Redboot> load -r -b 0x80041000 openwrt-fonera2-2.6-vmlinux.lzma
+Redboot> fis create kernel
+</verb></tscreen>
+
+<p> Buring the root file system:
+<tscreen<verb>
+Redboot> load -r -b 0x80041000 openwrt-fonera2-2.6-root.squashfs
+Redboot> fis create -l 0x400000 rootfs
+</verb></tscreen>
+
+
+<sect1> Re-build all without building toolchain
+
+<p>
+The steps are:
+<enum>
+<item> Remove the directories, bin, tmp and build_mips
+<tscreen<verb>
+$ rm -rf bin tmp build_mips
+</verb></tscreen>
+</enum>
+
+</article>

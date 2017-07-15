@@ -1,0 +1,15 @@
+Source-Makefile: package/dni-failover/Makefile
+Package: failover
+Version: 1
+Depends: 
+Provides: 
+Section: utils
+Category: Network
+Title: failover
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: failover
+@@
+
+

@@ -1,0 +1,17 @@
+Source-Makefile: package/libflac/Makefile
+Package: libflac
+Version: 1.2.1-1
+Depends: 
+Provides: 
+Build-Depends: libogg
+Section: libs
+Category: Libraries
+Title: libflac
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: flac-1.2.1.tar.gz
+Type: ipkg
+Description: libflac
+http://www.xiph.org/
+@@
+
+

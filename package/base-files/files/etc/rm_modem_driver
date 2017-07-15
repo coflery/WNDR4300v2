@@ -1,0 +1,32 @@
+#!/bin/sh
+
+while true
+do
+	sleep 1
+    useri=`lsmod |grep usbserial | awk '{print $3}'`
+
+    if [ "x$useri" != "x" ];then
+        rmmod usbserial
+        #echo "rmmod usbserial finished.."
+        break
+    elif [ "x$useri" = "x" ]; then
+        #echo "driver not exist.."
+        break
+    fi
+done
+
+while true
+do
+	sleep 1
+    cdc=`lsmod |grep cdc_acm | awk '{print $3}'`
+
+    if [ "x$cdc" != "x" ];then
+        rmmod cdc_acm
+        #echo "rmmod cdc-acm finished.."
+        break
+    elif [ "x$cdc" = "x" ]; then
+        #echo "driver not exist.."
+        break
+    fi
+done
+

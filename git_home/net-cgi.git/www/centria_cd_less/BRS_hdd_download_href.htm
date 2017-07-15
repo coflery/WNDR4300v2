@@ -1,0 +1,209 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<!--link rel="stylesheet" type="text/css" href="hdd_cd_less.css" /-->
+<link rel="stylesheet" type="text/css" href="style/hijack_style.css" />
+<link rel="stylesheet" type="text/css" href="style/form.css" />
+<script language="javascript" type="text/javascript" src="hdd_is_Mac.js"></script>
+
+</head>
+<body >
+<form>
+<% cfg_set("from_download", "1") %>
+
+<script>
+var download_desktop = "<% cfg_get("hdd_download_desktop") %>"; //onLoad=loadvalue();
+var download_readyshare = "<% cfg_get("hdd_download_readyshare") %>";
+var is_Mac = detectOS();
+var cf = document.forms[0];
+var page_status = "genie_downloading";
+
+function download()
+{
+	 if( download_desktop == "1" && download_readyshare == "1")
+   {
+		document.write('<img src="http://updates1.netgear.com/readysharevault/ReadySHARE_Vault.jpg" style="display:none" onerror="alert(\'$not_download $genie $now, $install_later\');location.href=\'BRS_hdd_success.htm\'" onload="setTimeout( function() { location.href=\'http://updates1.netgear.com/netgeargenie/update/NETGEARGenie-install.exe\' }, 6000 );">');
+   }
+   else if ( download_desktop == "1")
+   {
+		if( is_Mac == "Mac")
+		{
+				document.write('<img src="http://updates1.netgear.com/readysharevault/ReadySHARE_Vault.jpg" style="display:none" onerror="alert(\'$not_download $mac_genie $now, $install_later\');location.href=\'BRS_hdd_success.htm\'" onload="setTimeout( function() { location.href=\'http://updates1.netgear.com/netgeargenie/mac/update/NETGEARGenieInstaller.dmg\' }, 6000 ); ">');
+		}
+		else
+		{
+				document.write('<img src="http://updates1.netgear.com/readysharevault/ReadySHARE_Vault.jpg" style="display:none" onerror="alert(\'$not_download $genie $now, $install_later\');location.href=\'BRS_hdd_success.htm\'" onload="setTimeout( function() { location.href=\'http://updates1.netgear.com/netgeargenie/update/NETGEARGenie-install.exe\' }, 6000 );">');
+		}
+   }
+   else if  ( download_readyshare == "1")
+   {
+        document.write('<img src="http://updates1.netgear.com/readysharevault/ReadySHARE_Vault.jpg" style="display:none" onerror="alert(\'$not_download $readshare $now, $install_later\');location.href=\'BRS_hdd_success.htm\'" onload="setTimeout( function() { location.href=\'http://updates1.netgear.com/readysharevault/ReadySHAREVault-install.exe\' }, 6000 );">');
+   }				
+}
+</script>
+<div id="choices_div" class="wizard_words_div">
+	<TABLE align=center width=80% border=0 cellpadding=0 cellspacing=1>
+<script>
+	if( download_desktop == "1" || download_readyshare == "1")
+		document.write('<TR height=40px;> <TD colspan=2 class="st_header_font">$install_netgear </TD></TR>')
+	else
+		location.href="BRS_hdd_success.htm";
+</script>
+			<tr height=40px; id="string_mac" style="display:none">
+			     <td nowrap height=25px; width=25px;><div id="genie_mac" class="grey_dot"></div></td><td height=40px;><b class="gray_choice_font">$mac_genie $backup_home_network</b></td></tr>
+			<tr height=40px; id="string_genie">
+			     <td nowrap height=25px; width=25px;><div id="genie_chice" class="grey_dot"></div></td><td height=40px; ><b class="gray_choice_font">$genie $backup_home_network</b></td></tr>
+			<tr height=40px; id="string_rs">
+			<td nowrap height=25px; width=25px;><div id="RS_choose" class="black_dot"></div></td> <td height=40px; ><b id="td_rs" class="choice_font">$win_readshare</b></td></tr>
+				<!--input type="checkbox" name="help_choice"  checked="checked" /><b class="choice_font">Yes, Install ReadySHARE Vault</b-->
+	<TR height=40px; id="genie_mac_show" style="display:none"> <TD colspan=2 class="st_header_font">$install_start $mac_genie.</TD></TR>
+	<TR height=40px; id="genie_show" style="display:none"> <TD colspan=2 class="st_header_font">$install_start $genie.</TD></TR>
+	<TR height=40px; id="rs_show" style="display:none" > <TD colspan=2 class="st_header_font">$install_start $readshare.</TD></TR>
+	<tr height=40px;> <td colspan=2 class="st_header_font">$install_click_next</td></tr>
+	</TABLE>
+	
+	<div id="wait_img" align="center" class="waiting_img_div" style="display:none">
+	<img src="/image/wait30.gif" />
+	</div>
+	
+	<div id="buttons_div_02" class="wizard_buttons_div" align="center">
+	  <TABLE align=center width="90%" border=0 cellpadding=0 cellspacing=2>
+         <TR><TD nowrap align=right>
+	      <INPUT class="short_common_hdd" type='button' name="Next" value='$next_mark >' onClick='download_next( document.forms[0])'>
+	     </TD></TR>
+      </TABLE>
+	</div>	
+</div>
+
+<script>
+show_first();
+function show_first()
+{
+
+	document.getElementById("genie_mac_show").style.display="none";
+	document.getElementById("genie_show").style.display="none";
+	document.getElementById("rs_show").style.display="none";
+	
+	document.getElementById("string_mac").style.display="none";
+	document.getElementById("string_genie").style.display="none";
+	document.getElementById("string_rs").style.display="none";
+	
+	if( download_desktop == 1)
+	{
+		if( is_Mac == "Mac")
+		{
+			genie_rs_stat( 1, 0, 0);
+			page_status = "genie_mac_downloading";
+		}	
+		else
+		{
+			genie_rs_stat( 0, 1, 0);
+			page_status = "genie_downloading";
+		}
+	}
+	else if( download_readyshare == 1)
+	{
+		genie_rs_stat( 0, 0, 1); 
+		page_status = "readyshare_downloading";
+	}
+		
+		
+	if( download_desktop == 1 && download_readyshare == 1)
+	{
+		if( is_Mac == "Mac")
+			genie_rs_string( 1, 0, 1);
+		else
+			genie_rs_string( 0, 1, 1);
+	}
+	else if( download_desktop == 1)
+	{
+		if( is_Mac == "Mac")
+			genie_rs_string( 1, 0, 0);
+		else
+			genie_rs_string( 0, 1, 0);
+	}
+	else if( download_readyshare == 1)
+	{
+		document.getElementById("RS_choose").className = "grey_dot";
+        document.getElementById("td_rs").className = "gray_choice_font";
+		genie_rs_string( 0, 0, 1);
+	}
+}
+
+function genie_rs_stat( var1, var2, var3 )
+{	
+	if( var1 == 0)
+		document.getElementById("genie_mac_show").style.display="none";
+	else
+		document.getElementById("genie_mac_show").style.display="";
+		
+	if(var2 == 0)
+		document.getElementById("genie_show").style.display="none";
+	else
+		document.getElementById("genie_show").style.display="";
+	
+	if(var3 == 0)
+		document.getElementById("rs_show").style.display="none";
+	else
+		document.getElementById("rs_show").style.display="";
+
+	if( var1 == 1 || var2 == 1 || var3 == 1 )
+		document.getElementById("wait_img").style.display="";
+	else
+		document.getElementById("wait_img").style.display="none";
+}
+
+function genie_rs_string( var1, var2, var3 )
+{	
+	if( var1 == 0)
+		document.getElementById("string_mac").style.display="none";
+	else
+		document.getElementById("string_mac").style.display="";
+		
+	if(var2 == 0)
+		document.getElementById("string_genie").style.display="none";
+	else
+		document.getElementById("string_genie").style.display="";
+	
+	if(var3 == 0)
+		document.getElementById("string_rs").style.display="none";
+	else
+		document.getElementById("string_rs").style.display="";
+}
+
+download();
+
+function download_next()
+{
+	cf = document.forms[0];
+	
+	if( page_status == "genie_downloading" && download_readyshare == 1)
+	{
+		genie_rs_stat(0, 0, 1);
+		//cf.genie_chice.src = '/image/hdd/confirmation.jpg';
+		document.getElementById("genie_chice").className = "gren_show";
+		document.getElementById("RS_choose").className = "grey_dot";
+		document.getElementById("td_rs").className = "gray_choice_font";
+		page_status = "readyshare_downloading"
+
+		setTimeout('location.href="http://updates1.netgear.com/readysharevault/ReadySHAREVault-install.exe";', 1000);
+	}
+	else if (page_status == "genie_mac_downloading" && download_readyshare == 1)
+	{
+		genie_rs_stat(0, 0, 1);
+		//cf.genie_mac.src = '/image/hdd/confirmation.jpg';
+		document.getElementById("genie_mac").className = "gren_show";
+		document.getElementById("RS_choose").className = "grey_dot";
+		document.getElementById("td_rs").className = "gray_choice_font";
+		page_status = "readyshare_downloading"
+
+                setTimeout('location.href="http://updates1.netgear.com/readysharevault/ReadySHAREVault-install.exe";', 1000);
+	}
+	else
+		location.href='BRS_hdd_success.htm';
+}
+</script>
+</form>
+</body>
+</html>

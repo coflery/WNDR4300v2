@@ -1,0 +1,31 @@
+#!/bin/sh /etc/rc.common
+START=19
+
+. $IPKG_INSTROOT/etc/moca.conf
+
+start()
+{
+	[ -x /etc/init.d/init.enet.0 ] && /etc/init.d/init.enet.0
+
+	# it seems eth0 must up first, otherwise, atheros_header disappears.
+	ifconfig eth0 up
+	ifconfig eth0 down
+
+	# set wan_factory_mac
+	wan_default_mac=$(get_mac_addr wan)
+	$CONFIG set wan_factory_mac="$wan_default_mac"
+	echo "init.enet: Default WAN MAC is : $wan_default_mac"
+
+	# set lan mac
+	lan_default_mac=$(get_mac_addr lan)
+	ifconfig $LAN_IF hw ether $lan_default_mac
+	vlan_tag_enable=$(/bin/config get vlan_tag_enable)
+	if [ "x$vlan_tag_enable" == "x1" ]; then
+		brctl addif $BR_VLAN $LAN_IF
+	else
+		brctl addif $BR_IF $LAN_IF
+	fi
+	ifconfig $BR_VLAN hw ether $lan_default_mac
+	ifconfig $BR_IF hw ether $lan_default_mac
+	echo "init.enet: Default LAN MAC is : $lan_default_mac"
+}

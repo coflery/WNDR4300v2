@@ -1,0 +1,87 @@
+#!/bin/sh
+
+[ -f /etc/ath/board.conf ] && . /etc/ath/board.conf
+[ $WLAN_IPTV_SUPPORT -eq 0 ] && return
+
+CONFIG=/bin/config
+
+# check_iptv_regions
+# check whether the current language is RU, if yes, return 1, else return 0
+check_iptv_regions()
+{
+	gui_region=$($CONFIG get GUI_Region)
+	firmware_region=`cat /tmp/firmware_region | awk '{print $1}'`
+
+	if [ "$firmware_region" = "" ] || [ "$firmware_region" = "WW" ]; then
+	    if [ "$gui_region" != "Russian" -a "$gui_region" != "Chinese" ]; then
+	        return 0
+	    fi
+	elif [ "$firmware_region" != "RU" -a "$firmware_region" != "PR" ]; then
+	        return 0
+	fi
+
+	return 1
+}
+
+# check_iptv_vap_onoff
+# if the athX is add into iptv port, return 1, else return 0
+check_iptv_vap_onoff()
+{
+
+	if check_iptv_regions; then
+		return 0
+	fi
+
+	PORT=$1
+	wl_1st_iptv="$($CONFIG get wan_brig_ssid1)"
+	wl_2nd_iptv="$($CONFIG get wan_brig_ssid2)"
+	wl_guest_iptv1="$($CONFIG get wan_brig_guest_ssid1)"
+	wl_guest_iptv2="$($CONFIG get wan_brig_guest_ssid2)"
+	wlg_guest_on="$($CONFIG get wlg1_endis_guestNet)"
+	wla_guest_on="$($CONFIG get wla1_endis_guestNet)"
+
+	if [ "$wla_exist" = "on" ]; then
+	    if [ "$wl_1st_iptv" = "0" -a "$wl_2nd_iptv" = "0" -a "$wl_guest_iptv1" = "0" -a "$wl_guest_iptv2" = "0" ]; then
+	        return 0
+	    fi
+	    # check 2.4G primary network
+	    if [ "$PORT" = "ath0" ] && [ "$wl_1st_iptv" = "1" ]; then
+	        return 1
+	    fi
+	    # check 5G primary network
+	    if [ "$PORT" = "ath1" ] && [ "$wl_2nd_iptv" = "1" ] ; then
+	        return 1
+	    fi
+
+	    # check Guest network
+	    #if we only enable 5G Guest Network, now ath2 is 5G Gusest Network Interface.
+	    if [ "$wlg_guest_on" = "0" -a "$wla_guest_on" = "1" ]; then
+	        if [ "$wl_guest_iptv2" = "1" ] && [ "$PORT" = "ath2" ]; then
+	            return 1
+	        fi
+	    else
+	        # check 2.4G guest network
+	        if [ "$PORT" = "ath2" ] && [ "$wl_guest_iptv1" = "1" ]; then
+	            return 1
+	        fi
+	        # check 5G guest network
+	        if [ "$PORT" = "ath3" ] && [ "$wl_guest_iptv2" = "1" ]; then
+	            return 1
+	        fi
+	    fi
+	else
+	        if [ "$wl_1st_iptv" = "0" -a "$wl_guest_iptv1" = "0" ]; then
+		    return 0
+		fi
+	        # check 2.4G primary network
+	        if [ "$PORT" = "ath0" ] && [ "$wl_1st_iptv" = "1" ]; then
+	            return 1
+	        fi
+	        # check 2.4G Guest network
+	        if [ "$PORT" = "ath1" ] && [ "$wl_guest_iptv1" = "1" ] ; then
+	           return 1
+	        fi
+        fi
+
+	return 0
+}

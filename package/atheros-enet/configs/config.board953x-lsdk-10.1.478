@@ -1,0 +1,312 @@
+#
+# Copyright (c) 2013 Qualcomm Atheros, Inc.
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+
+# Set the toolchain path
+export TOOLCHAIN=buildroot-2009.08
+export TOOLPREFIX=mips-linux-uclibc-
+export TOOLARCH=build_mips/staging_dir/usr
+export UBOOT_GCC_4_3_3_EXTRA_CFLAGS=-fPIC
+
+export KERNEL=mips-linux-2.6.31
+export KERNELVER=2.6.31
+export KERNELTARGET=vmlinux.bin
+export COMPRESSKERNEL=y
+export KERNELARCH=mips
+#export TARGETFSSIZE=6488064
+#export ATH_DUAL_FLASH=1
+export TARGETFSSIZE=2818048
+export CONFIG_MIPS_24K_KERNEL_OPTIMIZATION=1
+#export CONFIG_EMULATION=1
+
+
+ifeq ($(CFG_BOARD_TYPE),ap143) #{
+export COMPRESSED_UBOOT=1
+export FLASH_SIZE=4
+export TARGETFSSIZE=3080192
+export BUILD_OPTIMIZED=y
+endif #}
+
+ifeq ($(BUILD_CONFIG),_powercloud)
+export TARGETFSSIZE=3014656
+endif
+
+ifeq ($(BUILD_CONFIG),_cus227)
+export FLASH_SIZE=16
+endif
+
+export BUSYBOX=busybox-1.01
+export WIRELESSTOOLS=wireless_tools.29
+export WIRELESSTOOLSLIB=libiw.so.29
+
+export BUILD_WPA2=y
+
+ifeq ($(USE_GCC_4_5_1), y)
+export TOOLCHAIN=gcc-4.5.1
+endif
+
+ifeq ($(BUILD_WLAN_PBO_DATA),y)
+export GCOV_KERNEL_ENABLE=y
+export WLAN_PBO_DATA_PATH=$(TOPDIR)/build/scripts/$(CFG_BOARD_TYPE)/pbo_data/wlan
+endif
+
+#DEFINE AH_CAL_IN_FLASH_PCI to indicate CALDATA is read from flash thr' PCI bus.
+#DEFINE AH_CAL_IN_FLASH_AHB to indicate CALDATA is read from flash thr' AHB bus
+#DO NOT DEFINE AH_CAL_IN_FLASH if bus type is dual.
+
+# ifeq ($(CFG_BOARD_TYPE),ap143) #{
+# export BUS=AHB
+# export AH_CAL_IN_FLASH=1
+# export AH_CAL_LOCATIONS=0xbfff0000
+# export AH_CAL_RADIOS=1
+# export AP_TYPE=single
+# export JUMPSTART_GPIO=21
+# export ATH_SUPPORT_DFS=0
+# export AP_USB_LED_GPIO=11
+# export AH_SUPPORT_KITE_ANY=0
+# export AH_SUPPORT_KITE_10=0
+# export AH_SUPPORT_KITE_12=0
+# export AH_SUPPORT_KIWI_10=0
+# export AH_SUPPORT_KIWI_ANY=0
+# export AH_SUPPORT_KIWI_11=0
+# export ATH_NO_5G_SUPPORT=1
+# export ATH_SUPPORT_DFS=0
+# export ATH_GMAC_TXQUEUELEN=700
+# #}
+# else #{
+export AH_SUPPORT_KITE_ANY=1
+export AH_SUPPORT_KITE_10=1
+export AH_SUPPORT_KITE_12=1
+export AH_SUPPORT_KIWI_10=1
+export AH_SUPPORT_KIWI_ANY=1
+export AH_SUPPORT_KIWI_11=1
+export BUS=dual
+#export BUS=AHB
+export AP_TYPE=dual
+#export AP_TYPE=single
+export AH_CAL_IN_FLASH_PCI=1
+export AH_CAL_RADIOS_PCI=1
+
+export AH_CAL_LOCATIONS_PCI=0xbfff4000
+export AH_CAL_IN_FLASH_AHB=1
+export AH_CAL_RADIOS_AHB=1
+export AH_CAL_LOCATIONS_AHB=0xbfff0000
+export ATH_SUPPORT_DFS=0
+export ATH_NO_5G_SUPPORT=1
+export AP_USB_LED_GPIO=11
+# endif #} 
+
+export MADWIFITARGET=mipsisa32-be-elf
+export FUSIONTARGET=mipsisa32-be-elf
+export TARGETARCH=mipsisa32-be-elf
+
+export ATH_SUPPORT_LED=1
+# To differentiate Customer specific GPIO mappings.
+# lmac/ath_dev/ath_led.h
+export ATH_LED_CUSTOMER=CUSTOMER_ATHEROS_WASP
+export WPS_LED_GPIO_PIN=15
+
+export AP_READY_LED_GPIO=14
+export GPIO_PIN_FUNC_0=0
+export GPIO_PIN_FUNC_1=0
+export GPIO_PIN_FUNC_2=0
+
+# Ethernet defines
+
+export GMAC_QCA953x=1
+
+ifeq ($(CFG_BOARD_TYPE),ap143) #{
+# Check if PHY swap is required for ap143
+# export ATH_PHY_SWAP=1
+endif
+
+#To build hostapd 0.8.0 version for db12x and mi124
+export BUILD_ATHR_HOSTAP=1
+
+export ATH_GMAC_RX_TASKLET=1
+# export ATH_GMAC_DESC_SRAM=0
+
+export ATH_GMAC1_RXFCTL=1
+export ATH_GMAC1_TXFCTL=1
+
+export ATH_GMAC0_RXFCTL=1
+export ATH_GMAC0_TXFCTL=1
+
+
+ifeq ($(CFG_BOARD_TYPE), ap143)
+export ATH_GMAC0_TX_CNT=512
+export ATH_GMAC1_TX_CNT=512
+else
+export ATH_GMAC0_TX_CNT=128
+export ATH_GMAC1_TX_CNT=128
+endif
+
+export ATH_GMAC0_RX_CNT=128
+export ATH_GMAC1_RX_CNT=128
+
+export ATH_GMAC_HW_QOS=0
+
+export ATH_GMAC_GE0_IS_CONNECTED=1
+export ATH_GMAC_GE1_IS_CONNECTED=1
+
+export ATH_GMAC_LEN_PER_TX_DS=1536
+export ATH_GMAC_LOCATION=0xbfff0000
+
+
+export ATH_GMAC0_MII=ATHR_MII
+export ATH_GMAC1_MII=ATHR_RGMII
+
+export ATH_GPIO_LED=1
+export ATH_LINK_INTR=1
+export ATH_DMA_CHECK=1
+export ATH_SWITCH_ONLY_MODE=0
+export ETH_CONFIG=_s27
+
+ifneq ($(ETH_CONFIG),_s27)
+export ATH_GMAC0_MII=ATHR_RGMII
+export BUILD_EXT=$(ETH_CONFIG)$(ETH_CONFIG2)
+endif
+
+
+ifeq ($(ETH_CONFIG),_s27)
+export ATH_GMAC_RX_PKT_CNT=18
+else
+export ATH_GMAC_RX_PKT_CNT=100
+endif
+
+
+export BUILD_UMAC=1
+
+# Set Phy Err Diagnostics (Radar detection) to be enabled for AP builds
+export ATH_CAP_PHYERR_DIAG=1
+
+export AR5416_G_MODE=1
+export AR9100=0
+export AR7240_EMU=1
+export AH_DEBUG=0
+
+export AH_SUPPORT_AR5210=0
+export AH_SUPPORT_AR5212=0
+export AH_SUPPORT_5111=0
+export AH_SUPPORT_5112=0
+export AH_SUPPORT_2413=0
+export AH_SUPPORT_5111=0
+export AH_SUPPORT_5112=0
+export AH_SUPPORT_2413=0
+export AH_SUPPORT_5413=0
+export AH_SUPPORT_2316=0
+export AH_SUPPORT_2317=0
+export AH_SUPPORT_2425=0
+export AH_SUPPORT_SOWL=0
+export AH_SUPPORT_AR5416=1
+ifeq ($(BUILD_WMACEMU),1) #{
+export AR9340_EMULATION=1
+export AR9530_EMULATION=1
+export AR9300_EMULATION=1
+export AR9300_EMULATION_BB=1
+endif #}
+export AH_SUPPORT_K2=0
+export AH_SUPPORT_EEPROM_AR9287=1
+export ATH_SUPPORT_VLAN=1
+
+export ATH_CHAINMASK_SELECT=0
+ifeq ($(CFG_BOARD_TYPE),ap143)
+export ATH_RXBUF=256
+export ATH_TXBUF=512
+else
+export ATH_RXBUF=512
+export ATH_TXBUF=512
+endif
+export ATH_CAP_AMSDU=1
+export IEEE80211_MCAST_ENHANCEMENT=1
+export ATH_RB=0
+export AR5416_G_MODE=1
+export AH_SUPPORT_HOWL=0
+export AH_SUPPORT_OWL=1
+export AR5416_INT_MITIGATION=1
+export ATH_SUPPORT_IQUE=1
+export ATH_SUPPORT_GREEN_AP=1
+export ATH_SUPPORT_DYN_TX_CHAINMASK=0
+export AH_DESC_NOPACK=1
+export ATH_SUPPORT_PAPRD=1
+# export ATH_TRAFFIC_FAST_RECOVER=1
+
+export AH_SUPPORT_HONEYBEE=1
+
+ifeq ($(BUILD_WPA2),y)
+export ATH_WPS_IE=1
+else
+export ATH_WPS_IE=0
+endif
+
+ifeq ($(BUILD_SAMBA),y)
+
+export SAMBA_MIPS_74K_CFLAGS=-funit-at-a-time -Os -pipe -march=74kc -mtune=74kc
+
+#Populate the utilities to be removed
+
+sbin_list1=sbin/802* sbin/apst* sbin/ath* sbin/ifr* sbin/iwe*
+sbin_list2=sbin/iwsp* sbin/iwli* sbin/radar* sbin/iwge* sbin/pktl*
+samba_list=usr/local/bin/* usr/local/sbin/nmb* usr/local/sbin/smb*nt
+
+export INSTALL_BLACKLIST="usr/bin/gdb* $(sbin_list1) $(sbin_list2) $(samba_list)"
+
+endif
+
+
+#export ATH_SST_FLASH=y
+#export EXTRAVERSION=-9.2.0.39.3
+#export ATH_SINGLE_CFG=1
+export ATH_EXT_AP=1
+
+export ATH_SUPPORT_QUICK_KICKOUT=1
+#export ATH_SUPPORT_TxBF=1
+
+#export ATH_LOW_POWER_ENABLE=1
+
+#export CONFIG_I2S=1
+export KBUILD_MODPOST_WARN=y
+
+#Remove the example files in apps/wpa2 directory
+export BUILD_WPA2_NO_EXAMPLES=y
+
+export ATH_SUPPORT_DESC_CACHABLE=1
+export ATH_TXQ_BH_LOCK=1
+#turn on ap-only code
+export UMAC_SUPPORT_APONLY=1
+
+export ATH_WDS_SUPPORT_APONLY=1
+export ATH_HW_TXQ_STUCK_WAR=1
+export ATH_SUPPORT_RX_PROC_QUOTA=1
+
+#WifiPositoning support
+export ATH_SUPPORT_WIFIPOS=0
+
+export ATH_VAP_PAUSE_SUPPORT=0
+export UMAC_SUPPORT_VAP_PAUSE=0 
+export UMAC_SUPPORT_STA_MODE=0
+
+#Disable increment of some node level stats in the Tx data path
+#to gain a (small) improvement in CPU utilization.
+export UMAC_SUPPORT_TXDATAPATH_NODESTATS=0
+
+export ATH_DEBUG=0
+export UMAC_SUPPORT_TX_FRAG=1
+export ATH_TX_COMPACT=1
+export ATH_INT_TX_MITIGATION=0
+
+export UMAC_SUPPORT_ACFG=1
+export LMAC_SUPPORT_POWERSAVE_QUEUE=1
+export ATH_SUPPORT_KEYPLUMB_WAR=0

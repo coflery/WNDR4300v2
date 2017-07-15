@@ -1,0 +1,259 @@
+#!/bin/sh
+# Copyright (C) 2006 OpenWrt.org
+
+. /etc/functions.sh
+
+find_net_config() {(
+	local vif="$1"
+	local cfg
+	local ifname
+
+	config_get cfg "$vif" network
+
+	[ -z "$cfg" ] && {
+		include /lib/network
+		scan_interfaces
+
+		config_get ifname "$vif" ifname
+
+		cfg="$(find_config "$ifname")"
+	}
+	[ -z "$cfg" ] && return 0
+	echo "$cfg"
+)}
+
+
+bridge_interface() {(
+	local cfg="$1"
+	[ -z "$cfg" ] && return 0
+
+	include /lib/network
+	scan_interfaces
+
+	config_get iftype "$cfg" type
+	[ "$iftype" = bridge ] && config_get "$cfg" ifname
+)}
+
+wifi_fixup_hwmode() {
+	local device="$1"
+	local default="$2"
+	local hwmode hwmode_11n
+
+	config_get channel "$device" channel
+	config_get hwmode "$device" hwmode
+	case "$hwmode" in
+		11bg) hwmode=bg;;
+		11a) hwmode=a;;
+		11b) hwmode=b;;
+		11g) hwmode=g;;
+		11n*)
+			hwmode_11n="${hwmode##11n}"
+			case "$hwmode_11n" in
+				a|g) ;;
+				default) hwmode_11n="$default"
+			esac
+			config_set "$device" hwmode_11n "$hwmode_11n"
+		;;
+		*)
+			hwmode=
+			if [ "${channel:-0}" -gt 0 ]; then 
+				if [ "${channel:-0}" -gt 14 ]; then
+					hwmode=a
+				else
+					hwmode=g
+				fi
+			else
+				hwmode="$default"
+			fi
+		;;
+	esac
+	config_set "$device" hwmode "$hwmode"
+}
+
+wifi_updown() {
+	#[ enable = "$1" ] && {
+	#	wifi_updown disable "$2"
+	#	scan_wifi
+	#}
+	for device in ${2:-$DEVICES}; do (
+		config_get disabled "$device" disabled
+		[ 1 == "$disabled" ] && {
+			echo "'$device' is disabled"
+			set disable
+		}
+		config_get iftype "$device" type
+		if eval "type ${1}_$iftype" 2>/dev/null >/dev/null; then
+			eval "scan_$iftype '$device'"
+			eval "${1}_$iftype '$device' dni" || echo "$device($iftype): ${1} failed"
+		else
+			echo "$device($iftype): Interface type not supported"
+		fi
+	); done
+
+	# Re-check the iptv
+	iptv_file="/etc/init.d/net-iptv"
+	[ enable = "$1" ] && [ -f $iptv_file ] && $iptv_file start
+}
+
+wifi_detect() {
+	for driver in ${2:-$DRIVERS}; do (
+		if eval "type detect_$driver" 2>/dev/null >/dev/null; then
+			eval "detect_$driver dni" || echo "$driver: Detect failed" >&2
+		else
+			echo "$driver: Hardware detection not supported" >&2
+		fi
+	); done
+}
+
+start_net() {(
+	local iface="$1"
+	local config="$2"
+	local vifmac="$3"
+
+	[ -f "/var/run/$iface.pid" ] && kill "$(cat /var/run/${iface}.pid)" 2>/dev/null
+	[ -z "$config" ] || {
+		include /lib/network
+		scan_interfaces
+		setup_interface "$iface" "$config" "" "$vifmac"
+	}
+)}
+
+set_wifi_up() {
+	local cfg="$1"
+	local ifname="$2"
+	uci_set_state wireless "$cfg" up 1
+	uci_set_state wireless "$cfg" ifname "$ifname"
+}
+
+set_wifi_down() {
+	local cfg="$1"
+	local vifs vif vifstr
+
+	[ -f "/var/run/wifi-${cfg}.pid" ] &&
+		kill "$(cat "/var/run/wifi-${cfg}.pid")" 2>/dev/null
+	uci_revert_state wireless "$cfg"
+	config_get vifs "$cfg" vifs
+	for vif in $vifs; do
+		uci_revert_state wireless "$vif"
+	done
+}
+
+scan_wifi() {
+	local cfgfile="$1"
+	DEVICES=
+	config_cb() {
+		config_get TYPE "$CONFIG_SECTION" TYPE
+		case "$TYPE" in
+			wifi-device)
+				append DEVICES "$CONFIG_SECTION"
+				config_set "$CONFIG_SECTION" vifs ""
+			;;
+			wifi-iface)
+				config_get device "$CONFIG_SECTION" device
+				config_get vifs "$device" vifs 
+				append vifs "$CONFIG_SECTION"
+				config_set "$device" vifs "$vifs"
+			;;
+		esac
+	}
+	config_load "${cfgfile:-wireless}"
+}
+
+wifi_wps() {
+	for device in ${DEVICES}; do (
+		config_get iftype "$device" type
+		if eval "type wps_$iftype" 2>/dev/null >/dev/null; then
+			shift
+			eval "wps_$iftype" "$device" "$@" || echo "$iftype: WPS failed" >&2
+		else
+			echo "$iftype: Hardware wps ion not supported" >&2
+		fi
+	); done
+}
+
+wifi_toggle() {
+	for device in ${DEVICES}; do (
+		config_get iftype "$device" type
+		if eval "type wifitoggle_$iftype" 2>/dev/null >/dev/null; then
+			shift
+			eval "wifitoggle_$iftype" "$device" "$@" || echo "$iftype: WIFITOGGLE failed" >&2
+		else
+			echo "$iftype: Hardware wifitoggle not supported" >&2
+		fi
+	); done
+}
+
+wifi_schedule() {
+	for device in ${DEVICES}; do (
+		config_get iftype "$device" type
+		if eval "type wifischedule_$iftype" 2>/dev/null >/dev/null; then
+			shift
+			eval "wifischedule_$iftype" "$device" "$@" || echo "$iftype: WIFI SCHEDULE failed" >&2
+		else
+			echo "$iftype: Hardware wifi schedule not supported" >&2
+		fi
+	); done
+}
+
+wifi_stainfo() {
+	for device in ${DEVICES}; do (
+		config_get iftype "$device" type
+		if eval "type wifistainfo_$iftype" 2>/dev/null >/dev/null; then
+			shift
+			eval "wifistainfo_$iftype" "$device" "$@" || echo "$iftype: WIFI STAINFO failed" >&2
+		else
+			echo "$iftype: Hardware wifi stainfo not supported" >&2
+		fi
+	); done
+}
+
+wifi_radio() {
+	for device in ${DEVICES}; do (
+		config_get iftype "$device" type
+		if eval "type wifiradio_$iftype" 2>/dev/null >/dev/null; then
+			shift
+			eval "wifiradio_$iftype" "$device" "$@" || echo "$iftype: WIFI RADIO failed" >&2
+		else
+			echo "$iftype: Hardware wifi radio not supported" >&2
+		fi
+	); done
+}
+
+show_usage() {
+    cat <<EOF
+Usage: wlan <command> [<arguments>]
+
+Commands:
+    up                               : bring up wireless interfaces
+    down                             : bring down wireless interfaces
+    wps <arguments>                  : wps actions.
+         --client_pin <pin number>   :: start WPS client PIN
+         --pbc_start                 :: start WPS PBC
+         --wps_stop                  :: stop WPS actions
+    toggle                           : toggle wireless radio (ON <-> OFF)
+    schedule <11g/11a> <on/off>      : do wireless schedule
+    stainfo                          : show all attached wireless stations.
+    radio <11g/11a> <arguments>      : actions related to radio
+         --status                    :: show radio status (ON or OFF)
+         --channel                   :: show current channel
+         --coext <on/off>            :: enable/disable coexistence function.
+    help                             : show this
+EOF
+}
+
+DEVICES=
+DRIVERS=
+include /lib/wifi
+scan_wifi
+
+case "$1" in
+	down) wifi_updown "disable" "$2";;
+	detect) wifi_detect "$2";;
+	wps) wifi_wps "$@";;
+	toggle) wifi_toggle "$@";;
+	schedule) wifi_schedule "$@";;
+	stainfo) wifi_stainfo "$@";;
+	radio) wifi_radio "$@";;
+	up) wifi_updown "enable" "$2";;
+	*) show_usage ;;
+esac

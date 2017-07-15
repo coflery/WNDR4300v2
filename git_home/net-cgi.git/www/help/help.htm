@@ -1,0 +1,239 @@
+<% help_head() %>
+<script>
+var host_name = parent.host_name;
+var video_router_flag = parent.video_router_flag;
+var mode_is_300 = parent.mode_is_300;
+var is_vc_release = parent.is_vc_release;
+var guest_router_flag=parent.guest_router_flag;
+var an_router_flag = parent.an_router_flag;
+var gui_region="<% cfg_get("GUI_Region") %>";
+var netgear_region=top.netgear_region;
+var have_igmp_flag= (top.igmp_flag == 1)?1:0;
+var netgear_ver="<% cat_file("/firmware_version") %>";
+</script>
+</HEAD>
+
+<script>
+switch(parent.help_info) {
+	case "_USB_basic":
+		document.write("$h_USB_basic");
+		break;
+	case "_USB_advance":
+		document.write("$h_USB_advance");
+		break;
+	case "_USB_setting":
+		document.write("$h_USB_setting");
+		break;
+	case "_USB_approve":
+		document.write("$h_USB_approve");
+		break;
+	case "_index":
+		document.write("$h_index");
+		break;
+	case "_attach_device":
+		document.write("$h_attach_device");
+		break;
+	case "_auto_upgrade":
+		document.write("$h_auto_upgrade");
+		break;
+	case "_backup":
+		document.write("$h_backup");
+		document.write("<I><B>NETGEAR_"+host_name+".cfg</B></I>");
+		document.write("$h_backup_2");
+		document.write("<I><B>NETGEAR_"+host_name+".cfg</B></I>");
+		document.write("$h_backup_3");
+		break;
+	case "_BAS_bpa":
+		document.write("$h_BAS_bpa");
+		break;
+	case "_BAS_broadband":
+		   document.write("$h_BAS_broadband");
+	   break;
+	case "_BAS_ether":
+		document.write("$h_BAS_ether");
+		break;
+	case "_BAS_3g":
+		document.write("$h_BAS_3g_1");
+		document.write(netgear_ver);
+		document.write("$h_BAS_3g_2");
+		break;
+	case "_BAS_pptp":
+		document.write("$h_BAS_pptp");
+		break;
+	case "_BAS_pppoe":
+		document.write("$h_BAS_pppoe");
+		break;
+	case "_BAS_mulpppoe":
+		document.write("$h_BAS_mulpppoe");
+		break;
+	case "_BKS_keyword":
+		document.write("$h_BKS_keyword");
+		break;
+	case "_BKS_service_add":
+		document.write("$h_BKS_service_add");
+		break;
+	case "_BKS_service_edit":
+		document.write("$h_BKS_service_edit");
+		break;
+	case "_BKS_service":
+		document.write("$h_BKS_service");
+		break;
+	case "_CF_log":
+		document.write("$h_CF_log");
+		break;
+	case "_checkLanguage":
+		document.write("$h_checkLanguage");
+		break;
+	case "_DNS_ddns":
+		document.write("$h_DNS_ddns");
+		break;
+	case "_forward_service_add":
+		document.write("$h_forward_service_add");
+		break;
+	case "_FW_email":
+		document.write("$h_FW_email");
+		break;
+	case "_FW_forward":
+		document.write("$h_FW_forward");
+		break;
+	case "_FW_trigger":
+		document.write("$h_FW_trigger");
+		break;
+	case "_FW_remote":
+		document.write("$h_FW_remote");
+		break;
+	case "_FW_schedule":
+		document.write("$h_FW_schedule");
+		break;
+	case "_info":
+		document.write("$h_info");
+		if( is_vc_release == 1 )
+			document.write("$h_info_2_54_65_150_vc");
+		else if( mode_is_300 == 1 )
+			document.write("$h_info_2_54_130_300");
+		else
+			document.write("$h_info_2_54_65_150");
+		document.write("$h_info_3");
+		break;
+	case "_lan":
+		document.write("$h_lan");
+		break;
+	case "_passwd":
+		document.write("$h_passwd");
+		break;
+	case "_qos":
+		document.write("$h_qos");
+		break;
+	case "_STR_routes":
+		document.write("$h_STR_routes");
+		break;
+	case "_traffic":
+		document.write("$h_traffic");
+		break;
+	case "_upgrade":
+		document.write("$h_upgrade");
+		break;
+	case "_upnp":
+		document.write("$h_upnp");
+		break;
+	case "_WAN_wan":
+		document.write("$h_WAN_wan");
+		if( have_igmp_flag == 1 )
+			document.write("$h_WAN_wan_igmp");
+		break;
+	case "_wds":
+		if( "$h_wds_4" == "" )
+			document.write("$h_wds"+host_name+"$h_wds_2"+host_name+"$h_wds_3");
+		else
+			document.write("$h_wds"+host_name+"$h_wds_2"+host_name+"$h_wds_3"+host_name+"$h_wds_4");
+		break;
+	case "_Wizard_cfm":
+		document.write("$h_Wizard_cfm");
+		break;
+	case "_Wizard_setup":
+		document.write("$h_Wizard_setup");
+		break;
+	case "_wladv":
+		document.write("$h_wladv");
+		if( video_router_flag == 0 ){
+			document.write("$h_wladv_ssid_broad");
+		}
+		if( parent.qos_router_flag == 0 )
+			document.write("$h_wladv_2");
+		if( parent.transmit_router_flag == 1)
+			document.write("$h_wladv_tpc");
+		document.write("$h_wladv_3");
+		break;
+	case "_plc_avail_dev":
+		document.write("$h_plc_avail_dev");
+		break;
+	case "_plc_device_config":
+		document.write("$h_plc_device_config");
+		break;
+	case "_plc_qos_mac":
+		document.write("$h_plc_qos_mac");
+		break;	
+	case "_plc_qos_port":
+		document.write("$h_plc_qos_port");
+		break;
+	case "_wlan":
+		document.write("$h_wlan_1_1");
+		if( video_router_flag == 1 ){
+			document.write("$h_wladv_ssid_broad");
+			if( an_router_flag ==1 )
+			document.write("$h_wlan_video");
+		}	
+		document.write("$h_wlan_1_2");
+                if( is_vc_release == 1 )
+                        document.write("$h_wlan_2_54_65_150_vcna");
+		else if( mode_is_300 == 1 )
+			document.write("$h_wlan_2_54_130_300");
+		else
+			document.write("$h_wlan_2_54_65_150");
+		document.write("$h_wlan_3");
+		break;
+	case "_WLG_acl_add":
+		document.write("$h_WLG_acl_add");
+		break;
+	case "_WLG_acl":
+		document.write("$h_WLG_acl");
+		break;
+	case "_wps":
+		document.write("$h_wps");
+		break;
+	case "_wlan_guest_bgn":
+		if( parent.an_router_flag == 1 )
+			document.write("$h_wlan_guest_1 b/g/n $h_wlan_guest_2 $h_wlan_guest_3");
+		else
+			document.write("$h_wlan_guest_1 $h_wlan_guest_2 $h_wlan_guest_3");			
+		break;
+	case "_wlan_guest_an":
+		document.write("$h_wlan_guest_1 a/n $h_wlan_guest_2 $h_wlan_video $h_wlan_guest_3");
+		break;
+	case "_UPNP_media":
+		document.write("$h_UPNP_media");
+		break;
+	case "_IPv6":
+		document.write("$h_IPv6");
+		break;
+	case "_IPv6_auto":
+		document.write("$h_IPv6_auto");
+		break;
+	case "_IPv6_tunnel":
+		document.write("$h_IPv6_tunnel");
+		break;
+	case "_IPv6_fixed":
+		document.write("$h_IPv6_fixed");
+		break;
+	case "_IPv6_dhcp":
+		document.write("$h_IPv6_dhcp");
+		break;
+	case "_IPv6_pppoe":
+		document.write("$h_IPv6_pppoe");
+		break;
+	default:
+		document.write("$h_index");	
+}
+
+</script>
+</HTML>

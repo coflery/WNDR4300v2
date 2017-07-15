@@ -1,0 +1,41 @@
+#!/usr/bin/perl -w
+
+use strict;
+
+my $TempCompFileName = shift(@ARGV);
+my $OutFileName  = shift(@ARGV);
+
+my ($start_addr, $appd_cks, $appd_len) = (0);
+
+sub appendCks
+{
+    my ($fileName) = @_;
+    my ($cks, $len) = (0, 0);
+    
+    open APPENDCKS_FH, "+<$fileName"  or die "fail to open file $fileName : $!";
+    until ( eof APPENDCKS_FH ) {
+        $cks = ( $cks + ord( getc( APPENDCKS_FH )) ) % 0x100 ;
+        $len++ ;
+    }
+    
+    $cks = 0xFF - $cks;
+    close APPENDCKS_FH;
+
+    printf ("append checksum  =>  file : %s,  len : 0x%X, checksum : 0x%X \n", , $fileName, $len, $cks);
+	$appd_cks =$cks;
+	$appd_len =$len;
+}
+
+
+appendCks($TempCompFileName);
+
+# Then append Checksum (include the 4bytes starting address)  
+open INS_FH, "$TempCompFileName"  or die "fail to open file $TempCompFileName : $!";
+open OUT_FH, ">$OutFileName"      or die "fail to Append file $OutFileName: $!";
+while (<INS_FH>)
+{
+   print OUT_FH $_;
+}
+print OUT_FH chr($appd_cks); 
+close INS_FH;
+close OUT_FH;

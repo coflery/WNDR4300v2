@@ -1,0 +1,146 @@
+Source-Makefile: package/dnippp/Makefile
+Package: dnippp
+Menu: 1
+Version: 2.4.3-8
+Depends: @TARGET_dniwndr3700u2631||TARGET_wndr4500v3 +kmod-ppp
+Provides: 
+Build-Depends: libpcap
+Section: net
+Category: Network
+Title: PPP daemon
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: dnippp-2.4.3.tar.gz
+Type: ipkg
+Description:  This package contains the PPP (Point-to-Point Protocol) daemon.
+http://ppp.samba.org/
+@@
+Config:
+	menu "Configurations"
+		depends on PACKAGE_dnippp
+		source "package/dnippp/Config.in"
+	endmenu
+@@
+
+Package: dnippp-mod-pppoa
+Version: 2.4.3-8
+Depends: dnippp +linux-atm +kmod-pppoa
+Provides: 
+Build-Depends: libpcap
+Section: net
+Category: Network
+Title: PPPoA plugin
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: dnippp-2.4.3.tar.gz
+Type: ipkg
+Description:  This package contains a PPPoA (PPP over ATM) plugin for ppp.
+http://ppp.samba.org/
+@@
+
+Package: dnippp-mod-pppoe
+Version: 2.4.3-8
+Depends: dnippp +kmod-pppoe
+Provides: 
+Build-Depends: libpcap
+Section: net
+Category: Network
+Title: PPPoE plugin
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: dnippp-2.4.3.tar.gz
+Type: ipkg
+Description:  This package contains a PPPoE (PPP over Ethernet) plugin for ppp.
+http://ppp.samba.org/
+@@
+
+Package: dnippp-mod-pptp
+Version: 2.4.3-8
+Depends: dnippp +kmod-pptp
+Provides: 
+Build-Depends: libpcap
+Section: net
+Category: Network
+Title: PPTP plugin
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: dnippp-2.4.3.tar.gz
+Type: ipkg
+Description:  This package contains a PPTP (PPP over GRE/IPv4) plugin for ppp.
+http://ppp.samba.org/
+@@
+
+Package: dnippp-mod-l2tp
+Version: 2.4.3-8
+Depends: dnippp +kmod-l2tp
+Provides: 
+Build-Depends: libpcap
+Section: net
+Category: Network
+Title: L2TP plugin
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: dnippp-2.4.3.tar.gz
+Type: ipkg
+Description:  This package contains a L2TP (PPP over L2TP) plugin for ppp.
+http://ppp.samba.org/
+@@
+
+Package: dnippp-mod-radius
+Version: 2.4.3-8
+Depends: dnippp
+Provides: 
+Build-Depends: libpcap
+Section: net
+Category: Network
+Title: RADIUS plugin
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: dnippp-2.4.3.tar.gz
+Type: ipkg
+Description:  This package contains a RADIUS (Remote Authentication Dial-In User 
+ Service) plugin for ppp.
+http://ppp.samba.org/
+@@
+
+Package: dnichat
+Version: 2.4.3-8
+Depends: dnippp
+Provides: 
+Build-Depends: libpcap
+Section: net
+Category: Network
+Title: Establish conversation with a modem
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: dnippp-2.4.3.tar.gz
+Type: ipkg
+Description:  This package contains an utility to establish conversation with other 
+ PPP servers (via a modem).
+http://ppp.samba.org/
+@@
+
+Package: dnipppdump
+Version: 2.4.3-8
+Depends: dnippp
+Provides: 
+Build-Depends: libpcap
+Section: net
+Category: Network
+Title: Read PPP record file
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: dnippp-2.4.3.tar.gz
+Type: ipkg
+Description:  This package contains an utility to read PPP record file.
+http://ppp.samba.org/
+@@
+
+Package: dnipppstats
+Version: 2.4.3-8
+Depends: dnippp
+Provides: 
+Build-Depends: libpcap
+Section: net
+Category: Network
+Title: Report PPP statistics
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: dnippp-2.4.3.tar.gz
+Type: ipkg
+Description:  This package contains an utility to report PPP statistics.
+http://ppp.samba.org/
+@@
+
+

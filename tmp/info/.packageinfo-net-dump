@@ -1,0 +1,15 @@
+Source-Makefile: package/net-dump/Makefile
+Package: net-dump
+Version: 1
+Depends: @TARGET_WNDR3700U||TARGET_wndr4500v3
+Provides: 
+Section: utils
+Category: Network
+Title: Mini dump tool to capture packets.
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: Mini dump tool to capture packets.
+@@
+
+

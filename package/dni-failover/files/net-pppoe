@@ -1,0 +1,80 @@
+#!/bin/sh
+
+. /etc/failover/failover.common
+
+print_pppoe_options(){
+cat <<EOF
+noipdefault
+hide-password
+$3
+detectlink
+noauth
+noaccomp
+default-asyncmap
+connect /bin/true
+mtu $4
+mru $4
+persist
+lcp-echo-interval 10
+lcp-echo-failure 3
+user $1
+password $2
+plugin rp-pppoe.so $7
+$5
+$6
+EOF
+}
+
+setup_interface_pppoe(){
+	local user passwd mtu dns idle service ip
+	insert_modules pppoe
+	setup_generic_ppp
+	user=$($CONFIG get wan_pppoe_username)
+	passwd=$($CONFIG get wan_pppoe_passwd)
+	mtu=$($CONFIG get wan_pppoe_mtu)
+
+	if [ "$($CONFIG get wan_pppoe_dns_assign)" != "1" ]; then
+		dns="usepeerdns"
+	else
+		echo "nameserver $($CONFIG get wan_ether_dns1)" > $FAILOVER_RESOLVE
+		echo "nameserver $($CONFIG get wan_ether_dns2)" >> $FAILOVER_RESOLVE
+	fi
+
+	if [ "x$($CONFIG get wan_pppoe_service)" != "x" ]; then
+		service="rp_pppoe_service $($CONFIG get wan_pppoe_service)"
+	fi
+
+	if [ "$($CONFIG get wan_pppoe_wan_assign)" = "1" ]; then
+		ip="$($CONFIG get wan_pppoe_ip)"
+	fi
+	
+	print_pppoe_options "$user" "$passwd" "$dns" "${mtu:-1492}" "$service" "$ip" "$WAN_IF" > $FAILOVER_PPP_DIAL
+
+	sed -i '/user/ s/\\/\\\\/g' $FAILOVER_PPP_DIAL
+	sed -i '/user/ s/\#/\\#/g'  $FAILOVER_PPP_DIAL
+	sed -i '/password/ s/\\/\\\\/g' $FAILOVER_PPP_DIAL
+	sed -i '/password/ s/\#/\\#/g'  $FAILOVER_PPP_DIAL
+	sed -i '/rp_pppoe_service/ s/\\/\\\\/g' $FAILOVER_PPP_DIAL
+	sed -i '/rp_pppoe_service/ s/\#/\\#/g' $FAILOVER_PPP_DIAL
+
+	pppd call dial-provider updetach unit 1
+}
+
+FW_REGION_FILE="/tmp/firmware_region"
+firmware_region=$(cat $FW_REGION_FILE)
+if [ "x$($CONFIG get GUI_Region)" = "xRussian" -o "$firmware_region" = "RU" ]; then
+	if [ "$($CONFIG get wan_pppoe_intranet_wan_assign)" = "0" ]; then
+		setup_interface_pppoe
+		udhcpc -b -i $WAN_IF -s $FAILOVER_DHCPC_SCRIPT
+	else
+		netmask=$($CONFIG get wan_pppoe_intranet_mask)
+		if [ "x$netmask" != "x" -a "x$netmask" != "x0.0.0.0" -a "x$netmask" != "x255.255.255.255" ]; then
+			ifconfig $WAN_IF $($CONFIG get wan_pppoe_intranet_ip) netmask $netmask
+		else
+			ifconfig $WAN_IF $($CONFIG get wan_pppoe_intranet_ip)
+		fi
+		setup_interface_pppoe
+	fi
+else
+	setup_interface_pppoe
+fi

@@ -1,0 +1,16 @@
+Source-Makefile: package/zebra/Makefile
+Package: zebra
+Version: 0.95a-1
+Depends: 
+Provides: 
+Section: net
+Category: Base system
+Title: Zebra is free software that manages various routing protocols
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: zebra-0.95a.tar.gz
+Type: ipkg
+Description: Zebra is free software that manages various routing protocols
+http://zebra.sourceforge.net/
+@@
+
+

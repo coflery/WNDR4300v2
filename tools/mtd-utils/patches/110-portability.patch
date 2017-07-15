@@ -1,0 +1,60 @@
+--- a/compr_lzo.c
++++ b/compr_lzo.c
+@@ -24,7 +24,6 @@
+ #include <stdint.h>
+ #include <stdio.h>
+ #include <string.h>
+-#include <asm/types.h>
+ #include <linux/jffs2.h>
+ #include <lzo/lzo1x.h>
+ #include "compr.h"
+--- a/compr_zlib.c
++++ b/compr_zlib.c
+@@ -35,7 +35,6 @@
+ #include <stdint.h>
+ #include <zlib.h>
+ #include <stdio.h>
+-#include <asm/types.h>
+ #include <linux/jffs2.h>
+ #include "compr.h"
+ 
+--- a/rbtree.h
++++ b/rbtree.h
+@@ -94,8 +94,7 @@ static inline struct page * rb_insert_pa
+ #ifndef	_LINUX_RBTREE_H
+ #define	_LINUX_RBTREE_H
+ 
+-#include <linux/kernel.h>
+-#include <linux/stddef.h>
++#include <stddef.h>
+ 
+ struct rb_node
+ {
+@@ -131,7 +130,9 @@ static inline void rb_set_color(struct r
+ 
+ #define RB_ROOT	(struct rb_root) { NULL, }
+ 
++#ifndef offsetof
+ #define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
++#endif
+ 
+ #define container_of(ptr, type, member) ({                      \
+         const typeof( ((type *)0)->member ) *__mptr = (ptr);    \
+--- a/include/mtd/ubi-media.h
++++ b/include/mtd/ubi-media.h
+@@ -30,7 +30,15 @@
+ #ifndef __UBI_MEDIA_H__
+ #define __UBI_MEDIA_H__
+ 
++#ifdef __linux__
+ #include <asm/byteorder.h>
++#else
++#include <stdint.h>
++typedef uint8_t __u8;
++typedef uint16_t __be16;
++typedef uint32_t __be32;
++typedef uint64_t __be64;
++#endif
+ 
+ /* The version of UBI images supported by this implementation */
+ #define UBI_VERSION 1

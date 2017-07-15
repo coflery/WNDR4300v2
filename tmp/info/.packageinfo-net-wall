@@ -1,0 +1,22 @@
+Source-Makefile: package/net-wall/Makefile
+Package: net-wall
+Version: 2
+Depends: @TARGET_dniwndr3700u2631||TARGET_wndr4500v3
+Provides: 
+Build-Depends: datalib
+Section: utils
+Category: Network
+Title: Mini Firewall for Embedded Router.
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: Mini Firewall for Embedded Router.
+@@
+Config:
+	menu "Configurations"
+		depends on PACKAGE_net-wall
+		source "package/net-wall/Config.in"
+	endmenu
+@@
+
+

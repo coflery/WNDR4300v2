@@ -1,0 +1,10 @@
+# wireless tools configuration
+
+config WIRELESS_TOOLS_ANY_SSID_HACK
+	bool "Enable any SSID hack"
+	depends on PACKAGE_wireless-tools
+	default n
+        help
+          This is to enable the hack of accepting string "any"
+          as SSID.
+

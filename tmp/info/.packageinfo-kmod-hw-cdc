@@ -1,0 +1,16 @@
+Source-Makefile: package/kmod-hw-cdc/Makefile
+Package: kmod-hw-cdc
+Submenu: Other modules
+Version: <LINUX_VERSION>+4.19.19.00--1
+Depends: @TARGET_dniwndr3700u2631||TARGET_wndr4300||TARGET_wndr4500v3
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: Huawei driver to support 4G for kernel 2.6.31
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: Huawei driver to support 4G for kernel 2.6.31
+@@
+
+

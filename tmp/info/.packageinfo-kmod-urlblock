@@ -1,0 +1,22 @@
+Source-Makefile: package/kmod-urlblock/Makefile
+Package: kmod-urlblock
+Submenu: Other modules
+Version: <LINUX_VERSION>--1
+Depends: @TARGET_dniwndr3700u2631||TARGET_wndr4500v3
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: DNI URL Block firewall module
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: DNI URL Block firewall module
+@@
+Config:
+	menu "Configurations"
+		depends on PACKAGE_kmod-urlblock
+		source "package/kmod-urlblock/Config.in"
+	endmenu
+@@
+
+

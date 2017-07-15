@@ -1,0 +1,12 @@
+###################################
+# NTGR AC329U,AC327U
+
+DefaultVendor = 0x2077
+DefaultProduct = 0xf000
+
+TargetVendor = 0x2077
+TargetProductList = "a002,a003"
+
+MessageContent="5553424312345678000000000000061b000000020000000000000000000000"
+
+CheckSuccess=20

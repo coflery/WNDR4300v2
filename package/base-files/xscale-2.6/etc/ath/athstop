@@ -1,0 +1,8 @@
+#!/bin/sh
+
+rmmod ath_pci
+rmmod ath_rate_atheros
+rmmod wlan
+rmmod ath_hal
+
+

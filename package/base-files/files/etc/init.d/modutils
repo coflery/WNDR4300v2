@@ -1,0 +1,8 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+RCDLINKS="S,S20"
+
+start() {
+	load_modules /etc/modules.d/*
+}

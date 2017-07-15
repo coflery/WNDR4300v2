@@ -1,0 +1,109 @@
+# MadWifi configuration
+
+config ATHEROS_AQUILA_SCRIPT_GIT_TREEISH
+	string
+	prompt "treeish of atheros aquila script git repository"
+	default "madwifi-11n-scripts-aquila-dni95"
+	help
+	  Input the treeish of atheros aquila git repository which you want to build
+
+config ATHEROS_AQUILA_SCRIPT_GIT_REPOSITORY
+	string
+	prompt "name of atheros aquila script git repository"
+	default "madwifi-11n-scripts.git"
+	help
+	  Input the name of atheros aquila git repository which you want to build
+
+config ATHEROS_AQUILA_SCRIPT_GIT_URL
+	string
+	prompt "url of atheros aquila script git repository"
+	default "ssh://dniserver/scm/dnigit/common/apps/madwifi-11n-scripts.git"
+	help
+	  Input the url of atheros aquila git repository which you want to build
+
+choice
+	prompt "Select the type of board type"
+	depends on PACKAGE_atheros-aquila-madwifi-11n-scripts
+	default ATHEROS_AQUILA_SCRIPT_TYPE_DNI
+	help
+	  This option control the board type will be used by the script
+
+config ATHEROS_AQUILA_SCRIPT_TYPE_DNI
+	bool "Use DNI merged script type"
+	help
+          This is to use DNI merged script type
+
+config ATHEROS_AQUILA_SCRIPT_TYPE_SINGLE
+	bool "Use Atheros single board script"
+	help
+          This is to use Atheros Aquila single board script
+
+config ATHEROS_AQUILA_SCRIPT_TYPE_DUAL
+	bool "Use Atheros dual board script"
+	help
+          This is to use Atheros Aquila dual board script
+
+endchoice
+
+config ATHEROS_AQUILA_SCRIPT_USE_BOARD
+       string "Designate Atheros platform which is used for this project"
+       depends on PACKAGE_atheros-aquila-madwifi-11n-scripts
+       default ""
+       help
+         Different Atheros platform has different configuration file,
+         so the Atheros platform must be designated for installing
+         corresponding configuration file. If you don't know which
+         Atheros platfrom should be used for your project, please
+         contact with module administrator for more information.
+
+config ATHEROS_AQUILA_SCRIPT_READONLY_FS
+       bool "Is rootfs readonly?"
+       depends on PACKAGE_atheros-aquila-madwifi-11n-scripts
+       default n
+       help
+        If rootfs is readonly, we need to copy Atheros scripts to another folder
+        to link /etc/ath to ramdisk to ensure /etc/ath and /etc/wpa2 are writable.
+
+choice
+	prompt "Select the source of configuration system"
+	depends on PACKAGE_atheros-aquila-madwifi-11n-scripts
+	default ATHEROS_AQUILA_SCRIPT_DNI_CONFIG
+	help
+	  This option control the source of configuration system
+
+config ATHEROS_AQUILA_SCRIPT_DNI_CONFIG
+	bool "Use DNI datalib configuration system"
+	depends on PACKAGE_datalib
+	help
+          This is to use DNI configuration system (datalib)
+
+config ATHEROS_AQUILA_SCRIPT_OPENWRT_CONFIG
+	bool "Use Openwrt configuration system"
+	help
+          This is to use Openwrt configuration system
+
+endchoice
+
+config ATHEROS_AQUILA_PLATFORM_PATCH
+       bool "Apply platform specific patch"
+       depends on PACKAGE_atheros-aquila-madwifi-11n-scripts
+       default n
+
+config ATHEROS_AQUILA_SCRIPT_WSC_MANUFACTURER
+       string "The name of manufacturer used by WPS"
+       depends on PACKAGE_atheros-aquila-madwifi-11n-scripts
+       default "none"
+
+config ATHEROS_AQUILA_SCRIPT_WSC_MODEL_NAME
+       string "The model name used by WPS"
+       depends on PACKAGE_atheros-aquila-madwifi-11n-scripts
+       default "none"
+
+config ATHEROS_AQUILA_SCRIPT_WSC_MODEL_NUMBER
+       string "The model number used by WPS"
+       depends on PACKAGE_atheros-aquila-madwifi-11n-scripts
+       default "none"
+
+config ATHEROS_AQUILA_SCRIPT_IPTV_SUPPORT
+	bool "Support WLAN IPTV function"
+	default n

@@ -1,0 +1,68 @@
+#! /bin/sh
+
+DEVCLASS=`echo "$1" | awk -F '/' '{print $1}'`
+FLAG="$2"
+PROTO=`config get wan_proto`
+MULTI_WAN_TYPE=`config get multi_wan_type`
+
+if [ "$FLAG" = "off" ]; then
+	local cdma_pppd=`ps | grep "pppd call cdma" | grep -v "grep" |awk '{print $1}'`
+	if [ "x$cdma_pppd" != "x" ]; then
+		/bin/kill -SIGHUP $cdma_pppd
+		/bin/kill $cdma_pppd
+	fi
+fi
+
+if [ "$PROTO" != "3g" -a "$PROTO" != "wimax" ]; then
+	exit
+fi
+#exit for failover
+if [ "x$MULTI_WAN_TYPE" = "xfailover" ]; then
+	if [ "$FLAG" = "off" ]; then
+		if [ $DEVCLASS -eq 255 ] || [ $DEVCLASS -eq 2 ]; then
+			#send signal for hardlink plug out
+			if [ ! -f /tmp/usb_pluged_out ]; then
+				/bin/echo 1 > /tmp/usb_pluged_out
+				killall -SIGUSR2 failover
+			fi
+		fi
+	else
+		/bin/rm -f /tmp/usb_pluged_out
+	fi
+	exit
+fi
+
+#do not do reconnect or rmmod driver or killall  pppd for failover
+ID_VENDOR=`/bin/echo $PRODUCT | awk -F '/' '{print $1}'`
+ID_PRODUCT=`/bin/echo $PRODUCT | awk -F '/' '{print $2}'`
+
+config set dongle_need_plug=1;
+config set mobile_status="init"
+if [ "$ID_VENDOR" = "12d1" ] && [ "$ID_PRODUCT" = "14fe" -o "$ID_PRODUCT" = "1506" ]; then
+		config set mobile_status="E3276"
+fi
+
+if [ $DEVCLASS -eq 255 ] || [ $DEVCLASS -eq 2 ]; then
+        if [ "$FLAG" = "on" ]; then
+		/bin/echo $DEVCLASS
+		mobile_running=`config get mobile_running`
+
+		#Yota One LU150
+		if [ "$ID_VENDOR" = "1076" -a "$ID_PRODUCT" = "8003" ]; then
+			[ "$mobile_running" = "1" ] || /etc/init.d/net-wan restart
+		fi
+		#Yota One WU251
+		if [ "$ID_VENDOR" = "525" -a "$ID_PRODUCT" = "a4a2" ]; then
+			[ "$mobile_running" = "1" ] || /etc/init.d/net-wan restart
+		fi
+	fi
+	if [ "$FLAG" = "off" ]; then
+		if [ "$PROTO" = "3g" ]; then
+			echo 0 > /etc/ppp/ppp0-status
+			/etc/rm_modem_driver &
+			config set wan_cdma_card=""
+			config set wan_mobile_ifname=ppp0
+		fi
+		/sbin/ledcontrol -n wan -c amber -s off
+	fi
+fi

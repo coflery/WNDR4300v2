@@ -1,0 +1,42 @@
+#!/bin/sh
+
+. /etc/failover/failover.common
+
+setup_interface_dhcp_wimax(){
+    local mtu
+
+    mtu=$($CONFIG get wan_dhcp_mtu)
+	WIMAX_WAN_IF=$($CONFIG get wan_ifname_wimax)
+
+    ifconfig $WIMAX_WAN_IF down
+    ifconfig $WIMAX_WAN_IF mtu ${mtu:-1500}
+    ifconfig $WIMAX_WAN_IF up
+    if [ "x$($CONFIG get wan_domain)" = "x" ];then
+		udhcpc -b -i $WIMAX_WAN_IF -h "$($CONFIG get wan_hostname)" -r $($CONFIG get wan_dhcp_ipaddr) -N $($CONFIG get wan_dhcp_oldip) -s $FAILOVER_DHCPC_SCRIPT
+    else
+		udhcpc -b -i $WIMAX_WAN_IF -h "$($CONFIG get wan_hostname)" -r $($CONFIG get wan_dhcp_ipaddr) -N $($CONFIG get wan_dhcp_oldip) -d $($CONFIG get wan_domain) -s $FAILOVER_DHCPC_SCRIPT
+    fi
+}
+
+
+if [ "$($CONFIG get wan_cdma_wizard_detect_process)" != "1" ]; then
+	wimax_if_wait=0
+	while [ $wimax_if_wait -lt 15 ]
+	do
+		usb_cdc_eem_if=`grep cdc_ether -c /proc/bus/usb/devices`
+		if [ $usb_cdc_eem_if -gt 0 ]; then
+			break;
+		fi
+		wimax_if_wait=$(($wimax_if_wait + 1))
+		sleep 3
+	done
+	$CONFIG set wan_cdma_card_type=""
+	$CONFIG set wan_cdma_wimax_modem=""
+	$CONFIG set wan_cdma_card_url=""
+	/bin/config coremgr 1.2.4.1
+fi
+
+$CONFIG set wan_cdma_wizard_detect_process=0
+$CONFIG set wan_ifname_wimax=`ifconfig -a | grep eth[2-9] | awk '{print $1}'`
+setup_interface_dhcp_wimax
+

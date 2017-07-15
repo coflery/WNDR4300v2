@@ -1,0 +1,108 @@
+#!/bin/sh
+###################################################################################
+##  STAcfg
+##
+##  Configuration file for Atheros STA.
+##  All settings that affect the operation of the STA are included in this file.  For
+##  those settings not define here, defaults are used.  This file should be used in
+##  lieu of manual configuration.
+##
+###################################################################################
+##
+
+##
+###################################################################################
+
+
+#################################################################################
+## Default Parameters
+## If these are not set explictly by exporting environmental variables, the following
+## Defaults will be applied
+#################################################################################
+
+##
+## Interface/Network Section
+##
+export VAP_NAME=ath
+export WAN_IF=eth0
+export LAN_IF=eth1
+
+if [ "${STA_IPADDR}" = "" ]; then
+    export STA_IPADDR=192.168.1.10
+    export STA_NETMASK=255.255.255.0
+fi
+
+
+##
+## STA Identification Section
+##
+if [ "${STA_SSID}" = "" ]; then
+    export STA_SSID=Atheros_XSpan
+fi
+
+##
+## Channel Configuration Section
+##
+
+if [ "${STA_PRIMARY_CH}" = "" ]; then
+    # STA_PRIMARY_CH could be
+    #                a number or
+    #                11na (which means auto-scan in 11na mode) or
+    #                11ng (which means auto-scan in 11ng mode)
+
+    export STA_PRIMARY_CH=6
+fi
+
+if [ "${SHORTGI}" = "" ]; then
+    export SHORTGI=1
+fi
+
+#
+# Aggregation.  First parameter enables/disables,
+# second parameter sets the size limit
+#
+
+if [ "${AMPDU}" = "" ]; then
+    export AMPDU=1
+fi
+
+if [ "${STA_SECMODE}" = "" ]; then
+    export STA_SECMODE=NONE
+fi
+
+if [ "${STA_WEPKEY}" = "" ]; then
+    export STA_WEPKEY=12345
+fi
+
+if [ "${STA_SECFILE}" = "" ]; then
+    export STA_SECFILE=PSK
+fi
+
+if [ "${STA_WPA}" = "" ]; then
+    export STA_WPA=2
+fi
+
+if [ "${PSK_KEY}" = "" ]; then
+    export PSK_KEY=12345678
+fi
+
+if [ "${STA_CYPHER}" = "" ]; then
+    export STA_CYPHER="CCMP TKIP"
+fi
+
+if [ "${WPS_PIN}" = "" ]; then
+    export WPS_PIN="12345670"
+fi
+
+
+if [ "${WPS_ENABLE}" = "" ]; then
+    export WPS_ENABLE=0
+fi
+
+if [ "${TX_CHAINMASK}" = "" ]; then
+    export TX_CHAINMASK=0
+fi
+
+if [ "${RX_CHAINMASK}" = "" ]; then
+    export RX_CHAINMASK=0
+fi

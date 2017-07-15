@@ -1,0 +1,15 @@
+#!/bin/sh /etc/rc.common
+START=20
+
+stop() {
+	echo "net-wan stop: No actions here."
+}
+
+start() {
+	echo "net-wan start: No actions here."
+}
+
+restart() {
+	stop
+	start
+}

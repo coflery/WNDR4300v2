@@ -1,0 +1,16 @@
+Source-Makefile: package/disktype/Makefile
+Package: disktype
+Submenu: Disk Management.
+Version: 1
+Depends: 
+Provides: 
+Section: utils
+Category: Utilities
+Title: Disk format detection
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: 	disktype is used to detect the 200M EFI partition
+@@
+
+

@@ -1,0 +1,107 @@
+#!/bin/sh
+
+get_reg() # $1: reg_addr
+{
+	ethreg $1 | awk '{print $5}'
+}
+
+set_reg() # $1: reg_addr, $2: value, $3: mask
+{
+	if [ $# == 2 ]; then
+		ethreg $1=$2
+		return
+	fi
+
+	local v0=$(get_reg $1)
+	local v_value=$(($2 & $3))
+	local v_clear=$(($3 ^ 0xffffffff))
+	ethreg $1=$(($v0 & $v_clear | $v_value))
+}
+
+adjust_ssdp_acl_rule() # $1: entry_index, $2: vlan_id, $3: phy_port
+{
+	local entry_index=$1
+	local vlan_id=$2
+	local phy_port=$3
+	local index_offset=$(($entry_index << 5))
+	local port_members=$(( $(($phy_port << 1)) | 1 ))
+
+	# set a MAC match rule, mac addr: 01:00:5e:7f:ff:fa, vlan id
+
+	# set entry index in ACL rule table
+	set_reg $((0x58400 + $index_offset)) 0x5e7ffffa # DA:01:00:5e:7f:ff:fa
+	set_reg $((0x58404 + $index_offset)) 0x00000100
+	set_reg $((0x58408 + $index_offset)) 0x00000000
+	set_reg $((0x5840c + $index_offset)) $((0x00000000 | $vlan_id)) # VID
+	set_reg $((0x58410 + $index_offset)) 0x00000001 # VID_MASK_OPTION:1
+
+	# set entry index in ACL mask table
+	set_reg $((0x58c00 + $index_offset)) 0xffffffff # DA mask
+	set_reg $((0x58c04 + $index_offset)) 0x0000ffff
+	set_reg $((0x58c08 + $index_offset)) 0x00000000
+	set_reg $((0x58c0c + $index_offset)) 0x00000fff # VID mask
+
+	# set entry index for ACL rule control
+	set_reg $((0x58800 + $index_offset)) 0x00000001 # just only one ACL rule, select ADDR0
+	set_reg $((0x58804 + $index_offset)) $((0x00000000 | $entry_index)) # ADDR0: entry index
+	set_reg $((0x58808 + $index_offset)) 0x00000000 # ADDR1
+	set_reg $((0x5880c + $index_offset)) 0x00000000 # ADDR2
+	set_reg $((0x58810 + $index_offset)) 0x00000000 # ADDR3
+	# set ACL phy src port information
+	set_reg $((0x58814 + $index_offset)) $((0x00000000 | $port_members))
+	# set ACL rule length
+	set_reg $((0x58818 + $index_offset)) 0x00000006 # rule length: 6 bytes
+	# set ACL rule type select
+	set_reg $((0x5881c + $index_offset)) 0x00000001 # type: MAC_RULE
+
+	# set ACL rule result
+	set_reg $((0x58000 + $index_offset)) 0x00000000
+	set_reg $((0x58004 + $index_offset)) $(( 0x10000000 | $(($port_members << 20)) )) # DES_PORT_EN, DES_PORT: lan port+ CPU port.
+	set_reg $((0x58008 + $index_offset)) 0x00000000
+}
+
+iptv_port_mask=$(($1 & 0xf)) 
+non_iptv_port_mask=$(($iptv_port_mask ^ 0xf))
+
+# flush all vlan table
+set_reg 0x040 0x00000001
+set_reg 0x040 0x00000009
+# add vlan 1 in vlan table
+set_reg 0x044 $((0x00000800 | $(($non_iptv_port_mask << 1)) | 1))
+set_reg 0x040 0x00010002
+set_reg 0x040 0x0001000a
+# add vlan 2 in vlan table
+set_reg 0x044 $((0x00000800 | $(($iptv_port_mask << 1)) | 1))
+set_reg 0x040 0x00020002
+set_reg 0x040 0x0002000a
+
+set_reg 0x078 0x00000100 0x00000100 # CPU_PORT_EN
+# port0 (CPU_PORT)
+set_reg 0x104 0x00000200 0x00000300 # EG_VLAN_MODE (10): egress transmits frames with vlan
+set_reg 0x108 0x00010001 0x0fff0fff # CVID, SVID
+set_reg 0x10c 0xc01e0000 0xc07f0000 # 802.1Q_MODE, PORT_VID_MEM
+
+# port 1~4 (LAN ports)
+for i in 1 2 3 4; do
+	i_mask=$((1 << $(($i - 1)) ))
+	if [ $(($iptv_port_mask & $i_mask)) == 0 ]; then
+		v_08=0x00010001
+		ports=$(($non_iptv_port_mask & $(($i_mask ^ 0xf)) ))
+	else
+		v_08=0x00020002
+		ports=$(($iptv_port_mask & $(($i_mask ^ 0xf)) ))
+	fi
+	v_0c=$(( $((3 << 30 )) | $((1 << 16)) | $(($ports << 17)) ))
+
+	port_base=$(( $(($i+1)) << 8 ))
+	set_reg $(($port_base + 0x4)) 0x00000100 0x00000300 # EG_VLAN_MODE (01): egress transmits frames without vlan
+	set_reg $(($port_base + 0x8)) $v_08 0x0fff0fff # CVID, SVID
+	set_reg $(($port_base + 0xc)) $v_0c 0xc07f0000 # 802.1Q_MODE, PORT_VID_MEM
+done
+
+# adjust ACL rule for SSDP packets (239.255.255.250) after vlan-set
+set_reg 0x003c 0x00200000 0x00200000 # ACL_EN
+
+adjust_ssdp_acl_rule 0 1 $non_iptv_port_mask             # for lan ports, index:0, vid:1
+adjust_ssdp_acl_rule 1 2 $iptv_port_mask                 # for iptv ports, index:1, vid:2
+

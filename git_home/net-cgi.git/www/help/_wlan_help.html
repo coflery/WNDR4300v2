@@ -1,0 +1,34 @@
+<% help_head() %>
+</head>
+<script language="javascript" type="text/javascript">
+var host_name = top.host_name;
+var video_router_flag = top.video_router_flag;
+var guest_router_flag=top.guest_router_flag;
+var an_router_flag = top.an_router_flag;
+var is_vc_release = top.is_vc_release;
+var mode_is_300 = top.mode_is_300;
+var basic_coexistence_flag = top.basic_coexistence_flag;
+</script>
+$h_wlan_1_1
+<script>
+	if( basic_coexistence_flag == 1 )
+		document.write("$h_wladv_coexistence");
+
+		if( video_router_flag == 1 ){
+			document.write("$h_wladv_ssid_broad");
+			if( an_router_flag ==1 )
+			document.write("$h_wlan_video");
+		}
+</script>		
+$h_wlan_1_2	
+<script>
+
+                if( is_vc_release == 1 )
+                        document.write("$h_wlan_2_54_65_150_vcna");
+		else if( mode_is_300 == 1 )
+			document.write("$h_wlan_2_54_130_300");
+		else
+			document.write("$h_wlan_2_54_65_150");
+</script>
+$h_wlan_3
+</HTML>

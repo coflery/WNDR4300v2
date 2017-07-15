@@ -1,0 +1,24 @@
+diff --git a/net/8021q/vlan.c b/net/8021q/vlan.c
+index eb1c71e..0afd6cb 100644
+--- a/net/8021q/vlan.c
++++ b/net/8021q/vlan.c
+@@ -241,8 +241,7 @@ static int unregister_vlan_dev(struct net_device *real_dev,
+ 			 * interlock with HW accelerating devices or SW vlan
+ 			 * input packet processing.
+ 			 */
+-			if (real_dev->features &
+-			    (NETIF_F_HW_VLAN_RX | NETIF_F_HW_VLAN_FILTER)) {
++			if (real_dev->features & NETIF_F_HW_VLAN_FILTER) {
+ 				real_dev->vlan_rx_kill_vid(real_dev, vlan_id);
+ 			}
+ 
+@@ -410,8 +409,7 @@ static struct net_device *register_vlan_device(const char *eth_IF_name,
+ 	}
+ 
+ 	if ((real_dev->features & NETIF_F_HW_VLAN_RX) &&
+-	    (real_dev->vlan_rx_register == NULL ||
+-	     real_dev->vlan_rx_kill_vid == NULL)) {
++	    real_dev->vlan_rx_register == NULL) {
+ 		printk(VLAN_DBG "%s: Device %s has buggy VLAN hw accel.\n",
+ 			__FUNCTION__, real_dev->name);
+ 		goto out_put_dev;

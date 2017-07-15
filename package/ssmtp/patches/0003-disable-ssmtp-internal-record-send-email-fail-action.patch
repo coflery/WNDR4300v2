@@ -1,0 +1,16 @@
+--- ./ssmtp.bak	2014-08-23 15:39:18.000000000 +0800
++++ ./ssmtp.c	2014-08-23 15:43:14.000000000 +0800
+@@ -217,7 +217,13 @@
+ 	log_event(LOG_ERR, "%s", buf);
+ 
+ 	/* Send message to dead.letter */
++
++	/* disable dead letter function,we had been use
++	 * log_event record this action
++	 */
++#if 0
+ 	(void)dead_letter();
++#endif
+ 
+ 	exit(1);
+ }

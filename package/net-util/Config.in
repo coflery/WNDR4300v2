@@ -1,0 +1,20 @@
+config NET_UTIL_GIT_TREEISH
+	string
+	prompt "treeish of net-util git repository"
+	default "net-util-dni37"
+	help
+           Input the treeish of net-util git repository which you want to build
+
+config NET_UTIL_GIT_REPOSITORY
+        string
+        prompt "name of net-util git repository"
+        default "net-util.git"
+        help
+           Input the name of net-util git repository which you want to build
+
+config NET_UTIL_GIT_URL
+        string
+        prompt "url of net-util git repository"
+        default "ssh://dniserver/scm/dnigit/common/apps/net-util.git"
+        help
+           Input the url of net-util git repository which you want to build

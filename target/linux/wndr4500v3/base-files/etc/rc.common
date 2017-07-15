@@ -1,0 +1,117 @@
+#!/bin/sh
+# Copyright (C) 2006-2009 OpenWrt.org
+
+LAN_IF=eth0
+BR_IF=br0
+WAN_IF=eth1
+CONFIG=/bin/config
+
+. $IPKG_INSTROOT/etc/functions.sh
+
+PATH='/bin:/sbin:/usr/bin:/usr/sbin'
+
+get_art_mtd() {
+	local art_mtd="mtd2"
+	local art_opts="ART caldata cal calibration art"
+	local line art_tmp
+	
+	for line in $art_opts; do
+		art_mtd=$(grep "$line\"$" /proc/mtd | sed -e 's/^mtd/mtd/g' -e 's/:.*//g')
+		if [ "x$art_mtd" != "x" ]; then
+			break
+		fi
+		
+	done
+
+	echo -n "$art_mtd"
+}
+
+#$1: lan or wan or wlan5g
+get_mac_addr() {
+	local art_mtd=$(get_art_mtd)
+	local mac_addr="0030a0000001" offset=0
+
+	[ "$1" = "lan" ] && offset=0
+	[ "$1" = "wan" ] && offset=6
+	[ "$1" = "wlan5g" ] && offset=12
+
+	[ "x$art_mtd" != "x" ] && mac_addr=$(hexdump -s $offset -n 6 /dev/$art_mtd | awk 'NR==1 {print $2$3$4}')
+
+	# show mac_addr in format, such as 00:30:a0:00:00:01
+	mac_addr=$(echo $mac_addr | sed 's/../&:/g' | cut -c 1-17)
+	echo -n "$mac_addr"
+}
+
+initscript=$1
+action=${2:-help}
+shift 2
+
+start() {
+	return 0
+}
+
+stop() {
+	return 0
+}
+
+reload() {
+	return 1
+}
+
+restart() {
+	trap '' TERM
+	stop "$@"
+	start "$@"
+}
+
+boot() {
+	start "$@"
+}
+
+shutdown() {
+	return 0
+}
+
+disable() {
+	name="$(basename "${initscript}")"
+	rm -f "$IPKG_INSTROOT"/etc/rc.d/S??$name
+	rm -f "$IPKG_INSTROOT"/etc/rc.d/K??$name
+}
+
+enable() {
+	name="$(basename "${initscript}")"
+	disable
+	[ "$START" ] && ln -s "../init.d/$name" "$IPKG_INSTROOT/etc/rc.d/S${START}${name##S[0-9][0-9]}"
+	[ "$STOP"  ] && ln -s "../init.d/$name" "$IPKG_INSTROOT/etc/rc.d/K${STOP}${name##K[0-9][0-9]}"
+}
+
+enabled() {
+	name="$(basename "${initscript}")"
+	[ -x "$IPKG_INSTROOT/etc/rc.d/S${START}${name##S[0-9][0-9]}" ]
+}
+
+depends() {
+	return 0
+}
+
+help() {
+	cat <<EOF
+Syntax: $initscript [command]
+
+Available commands:
+	start	Start the service
+	stop	Stop the service
+	restart	Restart the service
+	reload	Reload configuration files (or restart if that fails)
+	enable	Enable service autostart
+	disable	Disable service autostart
+$EXTRA_HELP
+EOF
+}
+
+. "$initscript"
+
+ALL_COMMANDS="start stop reload restart boot shutdown enable disable enabled depends ${EXTRA_COMMANDS}"
+list_contains ALL_COMMANDS "$action" || action=help
+[ "$action" == reload ] && action='eval reload "$@" || restart "$@" && :'
+$action "$@"

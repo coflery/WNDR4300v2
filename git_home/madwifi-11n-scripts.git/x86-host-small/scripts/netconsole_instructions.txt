@@ -1,0 +1,23 @@
+# instruction to set up sending console messages over ethernet to another machine.
+# TARGET : machine/PC (with linux where you load your driver) whose console 
+#         you want to redirect messages to a REMOTE machine .   
+# REMOTE : machine where you want to  capture the console log of the TARGET machine. 
+#     REMOTE can be any pc with linux or mac which has the nc utilility and
+#     connected to the TARGET machine via network.   
+# change the TARGET IP address and REMOTE IP address/mac address in this script accordingly and
+# run the following 2 commands on  TARGET machine. 
+# sudo modrobe netconsole="@TARGET ip address/TARGET interface, REMOTE port@REMOTE ip/REMOTE mac address"
+# sudo dmesg -n7
+# on the REMOTE host you need to run the following command
+# nc -u -p 9353 -s <REMOTE ip>    <TARGET ip> 6665 
+
+Example commands
+On TARGET
+---------
+sudo modprobe netconsole netconsole="@10.234.18.243/eth0,9353@10.234.17.164/00:26:bb:51:2c:56"
+sudo dmesg -n7
+
+
+on REMOTE
+--------
+nc -u -p 9353  -s 10.234.17.164  10.234.18.243 6665 

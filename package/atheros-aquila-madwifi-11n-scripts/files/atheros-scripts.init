@@ -1,0 +1,17 @@
+#!/bin/sh /etc/rc.common
+START=80
+boot() {
+    if [ -f /sbin/wlan ]; then
+	/sbin/wlan up
+    elif [ -f /etc/functions.sh -a -f /etc/ath/apup ]; then
+        bridge_if="br0"
+        . /etc/functions.sh
+        config_cb() {
+            [ "$2" = "lan" ] && eval "bridge_if=br-$2"
+        }
+        config_load network
+
+        cfg -a BRIDGE_IF=$bridge_if
+        PATH="/etc/ath:$PATH" apup
+    fi
+}

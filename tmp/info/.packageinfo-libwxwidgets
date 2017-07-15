@@ -1,0 +1,17 @@
+Source-Makefile: package/libwxwidgets/Makefile
+Package: libwxwidgets
+Version: 2.8.12-1
+Depends: +libexpat +libstdcpp +zlib
+Provides: 
+Build-Depends: uclibcxx
+Section: libs
+Category: Libraries
+Title: Cross-platform C++ framework
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: wxWidgets-2.8.12.tar.gz
+Type: ipkg
+Description: Cross-platform C++ framework
+http://www.wxwidgets.org/
+@@
+
+

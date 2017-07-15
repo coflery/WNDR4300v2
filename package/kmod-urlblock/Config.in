@@ -1,0 +1,21 @@
+# kmod-urlblock configuration
+config URLBLOCK_GIT_TREEISH
+	string
+	prompt "treeish of urlblock git repository"
+	default "kmod-urlblock-v2.6.31-dni5"
+	help
+           Input the treeish of kmod-urlblock git repository which you want to build
+
+config URLBLOCK_GIT_REPOSITORY
+	string
+	prompt "name of urlblock git repository"
+	default "kmod-urlblock.git"
+	help
+	   Input the name of kmod-urlblock git repository which you want to build
+
+config URLBLOCK_GIT_URL
+	string
+	prompt "url of urlblock git repository"
+	default "ssh://dniserver/scm/dnigit/common/kmods/kmod-urlblock.git"
+	help
+	   Input the url of kmod-urlblock git repository which you want to build

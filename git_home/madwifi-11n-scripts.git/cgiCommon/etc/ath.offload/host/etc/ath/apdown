@@ -1,0 +1,54 @@
+#!/bin/sh
+##
+## Compatability scripts for older versions
+##
+
+. /etc/ath/apcfg
+WPS_LED_OFF=1
+echo $WPS_LED_OFF  > /proc/simple_config/simple_config_led
+
+#Finally, unload all modules
+
+wsupp=`ps | grep atd_wsupp_bridge | cut -b 1-5`
+for i in $wsupp
+do
+kill $wsupp
+done
+sleep 1
+
+killVAP all
+sleep 3
+
+/etc/rc.d/rc.wlan down
+rm -f /tmp/.apup
+rm /tmp/sec*
+rm /tmp/conf*
+rm -rf /tmp/hostapd
+
+# Configure vlans for pb9x offload.
+# This will revert any switch settings made
+# specifically for multivlan startup mode.
+if [ "${AP_STARTMODE}" = "multivlan" ]; then
+    echo Resetting multivlan mode specific configuration...
+    . /etc/vlan-pb9x-offload.sh
+
+    # Delete virtual interfaces created during apup
+    for i in $my_vaps;                                                          
+    do                                                                          
+        ITER_VLAN="AP_VLAN$i"                                                   
+        ITER_BRNAME="AP_BRNAME$i"                                               
+        eval ITER_VLAN=\$$ITER_VLAN                                             
+        eval ITER_BRNAME=\$$ITER_BRNAME                                         
+        if [ -z "$ITER_BRNAME" ]; then                                          
+            continue                                                              
+        fi                                                                      
+        echo $ITER_VLAN $ITER_BRNAME                                            
+        brctl delif $ITER_BRNAME "eth0.$ITER_VLAN"                              
+        brctl delif $ITER_BRNAME "eth1.$ITER_VLAN"                              
+        vconfig rem "eth0.$ITER_VLAN"                                           
+        vconfig rem "eth1.$ITER_VLAN"                                           
+        ifconfig $ITER_BRNAME down                                              
+        brctl delbr $ITER_BRNAME                                                
+    done
+fi
+

@@ -1,0 +1,21 @@
+# kmod-conenat configuration
+config CONENAT_GIT_TREEISH
+	string
+	prompt "treeish of conenat git repository"
+	default "kmod-conenat-v2.0.2"
+	help
+           Input the treeish of conenat git repository which you want to build
+
+config CONENAT_GIT_REPOSITORY
+        string
+        prompt "name of conenat git repository"
+        default "kmod-conenat.git"
+        help
+           Input the name of conenat git repository which you want to build
+
+config CONENAT_GIT_URL
+        string
+        prompt "url of conenat git repository"
+        default "ssh://dniserver/scm/dnigit/common/kmods/kmod-conenat.git"
+        help
+           Input the url of conenat git repository which you want to build

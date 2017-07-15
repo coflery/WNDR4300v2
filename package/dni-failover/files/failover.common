@@ -1,0 +1,56 @@
+#!/bin/sh
+
+. /etc/functions.sh
+
+WAN_IF=eth1
+FAILOVER_RESOLVE=/tmp/resolv_for_failover.conf
+FAILOVER_PPP_DIAL=/etc/ppp/peers/dial-provider
+FAILOVER_DHCPC_SCRIPT=/etc/failover/failover_dhcpc.script
+
+CONFIG=/bin/config
+IFCONFIG=/sbin/ifconfig
+ECHO=/bin/echo
+
+setup_generic_ppp() {
+	mknod /dev/ppp c 108 0
+	mkdir -p /tmp/ppp
+	mkdir -p /etc/ppp/peers
+}
+
+restart_dango(){
+	local need_plug=$($CONFIG get dongle_need_plug)
+	if [ "$need_plug" != "0" ]; then
+		echo 0 > /proc/simple_config/usb5v
+		sleep 2
+		echo 1 > /proc/simple_config/usb5v
+		sleep 3
+	fi
+}
+
+insert_modules(){
+	if [ "$1" = "pptp" ]; then
+		load_modules /etc/modules.d/60-pptp-mod
+	elif [ "$1" = "l2tp" ]; then
+		load_modules /etc/modules.d/60-l2tp-mod
+	elif [ "$1" = "3g" ]; then
+		load_modules /etc/modules.d/60-3g-mod
+	elif [ "$1" = "pppoe" ]; then
+		load_modules /etc/modules.d/60-pppoe-mod
+	fi
+}
+
+print_mobiled_conf(){
+    cat <<EOF
+wan_cdma_evdo $1
+wan_cdma_username $2
+wan_cdma_password $3
+wan_cdma_pincode $4
+wan_cdma_dialnum $5
+wan_cdma_apn $6
+wan_cdma_pdp_type $7
+dni_support 1
+multi_wan_type $8
+failover_link_detect $9
+EOF
+}
+

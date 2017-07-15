@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<META http-equiv="refresh" content="20; url=USB_hdd_format_wait.htm"/>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<!--link rel="stylesheet" type="text/css" href="hdd_cd_less.css" /-->
+<link rel="stylesheet" type="text/css" href="style/hijack_style.css" />
+<link rel="stylesheet" type="text/css" href="style/form.css" />
+<script language="javascript" type="text/javascript" src="script/funcs.js"></script>
+</head>
+<body onLoad=loadvalue();>
+<script>
+<!--% format_hdd() %-->
+/*function loadvalue() // uncomment this cause choose anpther method to test the time of format. 
+{
+    var cf=document.forms[0];
+	
+    cf.exit.disabled = true;
+	cf.Next.disabled = true;
+	//alert("xxxx");
+	 setTimeout( "wait_page_show();", 3000 );
+	
+	// setTimeout( "setDisabled(false,cf.exit,cf.Next);", 60000 );
+	//setDisabled(false,cf.exit,cf.Next);
+	updateProgress();
+}
+
+function wait_page_show()
+{
+	//alert("sss");
+	 setTimeout( "disabled();", 60000 );
+}
+
+function disabled()
+{
+	//alert("sss");
+	setDisabled(false,document.forms[0].exit,document.forms[0].Next);
+}
+
+var pchar = "|"; // progress char
+var maxchars = 40;   //80 for 2 min 40 for 1 min
+var delay_time = 1500; // msecs
+var charcount = 0; 
+
+function makeStr(strSize, fillChar)
+{
+	var temp = "";
+	for (i=0; i < strSize ; i ++)
+		temp = temp + fillChar;
+	return temp;
+}
+function updateProgress()
+{
+	var cf = document.forms[0];
+	if (charcount < maxchars)
+	{
+		charcount ++;
+		cf.progress.value = makeStr(charcount,pchar);
+		setTimeout("updateProgress()",delay_time);
+	}
+	else
+	{//fix bug 28926
+		//top.location.href="adv_index.htm";
+		click_exit();
+	}
+}*/
+
+var form_flag = "<% cfg_get("sata_partition_count") %>";
+
+ //var delay_time=180000;  // msecs
+function loadvalue()
+{
+	if( top.disk_format_wait_flag == 1)
+		setTimeout( "set_disk_wait_flag();", 10000 );
+	else
+		if( form_flag != "0")
+			location.href="USB_hdd_formt_success.htm";
+	//setTimeout("timeout()",delay_time);
+	/*var cf=document.forms[0];
+	
+    cf.exit.disabled = true;
+	cf.Next.disabled = true;
+	 setTimeout( "disabled();", 5000 );
+	updateProgress();*/
+}
+
+function set_disk_wait_flag()
+{
+	top.disk_format_wait_flag = 0;
+	location.href="USB_hdd_format_wait.htm";
+}
+
+/*function timeout()
+{
+	location.href="USB_hdd_formt_success.htm"; 
+}*/
+</script>
+<form method="post" action="">
+<input type="hidden" name="submit_flag" value="" />
+
+
+<script language="javascript" type="text/javascript">var ts="";</script>
+<div class="wizard_content_div">
+	<!--div id="WLinfo" align=center style="width:80%"-->
+	<TABLE align=center width="640px"; style="border:0px solid #000000;">
+		<TR><TD  width=40px; height=40px;><img style="float:left;" width=40px; src="/image/hdd/confirmation.jpg"></TD>
+		<TD><p style="color:#000000; font-family:Arial; font-size:17px;">$wait_hdd_format </p></TD></TR>
+		<TR><TD>&nbsp;&nbsp;</TD><TD>&nbsp;&nbsp;</TD></TR>
+		<TR><TD>&nbsp;&nbsp;</TD><TD>&nbsp;&nbsp;</TD></TR>
+		<TR><TD>&nbsp;&nbsp;</TD><TD>&nbsp;&nbsp;</TD></TR>
+		<TR><TD></TD>
+		
+		<script>
+		//if( form_flag == "0")
+		document.write('<TD align=center><img src="../image/hdd/ajax-loader-login.gif" alt="waiting" /></TD>');
+		//else 
+			//location.href="USB_hdd_formt_success.htm";
+		//document.write('<TD  style="color:#00ff00; font-family:Arial; font-size:17px;font-weight: bold;">Congratulations! format is complete!</TD>');
+		
+		</script>
+		<!--TABLE align=center width="560px"; style="border:1px solid #000000; margin:0 40px 0 0;" >
+		<TR >
+			<td nowrap align=left> Formatting Internal Hard DriveK</td><td nowrap align=right></td>
+		</TR>
+		<TR ><td nowrap align=center>&nbsp;&nbsp;</td></TR>
+		<TR ><td nowrap align=center>&nbsp;&nbsp;</td></TR>
+		<TR >
+			<td nowrap colspan=2 align=center><input type="text" name="progress" class="reboot1bar" size="60"  value="">
+			</td>
+		</TR>
+		</TABLE></TD--></TR>
+		</TABLE>
+		</div>	
+		
+	<!--div id="buttons_div_02" class="wizard_buttons_div" align="center">
+		<TABLE align=center width="640px" width=100% border=0 cellpadding=0 cellspacing=2>
+         <TR>
+		 <TD nowrap colspan=2 align=left>
+		<INPUT  class="short_common_bt" type='button' name="exit" value='Exit' onClick='click_exit()' disabled></TD>
+	   <TD nowrap colspan=2 align=right>
+	      <INPUT class="short_common_bt" type='button' name="Next" value='Next>' onClick='click_next( document.forms[0])' disabled>
+	       </TD>
+       </TR>
+
+      </TABLE>
+	</div-->	
+
+<script>
+/*function click_exit(cf)
+{
+ 
+	  location.href="BRS_hdd_success.htm"; 
+}
+
+function click_next(cf)
+{
+	   location.href="BRS_hdd_genie_stal.htm";
+}*/
+</script>
+</form>
+</body>
+</html>

@@ -1,0 +1,22 @@
+Source-Makefile: package/kmod-dnisip/Makefile
+Package: kmod-dnisip
+Submenu: DNI Kernel Module
+Version: <LINUX_VERSION>--1
+Depends: @TARGET_dniwndr3700u2631||TARGET_wndr4500v3
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: DNI SIP ALG
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: DNI SIP ALG
+@@
+Config:
+	menu "Configurations"
+		depends on PACKAGE_kmod-dnisip
+		source "package/kmod-dnisip/Config.in"
+	endmenu
+@@
+
+

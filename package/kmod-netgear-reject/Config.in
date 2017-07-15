@@ -1,0 +1,21 @@
+# kmod-netgear-reject configuration
+config NETGEAR_REJECT_GIT_TREEISH
+	string
+	prompt "treeish of kmod-netgear-reject git repository"
+	default "v2.6.31-dni2"
+	help
+           Input the treeish of kmod-netgear-reject git repository which you want to build
+
+config NETGEAR_REJECT_GIT_REPOSITORY
+	string
+	prompt "name of kmod-netgear-reject git repository"
+	default "kmod-netgear-reject.git"
+	help
+	   Input the name of kmod-netgear-reject git repository which you want to build
+
+config NETGEAR_REJECT_GIT_URL
+	string
+	prompt "url of kmod-netgear-reject git repository"
+	default "ssh://dniserver/scm/dnigit/common/kmods/kmod-netgear-reject.git"
+	help
+	   Input the url of kmod-netgear-reject git repository which you want to build

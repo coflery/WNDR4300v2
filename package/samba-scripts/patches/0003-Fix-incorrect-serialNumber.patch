@@ -1,0 +1,27 @@
+--- samba-scripts-1.0.0/update_smb.c.org	2014-05-13 13:28:04.169082764 +0800
++++ samba-scripts-1.0.0/update_smb.c	2014-05-13 13:30:35.455955690 +0800
+@@ -112,12 +112,16 @@
+        while(fgets(line,sizeof(line),fp)!= NULL)
+        {
+                char * serial_pos;
++	       unsigned int len = 0;
+                if((serial_pos = strstr(line,"Serial")) != NULL)
+                {
+                        serial_pos = strchr(line,':');
+                        serial_pos += 2;
+ 
+                        strncpy(sn,serial_pos,strlen(serial_pos)-1);
++                       /*Fix the issue that sometimes serial number will gets incorrect suffix.*/
++                       len = strlen(serial_pos)-1;
++                       sn[len] = '\0';
+                        USB_DEBUGP("serial number:%s\n",sn);
+                        fclose(fp);
+                        return 0;
+@@ -508,6 +512,7 @@
+ 			vendor = get_device_vendor(part_name);
+ 			
+ 			/* get the serial number of usb device */
++			memset(serialNumber,0x00,sizeof(serialNumber));
+ 			get_usb_serialNumber(serialNumber,part_name);	
+ 			if(!is_sda(part_name))
+ 				continue;

@@ -1,0 +1,49 @@
+#!/bin/sh /etc/rc.common
+START=15
+
+CAL_BLOCK_NUM=
+
+read_mac_addr_wpspin() {
+    cal_block=${1:-"/dev/caldata"}
+
+    [ ! -e $cal_block ] && {
+        echo "No $cal_block existed"
+        return
+    }
+
+    mac_addr_2g=`dd if=$cal_block bs=1c count=6 2>/dev/null | hexdump -v -e '1/1 "%02x"'`
+    if [ "$mac_addr_2g" != "000000000000" -a "$mac_addr_2g" != "ffffffffffff" ]; then
+        echo $mac_addr_2g | sed 's/\(..\)/\1:/g;s/:$//' > /tmp/mac_addr_2g
+    fi
+    mac_addr_5g=`dd if=$cal_block bs=1c count=6 skip=12 2>/dev/null | hexdump -v -e '1/1 "%02x"'`
+    if [ "$mac_addr_5g" != "000000000000" -a "$mac_addr_5g" != "ffffffffffff" ]; then
+        echo $mac_addr_5g | sed 's/\(..\)/\1:/g;s/:$//' > /tmp/mac_addr_5g
+    fi
+    wps_pin=`dd if=$cal_block bs=1c count=8 skip=18 2>/dev/null | hexdump -v -e '1/1 "%02x"'`
+    if [ "$wps_pin" != "0000000000000000" -a "$wps_pin" != "ffffffffffffffff" ]; then
+        echo $wps_pin | sed 's/\(..\)/0x\1 /g' | awk '{for (i=1; i<=8; i++) printf "%c",($i)}' > /tmp/wpspin
+    fi
+}
+
+boot() {
+        # prepare anything needed by update-wifi and Atheros scripts.
+	SBIN_TMP=/tmp/sbin
+	ATH_TMP=/tmp/etc/ath
+	ATH_ORI=/etc/ath.orig
+	WPA2_TMP=/tmp/etc/wpa2
+	WPA2_ORI=/etc/wpa2.orig
+	TOPOLOGY_FILE_TMP=/tmp/topology.conf
+	TOPOLOGY_FILE=/var/run/topology.conf
+	
+	[ -d $SBIN_TMP ] || mkdir -p $SBIN_TMP;
+	[ ! -d $ATH_TMP ] && mkdir -p $ATH_TMP && cp -a $ATH_ORI/* $ATH_TMP;
+	[ -d $WPA2_TMP ] || mkdir -p $WPA2_TMP && cp -a $WPA2_ORI/* $WPA2_TMP;
+	[ -h $TOPOLOGY_FILE ] || ln -s $TOPOLOGY_FILE_TMP $TOPOLOGY_FILE
+	if [ -n "$CAL_BLOCK_NUM" ]; then
+	   mknod /dev/caldata b 31 $CAL_BLOCK_NUM
+	fi
+	read_mac_addr_wpspin
+	/bin/config set wps_lock_down=0
+	/bin/config set wps_pin_history_failures=0
+	/bin/config set wps_client=""
+}

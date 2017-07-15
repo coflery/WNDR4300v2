@@ -1,0 +1,11 @@
+#!/bin/bash
+
+wlanconfig wlan-sim create wlandev wifi-sim0 wlanmode ap
+sleep 1
+
+iwconfig wlan-sim0 channel 44
+sleep 2
+
+hostapd -t -ddd -e /dev/random PSK.ap_bss_CCMP_sim > aplog &
+#sudo hostapd -ddK -e /dev/random PSK.ap_bss_TKIP > aplog &
+

@@ -1,0 +1,97 @@
+#!/bin/sh
+
+prog=${0##*/}
+
+exit_with_usage() # $1: exit_number
+{
+	cat <<EOF
+Usage: $prog
+
+eg: $prog 
+    * show dni_lan_os configs.
+    * exit status
+      0 : attached
+      1 : unattached
+
+Usage: $prog --dni_lan_qos_if NET_IF --qos_bdw_res "bandwidth:reserved" --lan_qos_enable 0/1
+
+eg: $prog --dni_lan_qos_if br0 --qos_bdw_res "30000:0" --lan_qos_enable 1
+	* attach dni-qos to br0.
+	* bandwidth = 30000 Kbits, bandwitdth reserved percentage : 50%
+	* enable lan qos
+	* reserved possible value :0->50% reserved
+			           1->60% reserved
+				   2->70% reserved
+				   3->80% reserved
+EOF
+	exit $1
+}
+
+exit_with_invalid_command() # $1: exit_number
+{
+	cat <<EOF
+Invalid command, use "$prog -h" for more information.
+EOF
+	exit $1
+}
+
+exit_with_print_configs()
+{
+	local nif=$(cat /proc/dni_lan_qos_if)
+	local lan_enable=$(cat /proc/lan_qos_enable)
+	local bdw_res=$(cat /proc/qos_bdw_res)
+
+	cat <<EOF
+dni_lan_qos_if=$nif
+dni_lan_enable=$lan_enable
+dni_lan_bdw_res=$bdw_res
+EOF
+
+	[ -z "$nif" ] && exit 1 || exit 0
+}
+
+if_is_up() # $1: net_if
+{
+	ip link show $1 | grep -q UP
+}
+
+[ $# -eq 0 ] && exit_with_print_configs
+[ "$1" = "-h" ] && exit_with_usage 0
+
+dni_lan_qos_options="dni_lan_qos_if:,qos_bdw_res:,lan_qos_enable:"
+TEMP=$(getopt -o "" --long "$dni_lan_qos_options" -n "dni_lan_qos" -- "$@")
+[ $? != 0 ] && exit_with_invalid_command 1
+#echo "TEMP: //$TEMP//"
+
+eval set -- "$TEMP"
+while true ; do
+	case "$1" in
+	--dni_lan_qos_if) new_if="$2"; shift 2;;
+	--qos_bdw_res) res="$2"; shift 2;;
+	--lan_qos_enable) mfs="$2"; shift 2;;
+	--) shift ; break ;;
+	*) exit_with_invalid_command 1;;
+	esac
+done
+
+old_if=$(cat /proc/dni_lan_qos_if)
+old_if_link="down"
+if [ -n "$old_if" ] && if_is_up "$old_if"; then
+	old_if_link="up"
+	ip link set "$old_if" down
+fi
+
+new_if_link="down"
+if [ -n "$new_if" ] && [ "$new_if" != "$old_if" ]; then
+	if if_is_up "$new_if"; then
+		new_if_link="up"
+		ip link set "$new_if" down
+	fi
+	echo "$new_if" > /proc/dni_lan_qos_if
+fi
+[ -n "$res" ] && echo "$res" > /proc/qos_bdw_res
+[ -n "$mfs" ] && echo "$mfs" > /proc/lan_qos_enable
+
+[ "$old_if_link" == "up" ] && ip link set "$old_if" up
+[ "$new_if" != "$old_if" ] && [ "$new_if_link" == "up" ] && ip link set "$new_if" up
+

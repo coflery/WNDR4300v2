@@ -1,0 +1,52 @@
+diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
+index f994f12..9aa23a3 100644
+--- a/drivers/net/phy/Kconfig
++++ b/drivers/net/phy/Kconfig
+@@ -62,6 +62,12 @@ config BROADCOM_PHY
+ 	---help---
+ 	  Currently supports the BCM5411, BCM5421 and BCM5461 PHYs.
+ 
++config MVSWITCH_PHY
++	tristate "Driver for Marvell switches"
++	select VLAN_8021Q
++	---help---
++	  Currently supports the Marvell 88E6060 switch.
++
+ config FIXED_PHY
+ 	tristate "Drivers for PHY emulation on fixed speed/link"
+ 	depends on PHYLIB
+diff --git a/drivers/net/phy/Makefile b/drivers/net/phy/Makefile
+index bcd1efb..36aed9c 100644
+--- a/drivers/net/phy/Makefile
++++ b/drivers/net/phy/Makefile
+@@ -11,4 +11,5 @@ obj-$(CONFIG_QSEMI_PHY)		+= qsemi.o
+ obj-$(CONFIG_SMSC_PHY)		+= smsc.o
+ obj-$(CONFIG_VITESSE_PHY)	+= vitesse.o
+ obj-$(CONFIG_BROADCOM_PHY)	+= broadcom.o
++obj-$(CONFIG_MVSWITCH_PHY)	+= mvswitch.o
+ obj-$(CONFIG_FIXED_PHY)		+= fixed.o
+diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
+index b31ce27..b126aff 100644
+--- a/drivers/net/phy/mdio_bus.c
++++ b/drivers/net/phy/mdio_bus.c
+@@ -35,6 +35,12 @@
+ #include <asm/irq.h>
+ #include <asm/uaccess.h>
+ 
++static void mdio_dev_release(struct device *dev)
++{
++	/* nothing to do */
++}
++
++
+ /* mdiobus_register 
+  *
+  * description: Called by a bus driver to bring up all the PHYs
+@@ -81,6 +87,7 @@ int mdiobus_register(struct mii_bus *bus)
+ 
+ 			phydev->dev.parent = bus->dev;
+ 			phydev->dev.bus = &mdio_bus_type;
++			phydev->dev.release = mdio_dev_release;
+ 			snprintf(phydev->dev.bus_id, BUS_ID_SIZE, PHY_ID_FMT, bus->id, i);
+ 
+ 			phydev->bus = bus;

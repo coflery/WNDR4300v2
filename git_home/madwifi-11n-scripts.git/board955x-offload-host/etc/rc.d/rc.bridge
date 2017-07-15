@@ -1,0 +1,31 @@
+#!/bin/sh
+######################################################################
+## This script controls bridge configuration.  It will configure the
+## bridge as specified by the stacfg file
+##
+######################################################################
+
+. /etc/ath/apcfg
+
+##
+## only bridge mode is supported 
+## 
+
+brctl addbr br0
+brctl setfd br0 0
+if [ "$BOARD_TYPE" != "ap136_bootrom" ]; then
+    vconfig add $LAN_IF 1
+    ifconfig $LAN_IF.1 up
+    brctl addif br0 $LAN_IF.1
+else
+    brctl addif br0 $WAN_IF
+fi
+#ifconfig br0 192.168.1.2
+
+#brctl addbr br0
+#brctl addif br0 $WAN_IF
+#brctl addif br0 $LAN_IF
+#brctl setfd br0 0
+
+ifconfig br0 $AP_IPADDR netmask $AP_NETMASK up
+

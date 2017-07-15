@@ -1,0 +1,207 @@
+#!/bin/sh
+CONFIG=/bin/config
+IFCONFIG=/sbin/ifconfig
+ECHO=/bin/echo
+FIREWALL="/www/cgi-bin/firewall.sh"
+
+. /etc/functions.sh
+
+set_dns() {
+    echo "nameserver $($CONFIG get wan_ether_dns1)" > /tmp/resolv.conf
+    [ "x$($CONFIG get wan_ether_dns2)" != "x" ] && \
+    echo "nameserver $($CONFIG get wan_ether_dns2)" >> /tmp/resolv.conf
+    [ "x$($CONFIG get wan_ether_dns3)" != "x" ] && \
+    echo "nameserver $($CONFIG get wan_ether_dns3)" >> /tmp/resolv.conf
+}
+
+detect_connect() {
+  local traffic_month_limit=$($CONFIG get trafficmeter_monthly_limit_reached)
+  local traffic_block_all=$($CONFIG get traffic_block_all)
+  local firmware_region=`cat /tmp/firmware_region | awk '{print $1}'`
+  local WAN_IF=eth1
+  if [ "x$firmware_region" = "xWW" ]||[ "x$firmware_region" = "x" ] ;then
+	if [ "x$($CONFIG get GUI_Region)" = "xRussian" ] ;then
+		ru_feature=1
+	fi
+  elif [ "x$firmware_region" = "xRU" ] ;then
+	ru_feature=1
+  fi
+
+  case $1 in
+	static)
+		ifconfig eth1 down
+		ifconfig eth1 $($CONFIG get wan_ipaddr) netmask $($CONFIG get wan_netmask)
+		ifconfig eth1 up
+		route add default gw $($CONFIG get wan_gateway)
+		$FIREWALL restart
+		ns_flag=1 
+		;;
+	dhcp)
+		udhcpc -b -i $WAN_IF
+		[ "$($CONFIG get wan_ether_dns_assign)" = "1" ] && ns_flag=1 
+		;;
+        pppoe)
+        . /lib/network/ppp.sh
+            if [ "$traffic_month_limit" != "1" -o "$traffic_block_all" != "1" ]; then
+               if [ "$($CONFIG get wan_pppoe_intranet_wan_assign)" = "0" ]; then
+                        setup_interface_ppp 
+                        if [ "$ru_feature" = "1" ]; then
+                                udhcpc -b -i $WAN_IF
+                                cat /tmp/dhcpc_resolv.conf >> /tmp/resolv.conf
+                        fi
+                else
+                        if [ "$($CONFIG get wan_pppoe_intranet_wan_assign)" = "1" -a "$ru_feature" = "1" ]; then
+                                netmask=$($CONFIG get wan_pppoe_intranet_mask)
+                                if [ "x$netmask" != "x" -a "x$netmask" != "x0.0.0.0" -a "x$netmask" != "x255.255.255.255" ]; then
+                                        ifconfig $WAN_IF $($CONFIG get wan_pppoe_intranet_ip) netmask $netmask
+                                else
+                                        ifconfig $WAN_IF $($CONFIG get wan_pppoe_intranet_ip)
+                                fi
+                        fi
+                        setup_interface_ppp 
+                fi
+                [ "$($CONFIG get wan_pppoe_dns_assign)" = "1" ] && ns_flag=1
+            fi
+	;;
+	pptp)
+        . /lib/network/ppp.sh
+	iptables -I INPUT -i $WAN_IF -j ACCEPT
+	iptables -I OUTPUT -o $WAN_IF -j ACCEPT
+            if [ "$traffic_month_limit" != "1" -o "$traffic_block_all" != "1" ]; then
+                if [ "$($CONFIG get wan_pptp_wan_assign)" = "0" ]; then
+                    setup_interface_ppp 
+                    udhcpc -b -i $WAN_IF
+                else
+                    if [ "x$($CONFIG get wan_pptp_eth_mask)" != "x" ]; then
+                        ifconfig $WAN_IF $($CONFIG get wan_pptp_local_ip) netmask $($CONFIG get wan_pptp_eth_mask)
+                    else
+                        ifconfig $WAN_IF $($CONFIG get wan_pptp_local_ip)
+                    fi
+
+                    setup_interface_ppp 
+                fi
+            fi
+        ;;
+	l2tp)
+	iptables -I INPUT -i $WAN_IF -j ACCEPT
+	iptables -I OUTPUT -o $WAN_IF -j ACCEPT
+	. /lib/network/ppp.sh
+		if [ "$($CONFIG get wan_l2tp_wan_assign)" = "0" ]; then
+			setup_interface_ppp &
+			udhcpc -b -i $WAN_IF
+		else
+		    if [ "x$($CONFIG get wan_l2tp_eth_mask)" != "x" ]; then
+			ifconfig $WAN_IF $($CONFIG get wan_l2tp_local_ip) netmask $($CONFIG get wan_l2tp_eth_mask)
+		    else
+			ifconfig $WAN_IF $($CONFIG get wan_l2tp_local_ip)
+		    fi
+
+		    setup_interface_ppp 
+	fi
+	;;
+	*)
+		echo "Unconfigure Wired Connection Mode...Exit!"
+		exit 1
+	;;
+  esac
+  [ "$ns_flag" = "1" ] && set_dns
+  # Restart dnsmasq
+  /etc/init.d/dnsmasq stop
+  /etc/init.d/dnsmasq start
+}
+
+ping_3g_prepare() {
+	iptables -I INPUT -i $1 -j ACCEPT
+	iptables -I OUTPUT -o $1 -j ACCEPT
+	cp /tmp/resolv_for_failover.conf /tmp/resolv.conf
+	killall dnsmasq
+	/usr/sbin/dnsmasq -r /tmp/resolv.conf --wan-interface=$1
+}
+
+
+$CONFIG set ping_3g_result=0
+$CONFIG set ping_ethernet_result=0
+$CONFIG set failover_test=1
+$CONFIG set failover_wired_done=0
+
+#start test wired connection
+/etc/init.d/net-wan stop
+
+#do 3g connect at background
+time_start=`date +%s`
+time_start=$(($time_start + 60))
+$CONFIG set multi_wan_type=failover
+$CONFIG set failover_link_detect=1
+rmmod usbserial &
+/etc/failover/failover.sh init_env 3g &
+
+wired_proto=$($CONFIG get failover_wired_proto)
+$CONFIG set wan_proto="$wired_proto"
+detect_connect $wired_proto
+case "$wired_proto" in
+        static|dhcp)
+                WAN_IF=eth1
+                ;;
+        pppoe|pptp|l2tp)
+                WAN_IF=ppp0
+                ;;
+        *)
+                echo "Unkown WAN Protocol...Exit!"
+                exit 1
+                ;;
+esac
+
+#check the ethernet ping www.netgear.com result.
+wait_time=10
+while [ "$wait_time" -gt "0" ]; do
+	ping -I $WAN_IF -c 1 www.netgear.com > /dev/null 2>&1 && $CONFIG set ping_ethernet_result=1 &
+	sleep 1
+	local ping_result=$($CONFIG get ping_ethernet_result)
+	if [ "$ping_result" = "1" ]; then
+		break
+	fi
+	wait_time=$(( $wait_time - 1 ))
+done
+
+ifconfig $WAN_IF down
+$CONFIG set failover_wired_done=1
+
+#start get ping 3g result
+time_now=`date +%s`
+if [ $time_start -gt $time_now ]; then
+	sleep $(($time_start - $time_now))
+fi
+wait_time=10
+ping_if=ppp1
+while [ "$wait_time" -gt "0" ]; do
+	mobile_ifname=$($CONFIG get wan_mobile_ifname)	
+	if [ "$mobile_ifname" = "eth2" ]; then
+		ping_if=eth2
+		ping_gw=$($CONFIG get lte_dhcp_gateway)
+	else
+		ping_gw=`ifconfig ppp1 |grep "inet addr" |grep -v "Link" |awk '{print $3}'|awk -F: '{print $2}'`
+	fi
+	if [ "x$ping_gw" != "x" ]; then
+		/sbin/route add default gw $ping_gw dev $ping_if
+		ping_3g_prepare $ping_if
+	fi	
+	ping -I $ping_if -c 1 www.netgear.com > /dev/null 2>&1 && $CONFIG set ping_3g_result=1 &
+        sleep 2
+	local ping_result=$($CONFIG get ping_3g_result)
+        if [ "$ping_result" = "1" ]; then
+                break
+        fi
+	wait_time=$(( $wait_time - 1 ))
+done
+
+#do some end operation
+if [ "$wired_proto" = "pptp" ] || [ "$wired_proto" = "l2tp" ]; then
+	iptables -D INPUT -i eth1 -j ACCEPT
+	iptables -D OUTPUT -o eth1 -j ACCEPT
+fi
+iptables -D INPUT -i $ping_if -j ACCEPT
+iptables -D OUTPUT -o $ping_if -j ACCEPT
+$CONFIG unset failover_test
+$CONFIG set multi_wan_type=""
+$CONFIG unset failover_link_detect
+/etc/init.d/net-wan stop

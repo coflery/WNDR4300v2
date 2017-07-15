@@ -1,0 +1,39 @@
+#!/bin/sh
+TRAFFIC_STATUS=/tmp/traffic_meter/traffic_meter.conf
+wan_proto=`cat /tmp/configs/wan_proto`
+if [ "$wan_proto" = "pppoe" ] || [ "$wan_proto" = "pptp" ] ;then
+	connection_type=0
+else
+	connection_type=1
+fi
+endis_traffic_meter=`cat /tmp/configs/endis_traffic`
+control_type=`cat /tmp/configs/ctrl_volumn_time`
+volume_control_type=`cat /tmp/configs/limit`
+monthly_volume_limit=`cat /tmp/configs/mon_volumn_limit`
+round_up_data=`cat /tmp/configs/round_up`
+monthly_time_limit=`cat /tmp/configs/mon_time_limit` 
+restart_day=`cat /tmp/configs/traffic_restart_day`
+restart_time_hour=`cat /tmp/configs/restart_counter_time | awk -F: '{print $1}'`
+restart_time_min=`cat /tmp/configs/restart_counter_time | awk -F: '{print $2}'`
+traffic_led=`cat /tmp/configs/traffic_led`
+traffic_block=`cat /tmp/configs/traffic_block_all`
+last_conn_time=`cat /tmp/traffic_meter/last_conn_time | awk -F. '{print $1}'`
+last_stop_time=`cat /tmp/traffic_meter/last_stop_time | awk -F. '{print $1}'`
+left_volume_time=`cat /tmp/configs/left_time_volumn`
+echo "connection_type="$connection_type > $TRAFFIC_STATUS
+echo "endis_traffic_meter="$endis_traffic_meter >> $TRAFFIC_STATUS
+echo "control_type="$control_type >> $TRAFFIC_STATUS
+echo "volume_control_type="$volume_control_type >> $TRAFFIC_STATUS
+echo "monthly_volume_limit="$monthly_volume_limit >> $TRAFFIC_STATUS
+echo "round_up_data="$round_up_data >> $TRAFFIC_STATUS
+echo "monthly_time_limit="$monthly_time_limit >> $TRAFFIC_STATUS
+echo "restart_day="$restart_day >> $TRAFFIC_STATUS
+echo "restart_time_hour="$restart_time_hour >> $TRAFFIC_STATUS
+echo "restart_time_min="$restart_time_min >> $TRAFFIC_STATUS
+echo "traffic_led="$traffic_led >> $TRAFFIC_STATUS
+echo "traffic_block="$traffic_block >> $TRAFFIC_STATUS
+echo "last_conn_time="$last_conn_time >> $TRAFFIC_STATUS
+echo "last_stop_time="$last_stop_time >> $TRAFFIC_STATUS
+echo "left_volume_time="$left_volume_time >> $TRAFFIC_STATUS
+
+

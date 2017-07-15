@@ -1,0 +1,133 @@
+#!/bin/sh
+
+update_config()
+{
+    local val
+    case "$1" in
+        on)
+            val=1;
+            ;;
+        *)
+            val=0;
+            ;;
+    esac
+
+    config set endis_wl_radio=$val
+    if [ $NUM_RADIO -eq 2 ]; then
+        config set endis_wla_radio=$val
+    fi
+    config commit
+}
+
+WIFI_TOGGLE_LOCK_FILE=/tmp/.wifi_toggle_lock
+[ -f /etc/ath/board.conf ] && . /etc/ath/board.conf
+if [ "$wlg_exist" = "on" -a "$wla_exist" = "on" ]; then
+    NUM_RADIO=2
+else
+    NUM_RADIO=1
+fi
+MAX_VAP=8
+
+if [ -f $WIFI_TOGGLE_LOCK_FILE ]; then
+    # Just exit if previous wifi toggle is not done.
+    exit
+fi
+touch $WIFI_TOGGLE_LOCK_FILE
+
+active_radio=0
+num=0
+while [ $num -lt $NUM_RADIO ]; do
+    # check if wifi interface is up.
+    radio_status=`ifconfig | grep wifi$num`
+    if [ "x$radio_status" != "x" ]; then
+        # if interface is up, increate active_radio counter.
+        active_radio=`expr $active_radio + 1`
+    fi
+    num=`expr $num + 1`
+done
+
+if [ $active_radio -eq 0 ]; then
+    NEXT_STATE=on
+else
+    # if any one radio is down, then next action is to turn off every radio.
+    NEXT_STATE=off
+fi
+
+echo "Turn Radio to $NEXT_STATE"
+
+# wps led should be turn on if security is not none and wireless is switch on
+if [ $NUM_RADIO -eq 1 ]; then
+    WPS_LED_OFF='echo 1 > /proc/simple_config/simple_config_led'
+    WPS_LED_ON='echo 2 > /proc/simple_config/simple_config_led'
+else
+    WPS_LED_OFF='echo 0 > /proc/simple_config/tricolor_led'
+    WPS_LED_ON='echo 1 > /proc/simple_config/tricolor_led'
+fi
+[ "$wlg_exist" = "on" ] && G_SECURITY_TYPE=`/bin/config get wl_sectype`
+[ "$wla_exist" = "on" ] && A_SECURITY_TYPE=`/bin/config get wla_sectype`
+
+if [ "$NEXT_STATE" = "on" ]; then
+    num=0
+    while [ $num -lt $NUM_RADIO ]; do
+        ifconfig wifi$num up 2>&1 > /dev/null
+        num=`expr $num + 1`
+    done
+    num=0
+    while [ $num -lt $MAX_VAP ]; do
+        vap_status=`ifconfig -a | grep ath$num`
+        if [ "x$vap_status" != "x" ]; then
+            ifconfig ath$num up 2>&1 > /dev/null
+        fi
+        num=`expr $num + 1`
+    done
+    if [ $NUM_RADIO -eq 1 ]; then
+        [ "${G_SECURITY_TYPE}" -gt "1" ] && eval ${WPS_LED_ON} || eval ${WPS_LED_OFF}
+    else
+        [ "${G_SECURITY_TYPE}" -gt "1" -o "${A_SECURITY_TYPE}" -gt "1" ] && eval ${WPS_LED_ON} || eval ${WPS_LED_OFF}
+    fi
+    if [ -f /tmp/aplist0 -o -f /tmp/aplist1 ]; then
+        # remove masked interface
+        sed -i 's/^#//g' /tmp/topology.conf
+        hostapd /var/run/topology.conf &
+    fi
+    if [ "$wlg_exist" = "on" ]; then
+        cat /proc/uptime | sed 's/ .*//' > /tmp/WLAN_uptime
+    fi
+    if [ "$wla_exist" = "on" ]; then
+        cat /proc/uptime | sed 's/ .*//' > /tmp/WLAN_uptime_5G
+    fi
+else
+    num=0
+    while [ $num -lt $MAX_VAP ]; do
+        vap_status=`ifconfig | grep ath$num`
+        if [ "x$vap_status" != "x" ]; then
+            ifconfig ath$num down 2>&1 > /dev/null
+        fi
+        num=`expr $num + 1`
+    done
+    num=0
+    while [ $num -lt $NUM_RADIO ]; do
+        ifconfig wifi$num down 2>&1 > /dev/null
+        num=`expr $num + 1`
+    done
+    if [ $NUM_RADIO -eq 1 ]; then
+        [ -n "${G_SECURITY_TYPE}" ] && eval ${WPS_LED_OFF}
+    else
+        [ -n "${G_SECURITY_TYPE}" -a -n "${A_SECURITY_TYPE}" ] && eval ${WPS_LED_OFF}
+    fi
+    test -f /var/run/wps_led.pid && {
+        kill $(cat /var/run/wps_led.pid)
+        /sbin/ledcontrol -n wps -c green -s off
+        rm -f /var/run/wps_led.pid
+    }
+    pidlist=`ps | grep 'hostapd' | cut -b1-5`
+    for j in $pidlist
+    do
+        kill -9 $j
+    done
+    rm -f /tmp/WLAN_uptime*
+fi
+
+update_config $NEXT_STATE
+
+rm $WIFI_TOGGLE_LOCK_FILE

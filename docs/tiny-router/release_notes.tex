@@ -1,0 +1,342 @@
+\documentclass[12pt]{report}
+\textwidth 6.5in
+\oddsidemargin 0pt
+\textheight 9in
+\topmargin 0pt
+\headsep 0pt
+\headheight 0pt
+%\linespread{1.6}
+\usepackage{amssymb,amsmath,epsfig,subfigure,psfrag}
+\newtheorem{prop}{Proposition}
+\newtheorem{Def}{Definition}
+\newtheorem{Cor}{Corollary}
+\newtheorem{Lem}{Lemma}
+\newtheorem{Thm}{Theorem}
+\newtheorem{Rem}{Remarks}
+\newcommand{\fclass}[1]{{\mathcal{#1}}} % function classes
+\newcommand{\msae}[1]{\bar{#1}}% Maximal Sub-Additive Embedded
+\newcommand{\mlabel}[1]{
+  \marginpar{#1} %to be deleted for hardcopy
+  }
+\newcommand{\tlabel}[1]{
+  \label{#1}%
+%  \marginpar{#1} %to be deleted for hardcopy
+  }
+\newcommand{\ispnpedf}{\mbox{ISP-NPEDF}}
+
+\newcommand{\myvector}[1]{
+  \boldsymbol{#1}%
+}
+\newcommand{\mathset}[1]{
+  \mathbb{#1}%
+}
+
+\newcommand{\esssup}[1]{
+  \mbox{\upshape ess}_{#1}\!\sup%
+}
+
+\newcommand{\abs}[1]{
+  | #1 |%
+}
+
+\newcommand{\norm}[1]{
+  \| #1 \|
+}
+
+\newcommand{\mybegineq}[1]{
+  \marginpar{#1} %to be deleted for hardcopy
+  \begin{equation}\label{#1}
+}
+
+\newcommand{\myendeq}{
+  \end{equation}%
+}
+
+
+
+
+
+\newcommand{\myscriptsize}{\small}
+\newcommand{\proof}{\noindent\hspace{2em}{\it Proof: }}
+\newcommand{\proofof}[1]{\noindent\hspace{2em}{\it Proof of #1: }}
+\newcommand{\myendproof}{\hspace*{\fill}$\blacksquare$}
+
+\begin{document}
+\title{Linux Tiny Router Release notes}
+
+% \author{\normalsize{Chia-Sheng Chang}\thanks{
+%     Corresponding author: Chia-Sheng Chang, e-mail:
+%     \texttt{changcs@santos.ee.ntu.edu.tw,}
+%     postal address: Room 533, Electrical Engineering Building, No.\ 1, Sec.\
+%     4, Roosevelt Rd., Taipei 10617, Taiwan, R.O.C.}
+%   \normalsize{ and Kwang-Cheng Chen} \\
+%   \texttt{\small changcs@santos.ee.ntu.edu.tw, chenkc@cc.ee.ntu.edu.tw}\\
+%   {\small Institute of Communications Engineering and Department of
+%     Electrical Engineering}\\ {\small National Taiwan University}
+%   }
+
+\author{\normalsize{Ronger Pan}}
+
+\maketitle
+\thispagestyle{empty}
+%% \begin{abstract}
+%%   \noindent Large delay schedulable regions, work-conserving property,
+%%   inter-session protection property, and acceptable realization
+%%   complexity are widely accepted performance metrics for
+%%   comparing packet
+%%   scheduling disciplines in packet-switching networks. % Under
+%% %  continuous-time assumptions, it is a difficult task to design a
+%% %  scheduling discipline with all these advantages.
+%%   In this paper, we propose a \emph{work-conserving} scheduling
+%%   discipline, called \ispnpedf, with \emph{optimal} delay schedulable
+%%   regions, and inter-session protection property. In addition,
+%%   the realization complexity of \ispnpedf\ is lower than that of
+%%   plain EDF (Earliest-Deadline First) with traffic regulators.
+
+
+
+%% %  \bfseries keywords: keywords
+
+%% \end{abstract}
+
+\psfull
+\tableofcontents
+\thispagestyle{empty}
+\newpage
+\setcounter{page}{1}
+
+\chapter{Revision History}
+\tlabel{sec:revision-history}
+
+   \begin{tabular}{|c||c|c|} \hline
+      Date & firmware version  & Revised by \\ \hline
+      2007/01/25 & Release 0.0.0.1rc3 & Ronger Pan \\ \hline
+	  2007/02/12 & Release 0.0.0.1rc4 & Ronger Pan \\ \hline
+   \end{tabular}
+
+
+% \begin{itemize}
+% %\item 20030625 0.1rc1.
+% \item 20030627 0.1rc1.
+% \end{itemize}
+
+\section{Firmware 0.0.0.1rc3}
+\tlabel{sec:0.0.0.1rc3}
+
+\subsection{What's new}
+\begin{itemize}
+\item CVS Repository ar5008-buildroot at dniserver(172.17.144.8/cgi-bin/viewcvs.cgi) 
+\begin{itemize}
+    \item Branch: \texttt{dni\_roofnet\_mesh\_1113\_br}
+    \item Tag: \texttt{tiny-router-code-drop-0-0-0-1rc3-20070125} including the following changes:
+\end{itemize}
+\begin{enumerate}
+\item Updated
+\begin{itemize}
+  \item \texttt{include/image.mk} to revision 1.1.1.1.4.1.2.4.
+  \item \texttt{package/linuxrc/Makefile} to revision 1.1.2.6.
+  \item \texttt{package/linuxrc/files/defaults.c} to revision 1.1.2.6.
+  \item \texttt{package/linuxrc/patches/008-dni-change-pppoe.patch} to revision 1.1.2.2.
+  \item \texttt{package/linuxrc/patches/009-dni-add-pptp-eval.patch} to revision 1.1.2.3.
+  \item \texttt{package/linuxrc/patches/012-dni-tiny-bugs.patch} to revision 1.1.2.2.
+  \item \texttt{package/linuxrc/patches/013-dni-bpa-busybox-bugs.patch} to revision 1.1.2.2.
+  \item \texttt{package/linuxrc/patches/020-dni-for-new-autoconf-compile.patch} to revision 1.1.2.1.
+  \item \texttt{package/linuxrc/patches/030-dni-for-firewall-start.patch} to revision 1.1.2.1.
+  \item \texttt{package/linuxrc/patches/031-dni-modify-iptables-makefile.patch} to revision 1.1.2.1.
+  \item \texttt{package/linuxrc/patches/040-dni-for-lan-dhcp-server.patch} to revision 1.1.2.1.
+  \item \texttt{package/linuxrc/patches/041-dni-for-wireless.patch} to revision 1.1.2.1.
+  \item \texttt{package/linuxrc/patches/042-dni-tiny-bug.patch} to revision 1.1.2.1.
+  \item \texttt{package/linuxrc/patches/050-dni-iptc-free.patch} to revision 1.1.2.1.
+  \item \texttt{package/linuxrc/patches/060-dni-change-upnp.patch} to revision 1.1.2.1.
+  \item \texttt{package/linuxrc/patches/061-dni-wan-mod.patch} to revision 1.1.2.3.
+  \item \texttt{package/mtd/Makefile} to revision 1.1.1.1.6.1.
+  \item \texttt{package/mtd/src/Makefile} to revision 1.1.1.1.6.1.
+  \item \texttt{package/mtd/src/mtd.c} to revision 1.1.1.1.6.2.
+  \item \texttt{package/mtd/src/mtd.h} to revision 1.1.2.1.
+  \item \texttt{package/mtd/src/webupload.c} to revision 1.1.2.1.
+  \item \texttt{package/router-gui/www/cgi/setobject.cgi} to revision 1.1.2.11.
+  \item \texttt{package/router-gui/www/cgi/webupgrade.cgi} to revision 1.1.2.2.
+  \item \texttt{package/router-gui/www/dynamic/block\_sites.html} to revision 1.1.2.2.
+  \item \texttt{package/router-gui/www/dynamic/info.html} to revision 1.1.2.5.
+  \item \texttt{package/router-gui/www/dynamic/lan.html} to revision 1.1.2.3.
+  \item \texttt{package/router-gui/www/dynamic/security.html} to revision 1.1.2.2.
+  \item \texttt{package/router-gui/www/dynamic/upgrade.html} to revision 1.1.2.3.
+  \item \texttt{package/router-gui/www/dynamic/upnp.html} to revision 1.1.2.2.
+  \item \texttt{package/router-gui/www/dynamic/wlan.html} to revision 1.1.2.3.
+  \item \texttt{package/router-gui/www/dynamic/wlan\_adv.html} to revision 1.1.2.2.
+  \item \texttt{package/router-gui/www/dynamic/wpa2.html} to revision 1.1.2.2.
+  \item \texttt{package/router-gui/www/dynamic/wpas.html} to revision 1.1.2.2.
+  \item \texttt{package/router-gui/www/sh/block\_services.sh} to revision 1.1.2.2.
+  \item \texttt{package/router-gui/www/sh/firewall.sh} to revision 1.1.2.3.
+  \item \texttt{package/router-gui/www/sh/firewall\_function.sh} to revision 1.1.2.3.
+  \item \texttt{package/router-gui/www/sh/forwarding.sh} to revision 1.1.2.3.
+  \item \texttt{package/router-gui/www/sh/functions.sh} to revision 1.1.2.3.
+  \item \texttt{package/router-gui/www/sh/info.sh} to revision 1.1.2.3.
+  \item \texttt{package/router-gui/www/sh/lan.sh} to revision 1.1.2.4.
+  \item \texttt{package/router-gui/www/sh/language.sh} to revision 1.1.2.4.
+  \item \texttt{package/router-gui/www/sh/security.sh} to revision 1.1.2.2.
+  \item \texttt{package/router-gui/www/sh/shawk.sh} to revision 1.1.2.1.
+  \item \texttt{package/router-gui/www/sh/upgrade.sh} to revision 1.1.2.2.
+  \item \texttt{package/router-gui/www/static/upgrade.js} to revision 1.1.2.2.
+  \item \texttt{package/router-gui/www/static/lan.js} to revision 1.1.2.2.
+  \item \texttt{package/router-gui/www/static/pls\_wait.html} to revision 1.1.2.1.
+  \item \texttt{package/router-gui/www/static/upnp.js} to revision 1.1.2.2.
+  \item \texttt{package/web-boa/Makefile} to revision 1.1.2.4.
+  \item \texttt{package/web-boa/files/boa.conf} to revision 1.1.2.2.
+  \item \texttt{package/web-boa/patches/000-dni-remove-uid-gid.patch} to revision 1.1.2.2.
+  \item \texttt{package/web-boa/patches/002-dni-for-auth.patch} to revision 1.1.2.1.
+  \item \texttt{package/web-boa/patches/003-dni-for-firmware-upgrade.patch} to revision 1.1.2.2.
+  \item \texttt{target/linux/ar531x-2.4/patches/200-iptables-string-match.patch} to revision 1.1.2.1.
+\end{itemize}
+  Fixed bugs 
+  \begin{itemize}
+  \item \texttt1. Make static IP, DHCP, PPPOE in Interntet Settings working fine
+  \item \texttt2. Firmware upgrade/Restore factory default failed.
+  \item \texttt3. DHCP server offers the different subnet IP to client.
+  \item \texttt4. Make Wireless Settings working fine and stable.
+  \item \texttt5. Make UPNP working fine and stable.
+  \item \texttt6. Added http server authentication.
+  \item \texttt7. Added port forwarding.
+  \item \texttt7. Make dns relay working fine.
+  \end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+
+\begin{enumerate}
+
+\end{enumerate}
+
+\section{Firmware 0.0.0.1rc4}
+\tlabel{sec:0.0.0.1rc4}
+
+\subsection{What's new}
+\begin{itemize}
+\item CVS Repository ar5008-buildroot at dniserver(172.17.144.8/cgi-bin/viewcvs.cgi) 
+\begin{itemize}
+    \item Branch: \texttt{dni\_roofnet\_mesh\_1113\_br}
+    \item Tag: \texttt{tiny-router-code-drop-0-0-0-1rc4-20070212} including the following changes:
+\end{itemize}
+\begin{enumerate}
+\item Updated
+\begin{itemize}
+	\item \texttt{defconfig-ar2315-tiny-router} to revision 1.1.2.21
+	\item \texttt{rules.mk} to revision 1.1.1.1.4.3.2.8
+	\item \texttt{include/image.mk} to revision 1.1.1.1.4.1.2.10
+	\item \texttt{package/base-files/default/etc/functions.sh} to revision 1.1.1.1.6.1
+	\item \texttt{package/base-files/default/etc/rc.common} to revision 1.1.1.1.4.2.2.2
+	\item \texttt{package/base-files/default/etc/init.d/boot} to revision 1.1.1.1.4.1.2.4
+	\item \texttt{package/base-files/default/etc/init.d/cron} to revision 1.1.1.1.6.2
+	\item \texttt{package/base-files/default/etc/init.d/httpd} to revision 1.1.1.1.6.1
+	\item \texttt{package/base-files/default/etc/init.d/network} to revision 1.1.1.1.4.2.2.4
+	\item \texttt{package/base-files/default/etc/init.d/rcS} to revision 1.1.1.1.6.5
+	\item \texttt{package/base-files/default/sbin/mount\_root} to revision 1.1.1.1.6.2
+	\item \texttt{package/base-files/default/sbin/wifi} to revision 1.1.1.1.6.3
+	\item \texttt{package/base-files/default/usr/share/udhcpc/default.bound} to revision 1.1.2.2
+	\item \texttt{package/base-files/default/usr/share/udhcpc/default.deconfig} to revision 1.1.2.2
+	\item \texttt{package/base-files/default/usr/share/udhcpc/default.renew} to revision 1.1.2.2
+	\item \texttt{package/base-files/default/usr/share/udhcpc/ourip.script} to revision 1.1.2.2
+	\item \texttt{package/dnsmasq/Makefile} to revision 1.1.1.1.4.1.2.1
+	\item \texttt{package/dnsmasq/files/dnsmasq.init} to revision 1.1.1.1.6.2
+	\item \texttt{package/iptables/Makefile} to revision 1.1.1.1.4.1.2.2
+	\item \texttt{package/iptables/files/firewall.init} to revision 1.1.1.1.6.2
+	\item \texttt{package/madwifi/Makefile} to revision 1.1.1.1.4.4.2.10
+	\item \texttt{package/mtd/Makefile} to revision 1.1.1.1.6.2
+	\item \texttt{package/mtd/src/Makefile} to revision 1.1.1.1.6.2
+	\item \texttt{package/mtd/src/mtd.c} to revision 1.1.1.1.6.3
+	\item \texttt{package/pptp/Makefile} to revision 1.1.1.1.4.1.2.1
+	\item \texttt{package/router-gui/Makefile} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/cgi/setobject.cgi} to revision 1.1.2.22
+	\item \texttt{package/router-gui/www/cgi/webupgrade.cgi} to revision 1.1.2.5
+	\item \texttt{package/router-gui/www/dynamic/CF\_logs.html} to revision 1.1.2.3
+	\item \texttt{package/router-gui/www/dynamic/FW\_email.html} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/dynamic/STR\_routes\_add.html} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/dynamic/STR\_routes\_edit.html} to revision 1.1.2.3
+	\item \texttt{package/router-gui/www/dynamic/bas\_bpa.html} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/dynamic/block\_services.html} to revision 1.1.2.3
+	\item \texttt{package/router-gui/www/dynamic/block\_services\_add.html} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/dynamic/block\_services\_edit.html} to revision 1.1.2.3
+	\item \texttt{package/router-gui/www/dynamic/forwarding.html} to revision 1.1.2.3
+	\item \texttt{package/router-gui/www/dynamic/forwarding\_add.html} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/dynamic/forwarding\_edit.html} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/dynamic/info.html} to revision 1.1.2.8
+	\item \texttt{package/router-gui/www/dynamic/lan.html} to revision 1.1.2.4
+	\item \texttt{package/router-gui/www/dynamic/menu.html} to revision 1.1.2.4
+	\item \texttt{package/router-gui/www/dynamic/rip.html} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/dynamic/schedule.html} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/dynamic/triggering.html} to revision 1.1.2.3
+	\item \texttt{package/router-gui/www/dynamic/triggering\_edit.html} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/dynamic/upgrade.html} to revision 1.1.2.4
+	\item \texttt{package/router-gui/www/dynamic/wan\_setup.html} to revision 1.1.2.3
+	\item \texttt{package/router-gui/www/dynamic/wlacl.html} to revision 1.1.2.3
+	\item \texttt{package/router-gui/www/dynamic/wlacl\_edit.html} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/dynamic/wlan.html} to revision 1.1.2.4
+	\item \texttt{package/router-gui/www/dynamic/wlan\_adv.html} to revision 1.1.2.3
+	\item \texttt{package/router-gui/www/sh/block\_services.sh} to revision 1.1.2.3
+	\item \texttt{package/router-gui/www/sh/fdefault.sh} to revision 1.1.2.3
+	\item \texttt{package/router-gui/www/sh/firewall.sh} to revision 1.1.2.10
+	\item \texttt{package/router-gui/www/sh/firewall\_function.sh} to revision 1.1.2.5
+	\item \texttt{package/router-gui/www/sh/forwarding.sh} to revision 1.1.2.4
+	\item \texttt{package/router-gui/www/sh/functions.sh} to revision 1.1.2.14
+	\item \texttt{package/router-gui/www/sh/info.sh} to revision 1.1.2.4
+	\item \texttt{package/router-gui/www/sh/language.sh} to revision 1.1.2.6
+	\item \texttt{package/router-gui/www/sh/passwd.sh} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/sh/schedule.sh} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/sh/st\_router.sh} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/sh/triggering.sh} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/sh/wlacl.sh} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/sh/wlan.sh} to revision 1.1.2.3
+	\item \texttt{package/router-gui/www/static/bas\_bpa.js} to revision 1.1.2.3
+	\item \texttt{package/router-gui/www/static/bas\_ether.js} to revision 1.1.2.3
+	\item \texttt{package/router-gui/www/static/bas\_pppoe.js} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/static/bas\_pptp.js} to revision 1.1.2.3
+	\item \texttt{package/router-gui/www/static/block\_services.js} to revision 1.1.2.3
+	\item \texttt{package/router-gui/www/static/block\_sites.js} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/static/email.js} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/static/fdefault.js} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/static/forwarding.js} to revision 1.1.2.3
+	\item \texttt{package/router-gui/www/static/funcs.js} to revision 1.1.2.7
+	\item \texttt{package/router-gui/www/static/lan.js} to revision 1.1.2.4
+	\item \texttt{package/router-gui/www/static/schedule.js} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/static/str\_router.js} to revision 1.1.2.3
+	\item \texttt{package/router-gui/www/static/upgrade.js} to revision 1.1.2.3
+	\item \texttt{package/router-gui/www/static/ureboot.js} to revision 1.1.2.2
+	\item \texttt{package/router-gui/www/static/wan.js} to revision 1.1.2.4
+	\item \texttt{package/router-gui/www/static/wlan\_adv.js} to revision 1.1.2.2
+	\item \texttt{package/web-boa/Makefile} to revision 1.1.2.5
+	\item \texttt{package/web-boa/patches/001-dni-add-authentication.patch} to revision 1.1.2.2
+	\item \texttt{package/web-boa/patches/003-dni-for-firmware-upgrade.patch} to revision 1.1.2.4
+	\item \texttt{package/zebra/Makefile} to revision 1.1.2.6
+	\item \texttt{target/image/ar531x/Makefile} to revision 1.1.2.9
+\end{itemize}
+  Fixed bugs 
+  \begin{itemize}
+  \item \texttt In Information Page, the MAC/IP Address/Subnet Mask of Internet Port can not display information.
+  \item \texttt In Information Page, the Country/Region show error information.
+  \item \texttt In LAN IP field of LAN Settings Page, we can enter 127.0.0.1 and over 224.X.X.X. The subnet mask can enter any number less than 255. The gateway can enter 127.0.0.1 and over 224.X.X.X. (almost all IP field had these problem)
+  \item \texttt In LAN Settings Page, the DHCP Server IP can not auto update after we configure the LAN IP address.
+  \item \texttt The SSID field should be able to fit all characters. After we enter include the quota character of SSID and [apply], the characters of SSID field after will be erased and displayed random value in SSID field.
+The SSID field should allow input Space character.
+  \item \texttt In Fix IP mode of Internet Settings Page, we can enter 127.0.0.1 and over 224.X.X.X. The subnet mask can enter any number less than 255. The gateway can enter 127.0.0.1 and over 224.X.X.X
+  \item \texttt In MAC field of Fix IP mode of Internet Settings Page, we can enter FF:FF:FF:FF:FF:FF.
+  \item \texttt The PPTP mode of Internet Settings Page does not work.
+  \item \texttt The BPA mode of Internet Settings Page does not work.
+  \item \texttt In Logs Page, the [clear log]&[send log] button does not work.
+  \item \texttt Block Sites does not work.
+  \item \texttt Block Services does not work.
+  \item \texttt Block Schedule does not work.
+  \item \texttt E-mail for logs sending does not work.
+  \item \texttt In Change Password Page, the new password does not work.
+  \item \texttt The DTIM allow enter 0 and the beacon cannot be observed after we applied it.
+  \item \texttt The DMZ does not work.
+  \item \texttt In MTU field of WAN setup Page, we can enter the value over 1500.
+  \item \texttt The Static Routes not works.
+  \item \texttt In UPnP test fail after we use X-box tool.
+  \item \texttt The DDNS does not work.
+  \item \texttt The RIP does not work.
+  \end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\end{document} 

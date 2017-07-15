@@ -1,0 +1,21 @@
+# kmod-l2tp configuration
+config L2TP_GIT_TREEISH
+	string
+	prompt "treeish of kmod-l2tp git repository"
+	default "l2tp-drv-v2.6.31-dni1"
+	help
+           Input the treeish of l2tp git repository which you want to build
+
+config L2TP_GIT_REPOSITORY
+	string
+	prompt "kmod-l2tp git repository"
+	default "kmod-drv-l2tp.git"
+	help
+	  Input the name l2tp git repository which you want to build
+
+config L2TP_GIT_URL
+	string
+	prompt "kmod-l2tp git url"
+	default "ssh://dniserver/scm/dnigit/common/kmods/kmod-drv-l2tp.git"
+	help
+	  Input the url l2tp git repository which you want to build

@@ -1,0 +1,15 @@
+Source-Makefile: package/netatalk-utility/Makefile
+Package: netatalk-utility
+Version: 1.0.0-1
+Depends: 
+Provides: 
+Section: net
+Category: Network
+Title: Netatalk Utility
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: Netatalk Utility
+@@
+
+

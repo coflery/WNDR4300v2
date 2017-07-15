@@ -1,0 +1,15 @@
+Source-Makefile: package/bridge-mode/Makefile
+Package: bridge-mode
+Version: 1
+Depends: 
+Provides: 
+Section: utils
+Category: Base system
+Title: For bridge-mode
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: For bridge-mode
+@@
+
+

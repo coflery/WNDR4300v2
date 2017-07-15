@@ -1,0 +1,22 @@
+Source-Makefile: package/dns-ipupdate/Makefile
+Package: dns-ipupdate
+Version: 2
+Depends: @TARGET_dniwndr3700u2631||TARGET_wndr4500v3
+Provides: 
+Build-Depends: datalib
+Section: net
+Category: Base system
+Title: Dynamic DNS application.
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: Dynamic DNS application.
+@@
+Config:
+	menu "Configurations"
+		depends on PACKAGE_dns-ipupdate
+		source "package/dns-ipupdate/Config.in"
+	endmenu
+@@
+
+

@@ -1,0 +1,58 @@
+diff -ruN samba-scripts-1.0.0.orig/update_smb.c samba-scripts-1.0.0/update_smb.c
+--- samba-scripts-1.0.0.orig/update_smb.c       2012-08-04 23:25:58.037754333 +0800
++++ samba-scripts-1.0.0/update_smb.c    2012-08-04 23:30:09.219049103 +0800
+@@ -13,6 +13,7 @@
+ #include <time.h>
+ #include <signal.h>
+ #include <ctype.h>
++#include <libgen.h>
+ 
+ /*
+   * The 'USB_Functionality_specification_v0.2.doc' is modified too much, so I don't want to
+@@ -470,6 +471,14 @@
+ 
+ 	char serialNumber[32];
+ 	memset(serialNumber,0x00,sizeof(serialNumber));
++#define PARTITION_CAPACITY_VIA_DF 1
++#ifdef PARTITION_CAPACITY_VIA_DF
++	char *dfout = "/tmp/df_out";
++	char path_name[100] = {0};
++	unsigned long long cap;
++	FILE *dfp;
++	system("df > /tmp/df_out");
++#endif
+ 
+ 	fp = fopen("/proc/partitions","r");
+ 	if (fp == NULL )
+@@ -489,6 +498,19 @@
+ 			continue;
+ 		if (strncmp(part_name, "sd", 2))
+ 			continue;
++
++#ifdef PARTITION_CAPACITY_VIA_DF
++		if ((dfp = fopen(dfout, "r")) != NULL) {
++			while (fgets(line, sizeof(line), dfp)) {
++				if (sscanf(line, "%s %llu %*llu %*llu %*s %*s", path_name, &cap) != 2)
++					continue;
++				if (strcmp(part_name, basename(path_name)) == 0)
++					capacity = cap;
++			}
++			fclose(dfp);
++		}
++#endif
++
+ 		for (s = part_name; *s; s++)
+ 			;
+ 		if (!isdigit(s[-1])){ 
+@@ -553,6 +575,11 @@
+                /* reload avahi without smbd services */
+                system("rm /etc/avahi/services/smbd.service > /dev/null 2>&1");
+        }
++
++#ifdef PARTITION_CAPACITY_VIA_DF
++	remove(dfout);
++#endif
++
+ #endif
+ }
+ 

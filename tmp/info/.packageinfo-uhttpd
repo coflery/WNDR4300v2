@@ -1,0 +1,57 @@
+Source-Makefile: package/uhttpd/Makefile
+Package: uhttpd
+Menu: 1
+Version: 31
+Depends: 
+Provides: 
+Section: net
+Category: Network
+Title: uHTTPd - tiny, single threaded HTTP server
+Maintainer: Jo-Philipp Wich <xm@subsignal.org>
+Source: 
+Type: ipkg
+Description:  uHTTPd is a tiny single threaded HTTP server with TLS, CGI and Lua
+ support. It is intended as a drop-in replacement for the Busybox
+ HTTP daemon.
+@@
+
+Package: uhttpd-mod-tls
+Version: 31
+Depends: uhttpd +PACKAGE_uhttpd-mod-tls_cyassl:libcyassl +PACKAGE_uhttpd-mod-tls_openssl:libopenssl
+Provides: 
+Section: net
+Category: Network
+Title: uHTTPd - tiny, single threaded HTTP server (TLS plugin)
+Maintainer: Jo-Philipp Wich <xm@subsignal.org>
+Source: 
+Type: ipkg
+Description:  The TLS plugin adds HTTPS support to uHTTPd.
+@@
+Config:
+        choice
+                depends on PACKAGE_uhttpd-mod-tls
+                prompt "TLS Provider"
+                default PACKAGE_uhttpd-mod-tls_cyassl
+
+                config PACKAGE_uhttpd-mod-tls_cyassl
+                        bool "CyaSSL"
+
+                config PACKAGE_uhttpd-mod-tls_openssl
+                        bool "OpenSSL"
+	endchoice
+@@
+
+Package: uhttpd-mod-lua
+Version: 31
+Depends: uhttpd +liblua
+Provides: 
+Section: net
+Category: Network
+Title: uHTTPd - tiny, single threaded HTTP server (Lua plugin)
+Maintainer: Jo-Philipp Wich <xm@subsignal.org>
+Source: 
+Type: ipkg
+Description:  The Lua plugin adds a CGI-like Lua runtime interface to uHTTPd.
+@@
+
+

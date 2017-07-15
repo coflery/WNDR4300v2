@@ -1,0 +1,22 @@
+# dni-acl configuration
+
+config DNI_ACL_GIT_TREEISH
+	string
+	prompt "treeish of dni-acl git repository"
+	default "dni-acl-dni3"
+	help
+          Input the treeish of dni-acl git repository which you want to build
+
+config DNI_ACL_GIT_REPOSITORY
+	string
+	prompt "name of dni-acl git repository"
+	default "dni-acl.git"
+	help
+	  Input the name of dni-acl git repository which you want to build
+
+config DNI_ACL_GIT_URL
+	string
+	prompt "url of dni-acl git repository"
+	default "ssh://dniserver/scm/dnigit/common/apps/dni-acl.git"
+	help
+	  Input the url of dni-acl git repository which you want to build

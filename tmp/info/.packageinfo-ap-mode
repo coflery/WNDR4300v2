@@ -1,0 +1,15 @@
+Source-Makefile: package/ap-mode/Makefile
+Package: ap-mode
+Version: 1
+Depends: 
+Provides: 
+Section: utils
+Category: Base system
+Title: For ap-mode
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: For ap-mode
+@@
+
+

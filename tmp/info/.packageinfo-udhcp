@@ -1,0 +1,22 @@
+Source-Makefile: package/udhcp/Makefile
+Package: udhcp
+Version: 0.9.8-3
+Depends: @TARGET_dniwndr3700u2631||TARGET_wndr4500v3
+Provides: 
+Section: net
+Category: Network
+Title: udhcp Server and Client Package
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  This package contains udhcp Server and Client.
+http://udhcp.busybox.net/source
+@@
+Config:
+	menu "Configuration"
+		depends on PACKAGE_udhcp
+		source "package/udhcp/Config.in"
+	endmenu
+@@
+
+

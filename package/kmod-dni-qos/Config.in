@@ -1,0 +1,21 @@
+# kmod-dni-qos configuration
+config DNI_QOS_GIT_TREEISH
+	string
+	prompt "treeish of dni-qos git repository"
+	default "qos-new-dni11"
+	help
+           Input the treeish of dni-qos git repository which you want to build
+
+config DNI_QOS_GIT_REPOSITORY
+	string
+	prompt "name of dni-qos git repository"
+	default "kmod-dni-qos.git"
+	help
+	   Input the name of dni-qos git repository which you want to build
+
+config DNI_QOS_GIT_URL
+	string
+	prompt "url of dni-qos git repository"
+	default "dniserver/scm/dnigit/common/kmods/kmod-dni-qos.git"
+	help
+	   Input the url of dni-qos git repository which you want to build

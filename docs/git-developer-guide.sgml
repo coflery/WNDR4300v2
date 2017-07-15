@@ -1,0 +1,2725 @@
+<!doctype linuxdoc system>
+
+<!-- Here's an SGML example file. Format it and print out the source, and
+     use it as a model for your own SGML files. As you can see this is a
+     comment. 
+ -->
+
+<article>
+
+<!-- Title information -->
+
+<title> WPN824V3 router developer's guide
+<author> Linux team
+<!-- XYZPPCGEFXDJDL -->
+<date> Wed Jul 16 13:19:31 CST 2003
+<!--
+v1.0, 31 October 2000
+-->
+<abstract>
+This is the abstract.
+</abstract>
+
+<!-- Table of contents -->
+<toc>
+
+<!-- Begin the document -->
+
+<sect> Prerequisite
+
+<p>
+A desktop computer with Intel Pentium level CPU, and GNU/Linux
+operation system. Debian GNU/Linux is recommended.
+
+<p> Also, add the following line into your <tt>/etc/hosts</tt>.
+<tscreen><verb>
+172.16.5.231    itgserver.addsra.nat    itgserver
+172.16.5.238    dbdell
+</verb></tscreen>
+<sect> Checkout the source from GIT server
+
+<p>
+<enum>
+<item> Clone repositories to the directory.
+<tscreen><verb>
+cd /your/git/home
+
+git-clone git://dbdell/pub/scm/linux-2.4/kernel/changcs/linux-2.4.git linux-2.4.git
+</verb></tscreen>
+<item> Clone buildtool. buildtool can be placed at any place that you want.
+<tscreen><verb>
+git-clone git://dbdell/pub/scm/buildtool/changcs/buildtool.git wpn824v3-buildtool
+</verb></tscreen>
+This will create a directory called <tt>wpn824v3-buildtool</tt> in the current directory. 
+<item> Enter the local GIT repository.
+<tscreen><verb>
+cd wpn824v3-buildtool
+</verb></tscreen>
+<item> Change to the working branch for project wpn824v3
+<tscreen><verb>
+git-checkout master_wpn824v3_codebase
+</verb></tscreen>
+</enum>
+
+<sect> Install Kernel Toolchain
+
+<p>
+Toolchain for kernel can be obtained from
+<tt>/public_share/ar5315-toolchain/</tt>
+in itgserver200 (172.16.5.73).
+
+<sect> Install the Toolchain for User-Space Applications
+
+<sect> Build the firmware
+
+<sect1>Preparations
+<p>
+<enum>
+<item> Install the package "fakeroot" in your development environment (the PC linux system). 
+<!--
+<item> Notes: default bootloader is Nucleus. Therefore, Only using the command for RedBoot bootloader when you are sure your bootloader is RedBoot.
+-->
+</enum>
+
+<sect1> Building Firmware Image (Linux 2.6.x)
+
+<p>
+<enum>
+<item>Change directory into the buildtool
+<item> Copy <tt>defconfig-ap81-router</tt> into <tt>.config</tt>
+<item>Build all in one step (assuming the GIT_HOME is /home/spencer/git-home)
+<tscreen<verb>
+	$ GIT_HOME=/home/spencer/git-home fakeroot make V=99
+
+setenv bootargs "console=ttyS0,115200 root=31:02 init=/sbin/init mtdparts=ar7100-nor0:256k(u-boot),64k(u-boot-env),4096k(rootfs),1024k(user-config),1024k(uImage),1728k(ART)"
+
+filesystem
+> erase 0xbf050000 +0x400000
+> tftp 0x80060000 root.burn
+> cp.b ${fileaddr} 0xbf050000 ${filesize}
+
+uImage
+> erase 0xbf550000 +0x100000
+> tftp 0x80060000 uImage
+> cp.b ${fileaddr} 0xbf550000 ${filesize}
+
+filesystem
+> erase 0xbf650000 +0x1b0000
+> tftp 0x80060000 root.burn.new
+> cp.b ${fileaddr} 0xbf650000 ${filesize}
+
+setenv bootargs "console=ttyS0,115200 root=31:02 init=/sbin/init mtdparts=ar7100-nor0:256k(u-boot),64k(u-boot-env),4096k(rootfs),1024k(user-config),1024k(uImage),1728k(ART)"
+
+setenv bootargs "console=ttyS0,115200 root=31:06 init=/sbin/init mtdparts=ar7100-nor0:256k(u-boot),64k(u-boot-env),4096k(rootfs),960k(user-config),64k(config),1024k(uImage),1728k(rootfs2)"
+
+</verb></tscreen> 
+<item> Finally you can find the firmware image with suffixing firmware version in
+<tscreen<verb>
+wpn824v3-buildtool/source/firmware/firmware_dir
+</verb></tscreen>
+like <tt>firmware_jffs2_root.img</tt>.
+</enum>
+
+<sect1> Building Firmware Image (Linux 2.4.x)
+
+<p>
+<enum>
+<item>Change directory into the buildtool
+<item> Copy <tt>defconfig-ap81-linux24-router</tt> into <tt>.config</tt>
+<item>Build all in one step (assuming the GIT_HOME is /home/spencer/git-home)
+<tscreen<verb>
+	$ PATH="$PATH:/public_share/crosstool/gcc-3.4.5-glibc-2.3.6/mips-unknown-linux-gnu/bin:/public_share/ar5315-toolchain/tools/gcc-3.3.3-2.4.25/toolchain_mips/bin" GIT_HOME=/home/spencer/git-home fakeroot make V=99
+</verb></tscreen> 
+<item> Finally you can find the firmware image with suffixing firmware version in
+<tscreen<verb>
+wpn824v3-buildtool/source/firmware/firmware_dir
+</verb></tscreen>
+like <tt>firmware_jffs2_root.img</tt>.
+</enum>
+
+<sect1> Compiling software with buildtool.pl
+
+<p> The command is (take root.lrp as an example):
+<tscreen><verb>
+PATH="/public_share/ar5315-toolchain/tools/gcc-3.3.3-2.4.25/toolchain_mips/bin:$PATH" GIT_HOME=/your/git/home ./buildtool.pl build root
+</verb></tscreen>
+
+<sect1> Removing software with buildtool.pl
+
+<p> The command is (take root.lrp as an example):
+<tscreen><verb>
+PATH="/public_share/ar5315-toolchain/tools/gcc-3.3.3-2.4.25/toolchain_mips/bin:$PATH" GIT_HOME=/your/git/home fakeroot ./buildtool.pl remove root
+</verb></tscreen>
+
+<sect1> Build packet with buildpacket.pl
+
+<p> The command is (take root.lrp as an example):
+<tscreen><verb>
+PATH="/opt/timesys/linux/4.1/toolchains/armv5b-linux/bin:$PATH"
+fakeroot ./buildpacket.pl --package=root --packager=anony --all
+</verb></tscreen>
+
+<sect> Install the firmware for DNIWNR2000V1
+
+<sect1> Installing Firmware Image (Linux 2.4.x)
+
+<p> U-boot should be version 1.1.4.3 (<tt>U-Boot 1.1.4 (Dec 20 2007 - 15:23:57)</tt>)
+<tscreen<verb>
+ar7100> setenv bootcmd "bootm 0xbf050000"
+ar7100> saveenv
+
+uImage
+ar7100> erase 0xbf050000 +0x070000
+ar7100> tftp 0x80060000 uImage
+ar7100> cp.b ${fileaddr} 0xbf050000 ${filesize}
+
+filesystem
+ar7100> erase 0xbf0c0000 +0x2f0000
+ar7100> tftp 0x80060000 root.burn
+ar7100> cp.b ${fileaddr} 0xbf0c0000 ${filesize}
+
+ar7100> rfschecksum
+ar7100> md 0xbf3e0000
+</verb></tscreen> 
+
+<sect1> Installing Firmware Image (Linux 2.6.x)
+
+<p> U-boot should be version 1.1.4.16 (<tt>U-Boot 1.1.4.16 (May 15 2008 - 13:03:12)</tt>)
+<tscreen<verb>
+ar7100> setenv bootcmd "bootm 0xbf050000"
+ar7100> saveenv
+
+uImage
+ar7100> erase 0xbf050000 +0x0b0000
+ar7100> tftp 0x80060000 uImage
+ar7100> cp.b ${fileaddr} 0xbf050000 ${filesize}
+
+filesystem
+ar7100> erase 0xbf100000 +0x2b0000
+ar7100> tftp 0x80060000 root.burn
+ar7100> cp.b ${fileaddr} 0xbf100000 ${filesize}
+
+ar7100> rfschecksum
+ar7100> md 0xbf3e0000
+</verb></tscreen>
+
+<sect> Install the firmware for DNIDRE834WNR
+
+<sect1> Installing Firmware Image (Linux 2.6.x)
+
+<p> RedBoot version (<tt>built 17:58:30, May 27 2008</tt>). This redboot
+can make CPU run at 450 BogoMIPS
+<tscreen<verb>
+RedBoot> fc -l
+Run script at boot: true
+Boot script:
+.. fis load -l vmlinux
+.. exec
+										Boot script timeout (1000ms resolution): 1
+Use BOOTP for network configuration: false
+Gateway IP address: 0.0.0.0
+Local IP address: 192.168.1.1
+Local IP address mask: 255.255.255.0
+Default server IP address: 192.168.1.7
+Console baud rate: 115200
+GDB connection port: 9000
+Force console for special debug messages: false
+Network debug at boot time: false
+
+Linux:
+Redboot> load -r -v -b 0x80500000 vmlinux.7z -h <tftp server ip>
+Redboot> fis create -b 0x80500000 -e 0x80060000 -r 0x80060000 -l 0x0d0000 vmlinux
+
+filesystem
+Redboot> load -r -v -b 0x80500000 root.squashfs -h <tftp server ip>
+Redboot> fis create -b 0x80500000 -e 0x0 -l 0x600000 filesystem
+
+config
+Redboot> load -r -v -b 0x80500000 ff65535 -h <tftp server ip>
+Redboot> fis create -b 0x80500000 -e 0x0 -l 0x10000 config
+</verb></tscreen>
+
+<sect> Install the firmware for DNIWNDR3700U
+
+<sect1> Installing Firmware Image (Linux 2.6.x)
+
+<p> u-boot (version <tt>v1.1.4-wndr3700u-0.3</tt>)
+<tscreen><verb>
+ar7100> tftp 80800000 openwrt-dniwndr3700u-2.6-squashfs.bin
+ar7100> erase bf070000 +720000
+ar7100> cp.b 80800000 bf070000 720000
+ar7100> macset lan 00:03:7F:EF:77:87
+ar7100> macset wan 00:03:7F:EF:77:88
+ar7100> set bootcmd 'bootm bf070000'
+ar7100> saveenv
+ar7100> reset
+</verb></tscreen>
+where <tt>openwrt-dniwndr3700u-2.6-squashfs.bin</tt> can be
+found in <tt>bin</tt> directory.
+
+<p> If this is a first-time installation, ELF linux kernel may be
+needed to boot the target board
+<tscreen><verb>
+ar7100> tftp 80800000 vmlinux.elf
+ar7100> bootelf 80800000
+</verb></tscreen>
+where <tt>vmlinux.elf</tt> can be found in
+<tt>build_mips/linux-2.6-dniwndr3700u</tt> directory.
+
+<sect> Install the firmware for DNIWNR1000V2
+
+<sect1> Installing Firmware Image (Linux 2.6.x)
+
+<p> u-boot (version <tt>v1.1.4-wndr3700u-0.3</tt>)
+<tscreen><verb>
+ar7240> tftp 80060000 openwrt-dniwnr1000v2-squashfs.bin
+ar7240> erase 9f050000 +0x350000
+ar7240> cp.b ${fileaddr} 0x9f050000 ${filesize}
+ar7240> set bootcmd 'bootm 9f050000'
+ar7240> saveenv
+ar7240> reset
+</verb></tscreen>
+where <tt>openwrt-dniwndr3700u-2.6-squashfs.bin</tt> can be
+found in <tt>bin</tt> directory.
+
+<sect> Re-build all without building toolchain
+
+<p>
+The steps are:
+<enum>
+<item> Remove the directory, bin:
+<tscreen<verb>
+$ rm -rf bin
+</verb></tscreen>
+<item> Remove all directories and files in <tt>build_mips/</tt> except for
+<tscreen><verb>
+target-utils
+</verb></tscreen>
+</enum>
+
+<sect> Info about tags on Linux kernel branch
+
+<p>
+The tags on <tt>wavesat_2_4_21-r20060217-dni</tt> branch are:
+<enum>
+<item> <tt>wavesat_2_4_21-r20060217-dni-clean1</tt>: removed files
+which stop the building of <tt>iptables.lrp</tt>. For example,
+<tt>ip_pool.h</tt>,
+<tt>ipt_pool.h</tt>,
+<tt>ipt_time.h</tt>,
+<tt>ip_pool.c</tt>,
+<tt>ipt_pool.c</tt>,
+<tt>ipt_time.c</tt>, etc.
+<item> <tt>wavesat_2_4_21-r20060217-dni-clean2</tt>: removed files
+not in linux 2.4.21. For example,
+<tt>include/net/mipglue.h</tt>,
+<tt>include/net/irda/irdacall.h</tt>,
+<tt>include/net/irda/irlap_comp.h</tt>,
+<tt>net/ipv4/netfilter/ip_autofw.c</tt>,
+<tt>net/ipv4/netfilter/ip_conntrack_h323.c</tt>,
+<tt>net/ipv4/netfilter/ip_conntrack_mms.c</tt>,
+<tt>net/ipv4/netfilter/ip_conntrack_pptp.c</tt>,
+<tt>net/ipv4/netfilter/ip_conntrack_pptp_priv.h</tt>,
+<tt>net/ipv4/netfilter/ip_conntrack_proto_gre.c</tt>,
+<tt>net/ipv4/netfilter/ip_nat_h323.c</tt>,
+<tt>net/ipv4/netfilter/ip_nat_mms.c</tt>,
+<tt>net/ipv4/netfilter/ip_nat_pptp.c</tt>,
+<tt>net/ipv4/netfilter/ip_nat_proto_gre.c</tt>,
+<tt>net/irda/irlap_comp.c</tt>, etc. Also removed changes in
+<tt>include/net/bluetooth</tt>,
+<tt>net/bluetooth</tt>,
+<tt>net/ipv6</tt>,
+<tt>net/irda</tt> directories.
+<item> <tt>wavesat_2_4_21-r20060217-dni-clean3</tt>: removed <tt>.c</tt>
+and <tt>.S</tt> files which are not used. A special header
+<tscreen><verb>
+#error who calls me
+</verb></tscreen>
+is added at the beginning of each file to prevent it from being
+used by the toolchain.
+<item> <tt>wavesat_2_4_21-r20060217-dni-clean4</tt>: removed <tt>.h</tt>
+files which are not used. A special header
+<tscreen><verb>
+#error who calls me
+</verb></tscreen>
+is added at the beginning of each file to prevent it from being
+used by the toolchain.
+(tip to clean all special headers:
+<tscreen><verb>
+find -type f -name "*.[chS]" -print0 |xargs -r -0 perl -i -p -e "s,^#error who calls me\n,,"
+</verb></tscreen>
+)
+<item> <tt>wavesat_2_4_21-r20060217-dni-clean5</tt>: removed unnecessary
+changes in the following files:
+<tt>drivers/acorn/char/Makefile</tt>,
+<tt>drivers/atm/nicstarmac.copyright</tt>,
+<tt>drivers/block/Config.in</tt>,
+<tt>drivers/block/Makefile</tt>,
+<tt>drivers/block/ll_rw_blk.c</tt>,
+<tt>drivers/block/rd.c</tt>,
+<tt>drivers/cdrom/Config.in</tt>,
+<tt>drivers/cdrom/Makefile</tt>,
+<tt>drivers/char/ftape/Makefile</tt>,
+<tt>drivers/char/ftape/compressor/Makefile</tt>,
+<tt>drivers/char/ftape/lowlevel/Makefile</tt>,
+<tt>drivers/char/ftape/zftape/Makefile</tt>,
+<tt>drivers/char/joystick/Config.in</tt>,
+<tt>drivers/char/joystick/Makefile</tt>,
+<tt>drivers/char/pcmcia/Config.in</tt>,
+<tt>drivers/hotplug/Config.in</tt>,
+<tt>drivers/i2c/Config.in</tt>,
+<tt>drivers/i2c/Makefile</tt>,
+<tt>drivers/ide/Config.in</tt>,
+<tt>drivers/ide/Makefile</tt>,
+<tt>drivers/ide/arm/Makefile</tt>,
+<tt>drivers/ide/legacy/Makefile</tt>,
+<tt>drivers/input/Config.in</tt>,
+<tt>drivers/input/Makefile</tt>,
+<tt>drivers/macintosh/Makefile</tt>,
+<tt>drivers/media/video/Config.in</tt>,
+<tt>drivers/media/video/Makefile</tt>, etc.
+<item> <tt>wavesat_2_4_21-r20060217-dni-clean6</tt>: removed unnecessary
+changes in the following files:
+<tt>drivers/net/Config.in</tt>,
+<tt>drivers/net/Makefile</tt>,
+<tt>drivers/net/Space.c</tt>,
+<tt>drivers/net/pppoe.c</tt>,
+<tt>drivers/net/e100/Makefile</tt>,
+<tt>drivers/net/e100/e100.h</tt>,
+<tt>drivers/net/e100/e100_config.c</tt>,
+<tt>drivers/net/e100/e100_config.h</tt>,
+<tt>drivers/net/e100/e100_eeprom.c</tt>,
+<tt>drivers/net/e100/e100_main.c</tt>,
+<tt>drivers/net/e100/e100_phy.c</tt>,
+<tt>drivers/net/e100/e100_phy.h</tt>,
+<tt>drivers/net/e100/e100_test.c</tt>,
+<tt>drivers/net/e100/e100_ucode.h</tt>,
+<tt>drivers/net/e1000/Makefile</tt>,
+<tt>drivers/net/irda/Config.in</tt>,
+<tt>drivers/net/pcmcia/Config.in</tt>,
+<tt>drivers/net/pcmcia/Makefile</tt>,
+<tt>drivers/net/wan/Config.in</tt>,
+<tt>drivers/net/wan/Makefile</tt>,
+<tt>drivers/net/wan/8253x/Makefile</tt>,
+<tt>drivers/net/wireless/Config.in</tt>,
+<tt>drivers/net/wireless/Makefile</tt>,
+<tt>drivers/parport/Config.in</tt>,
+<tt>drivers/parport/Makefile</tt>,
+<tt>drivers/pcmcia/Config.in</tt>,
+<tt>drivers/pcmcia/Makefile</tt>,
+<tt>drivers/scsi/Config.in</tt>,
+<tt>drivers/scsi/Makefile</tt>,
+<tt>drivers/scsi/README.aha152x</tt>,
+<tt>drivers/scsi/README.aic7xxx</tt>,
+<tt>drivers/scsi/README.osst</tt>,
+<tt>drivers/scsi/README.tmscsim</tt>,
+<tt>drivers/scsi/aic79xx/CHANGELOG</tt>,
+<tt>drivers/scsi/aic79xx/aic79xx.reg</tt>,
+<tt>drivers/scsi/aic79xx/aic79xx.seq</tt>,
+<tt>drivers/scsi/aic79xx/aicasm/aicasm_gram.y</tt>,
+<tt>drivers/scsi/aic79xx/aicasm/aicasm_macro_gram.y</tt>,
+<tt>drivers/scsi/aic79xx/aicasm/aicasm_macro_scan.l</tt>,
+<tt>drivers/scsi/aic79xx/aicasm/aicasm_scan.l</tt>,
+<tt>drivers/scsi/aic7xxx/aic7xxx.reg</tt>,
+<tt>drivers/scsi/aic7xxx/aic7xxx.seq</tt>,
+<tt>drivers/scsi/aic7xxx/aicasm/aicasm_gram.y</tt>,
+<tt>drivers/scsi/aic7xxx/aicasm/aicasm_macro_gram.y</tt>,
+<tt>drivers/scsi/aic7xxx/aicasm/aicasm_macro_scan.l</tt>,
+<tt>drivers/scsi/aic7xxx/aicasm/aicasm_scan.l</tt>,
+<tt>drivers/scsi/aic7xxx_old/README.aic7xxx</tt>,
+<tt>drivers/scsi/aic7xxx_old/aic7xxx.reg</tt>,
+<tt>drivers/scsi/aic7xxx_old/aic7xxx.seq</tt>,
+<tt>drivers/sound/Config.in</tt>,
+<tt>drivers/sound/Makefile</tt>,
+<tt>drivers/sound/dmasound/Config.in</tt>,
+<tt>drivers/usb/Config.in</tt>,
+<tt>drivers/usb/Makefile</tt>,
+<tt>drivers/usb/host/Config.in</tt>,
+<tt>drivers/usb/host/Makefile</tt>,
+<tt>drivers/video/Config.in</tt>,
+<tt>drivers/video/Makefile</tt>,
+<tt>drivers/zorro/zorro.ids</tt>, etc.
+</enum>
+
+<sect> RedBoot : Initiation
+<sect1> Initiating flash partition
+<p>
+Using 
+<tscreen><verb>
+RedBoot> fis list
+</verb></tscreen>
+to check the partition number in flash. If there is only one partition in the output list, use
+<tscreen><verb>
+RedBoot> fis init
+</verb></tscreen>
+(answer 'y') to initialize flash. Then, it should show three partitions in output list of <tt>fis list</tt>
+<tscreen><verb>
+ RedBoot> fis list   
+ Name              FLASH addr  Mem addr    Length      Entry point
+ RedBoot           0x50000000  0x50000000  0x00040000  0x00000000
+ RedBoot config    0x507C0000  0x507C0000  0x00001000  0x00000000
+ FIS directory     0x507E0000  0x507E0000  0x00020000  0x00000000
+</verb></tscreen>
+
+<sect1> Setup Tftp Server for Transfering Image Files onto Target Boards
+<p>
+<enum>
+<item> Install tftp server package (eg. the atftpd package ) on host PC.
+<item> Check where is the root directory (eg. /tftpboot ) of tftp server.
+</enum>
+
+<sect> RedBoot: Configuring
+<p>
+Using <tt>fconfig</tt> to configure the redboot.
+<tscreen><verb>
+ RedBoot> fconfig
+ Run script at boot: false
+ Boot script timeout (1000ms resolution): 1
+ Use BOOTP for network configuration: false 
+ Gateway IP address: 
+ Local IP address: 192.168.1.1 
+ Local IP address mask: 255.255.255.0
+ Default server IP address: 192.168.1.88 
+ Console baud rate: 9600
+ DNS server IP address: 
+ GDB connection port: 9000 
+ Force console for special debug messages: false 
+ Network debug at boot time: false
+ Update RedBoot non-volatile configuration - continue (y/n)? y
+</verb></tscreen>
+where <tt>192.168.1.88</tt> is the IP address of the tftp server mentioned
+in last section.
+<tt>Run script at boot</tt> is to tell Redboot what should do at booting. 
+Hence, this item will be set to true for booting kernel image from flash or tftp server.
+
+
+<sect> RedBoot: Creating an Empty Config Partition
+
+<p>
+<enum>
+<item> Create a 128 KB file with <tt>/dev/zero</tt> on you desktop.
+<tscreen><verb>
+$ dd if=/dev/zero of=/tmp/zeroconfig bs=128k count=1
+</verb></tscreen>
+<item> Load it into memory on the target board
+<tscreen><verb>
+RedBoot> load -r -b %{FREEMEMLO} zeroconfig
+RedBoot> fis create -f 0x50040000 -l 0x20000 -n Config
+</verb></tscreen>
+<item> Reboot the target board.
+</enum>
+
+<sect> Redboot: Creating Kernel Image Partition
+<p>
+<tscreen><verb>
+RedBoot> fis create -b 0x1600000 -f 0x50060000 -l 0x140000 -e 0x1600000 -r 0x1600000 -n zImage
+</verb></tscreen>
+
+<sect> Redboot: Creating File System Partition
+<p>
+<tscreen><verb>
+RedBoot> fis create -f 0x501A0000 -l 0x620000 -n RfsLinux
+</verb></tscreen>
+
+<sect> RedBoot: Writing Kernel Image onto Target Boards
+
+<p>
+<enum>
+<item> Load <tt>build/firmware/kernel_jffs2.img</tt> onto
+the target board
+<tscreen><verb>
+RedBoot> load -v -r -b 0x1600000 kernel_jffs2.img
+</verb></tscreen>
+<item> Commit the new zImage to flash
+<tscreen><verb>
+RedBoot> fis write -f 0x50060000 -b 0x1600000 -l 0x140000
+</verb></tscreen>
+<item> Reboot the target board.
+<item> Update the non-volatile RedBoot configuration<p>
+We have to update the RedBoot script so that it passes the root device as
+a command-line argument to Linux.  Use RedBoot's <tt>fconfig</tt> command again, and set <tt>Run script at boot</tt> to true and write the script as:
+<tscreen><verb>
+RedBoot> fconfig
+Run script at boot: true   
+Enter script, terminate with empty line  
+>> check_mac
+>> fis load zImage
+>> go -n
+>> 
+...
+...
+</verb></tscreen>
+</enum>
+
+<sect> RedBoot : Writing FilsSystem Partition Images onto Target Boards
+
+<p>
+<enum>
+<item> Create an padding image on your desktop:
+<tscreen><verb>
+$ dd bs=6553600 if=/dev/zero count=1 | tr '\000' '\377' > /tmp/pad.img
+</verb></tscreen>
+<item> Create an image from <tt>build/firmware/jffs2.img</tt> on your
+desktop:
+<tscreen><verb>
+$ cat build/firmware/jffs2.img /tmp/pad.img | head -c 6422528 > /tmp/burnit
+</verb></tscreen>
+<item> Load <tt>/tmp/burnit</tt> onto the target board
+<tscreen><verb>
+RedBoot> load -v -r -b 0x1000000 burnit
+</verb></tscreen>
+<item> Commit the filesystem image to flash
+<tscreen><verb>
+RedBoot> fis write -f 0x501A0000 -b 0x1000000 -l 0x620000
+</verb></tscreen>
+NOTE: This may take about 3 mins; be patient.
+You can use the <tt>fis list</tt> command to verify that the rootfs entry looks
+like this:
+<tscreen><verb>
+RedBoot> fis list
+Name              FLASH addr  Mem addr    Length      Entry point
+RedBoot           0x50000000  0x50000000  0x00040000  0x00000000
+RedBoot config    0x507C0000  0x507C0000  0x00001000  0x00000000
+FIS directory     0x507E0000  0x507E0000  0x00020000  0x00000000
+Config            0x50040000  0x50040000  0x00020000  0x00000000
+zImage            0x50060000  0x01600000  0x00140000  0x01600000
+RfsLinux          0x501A0000  0x501A0000  0x00620000  0x00000000
+</verb></tscreen>
+</enum>
+
+<sect> Redboot: Boot Linux from tftp server with SQUASHFS file system
+
+<sect1> Setup tftp server for transfering kernel image onto demo board
+<p>
+<enum>
+<item> Install tftp server package (eg. the atftpd package ) on host PC.
+<item> Check where is the root directory (eg. /tftpboot ) of tftp server.
+<item> Put the ELF kernel image in the root directory of tftp server. (eg. /tftpboot/vmlinux)
+</enum>
+
+<sect1> Boot Linux kernel with SQUASHFS file system
+<p>
+<enum>
+<!--
+<item> Make sure the steps in <ref id="write-jffs2" name="put the SQUASHFS image on flash"> has been done.
+-->
+<item> Load Linux kernel image from tftp server <bf>manually</bf>
+<tscreen><verb>
+RedBoot> load -v -b 0x1600000 vmlinux-jffs2
+RedBoot> go
+</verb></tscreen>
+where <tt>vmlinux-jffs2</tt> can be found at
+<tt>linux-2.4.x/arch/arm/boot/compressed</tt> directory.
+<item> Load Linux kernel image from tftp server <bf>automatically</bf>
+<p>
+Set the script as:
+<tscreen><verb>
+RedBoot> fconfig
+Run script at boot: true
+Enter script, terminate with empty line
+>> load vmlinux
+>> exec -c "root=/dev/mtdblock3"
+>>
+</verb></tscreen>
+reset the board to load linux kernel image automatically
+<tscreen><verb>
+RedBoot> reset
+</verb></tscreen>
+</enum>
+
+<sect> RedBoot setup for 16MB flash
+
+<p>
+<enum>
+<item> Create a 128 KB file with <tt>/dev/zero</tt> on you desktop.
+<tscreen><verb>
+$ dd if=/dev/zero of=/tmp/zeroconfig bs=128k count=1
+</verb></tscreen>
+<item> Load it into memory on the target board
+<tscreen><verb>
+RedBoot> fis init -f
+RedBoot> load -r -b %{FREEMEMLO} zeroconfig
+RedBoot> fis create -f 0x50040000 -l 0x20000 -n Config
+RedBoot> load -r -b %{FREEMEMLO} zeroconfig
+RedBoot> fis create -f 0x50FA0000 -l 0x20000 -n Cert
+RedBoot> fis create -b 0x1600000 -f 0x50060000 -l 0x140000 -e 0x1600000 -r 0x1600000 -n zImageA
+RedBoot> fis create -f 0x501A0000 -l 0x660000 -n rootfsA
+RedBoot> fis create -b 0x1600000 -f 0x50800000 -l 0x140000 -e 0x1600000 -r 0x1600000 -n zImageB
+RedBoot> fis create -f 0x50940000 -l 0x660000 -n rootfsB
+==============================================================
+RedBoot> load -v -r -b 0x1600000 kernel_jffs2.img
+RedBoot> fis write -f 0x50060000 -b 0x1600000 -l 0x140000
+RedBoot> load -v -r -b 0x1000000 burnit
+RedBoot> fis write -f 0x501A0000 -b 0x1000000 -l 0x660000
+RedBoot> load -v -r -b 0x1600000 kernel_jffs2.img
+RedBoot> fis write -f 0x50800000 -b 0x1600000 -l 0x140000
+RedBoot> load -v -r -b 0x1000000 burnit
+RedBoot> fis write -f 0x50940000 -b 0x1000000 -l 0x660000
+</verb></tscreen>
+where <tt>burnit</tt> is obtained by padding <tt>root_jffs2.img</tt> to 6684672 bytes.
+<item> Reboot the target board.
+</enum>
+<p>
+Set the script as:
+<tscreen><verb>
+RedBoot> fconfig
+Run script at boot: true
+Enter script, terminate with empty line
+>> check_mac
+>> fis load zImageA
+>> go -n
+>>
+</verb></tscreen>
+
+<sect> Telnetd for remote login
+
+<p>
+The steps are:
+<enum>
+<item> Obtain <htmlurl url="http://itgserver/~changcs/dww34/files/telnetd" name="telnetd,"> and upload this binay file to DWW34 board.
+Note that this binary is dynamically linked and can only work against
+uClibc 0.9.27.
+<item> Added <tt>ttyp0</tt> into <tt>/etc/securetty</tt>
+<item> chmod +x /tmp/telnetd
+<item> Run the following command
+<tscreen><verb>
+# /tmp/telnetd -l /bin/login
+</verb></tscreen>
+</enum>
+
+<sect> Steps to boot Atheros 2.6.13 kernel
+
+<p>
+The required changes are
+<enum>
+<item> Change <tt>include/asm-arm/arch-ixp4xx/uncompress.h</tt> to let <tt>__arch_decomp_setup()</tt> use <tt>IXP4XX_UART2_BASE_PHYS</tt>.
+<item> Change <tt>include/asm-arm/arch-ixp4xx/debug-macro.S</tt> such that
+<tscreen><verb>
+  moveq   \rx, #0xc8000000
+  movne   \rx, #0xff000000
++ add   \rx, \rx, #0x01000
+</verb></tscreen>
+<item> Add a header prior to zImage with content like
+<tscreen><verb>
+e3a0 1c03 e381 100e
+</verb></tscreen>
+</enum>
+
+<sect> Setting <tt>ROOT_DEV</tt> for Firmware Fall-Back
+<p>
+In <tt>linux-2.4.x/fs/nfs/nfsroot.c</tt>, it reads
+<tscreen><verb>
+ROOT_DEV = MKDEV(UNNAMED_MAJOR, 255);
+</verb></tscreen>
+Maybe in the mtd case, <tt>ROOT_DEV</tt> can also be set by
+<tscreen><verb>
+ROOT_DEV = MKDEV(MTD_BLOCK_MAJOR, i);
+</verb></tscreen>
+
+<sect> Issues for mass production
+
+<p>
+The important variables are
+<enum>
+<item> The version of the bootloader is
+<tscreen><verb>
+RedBoot(tm) bootstrap and debug environment [ROM]
+Red Hat certified release, version 1.06 - built 17:46:27, Dec  5 2006
+</verb></tscreen>
+<item> MAC addresses must be changed to
+<tscreen><verb>
+RedBoot> set_npe_mac
+NPE mac: 00:30:ab:00:00:01
+OFDM mac: 00:30:ab:00:00:02
+</verb></tscreen>
+<item> Reset to factory default.
+</enum>
+
+<sect> Procedures to test snmp
+
+<p> Procedures are:
+<enum>
+<item> Install snmp package in your desktop. For Debian GNU/Linux, try
+the following command:
+<tscreen<verb>
+# apt-get update
+# apt-get install snmp
+</verb></tscreen>
+<item> Untar <tt>wpn824v3-buildtool/package/libsnmp.lrp</tt> into some
+directory in your desktop. Here we take <tt>/tmp/mibs</tt> as an example.
+<item> Set the following two environment variables:
+<tscreen<verb>
+$ export MIBDIRS=/tmp/mibs/usr/share/snmp/mibs
+$ export MIBS=all
+</verb></tscreen>
+<item> Now execute the following command:
+<tscreen<verb>
+$ snmpwalk -v 2c -c public 192.168.1.1 system
+</verb></tscreen>
+where <tt>192.168.1.1</tt> is the IP address of the SNMP daemon.
+<item> (Optional) the following command tells the oids which can be walked:
+<tscreen<verb>
+$ snmptranslate -Tp
+</verb></tscreen>
+</enum>
+
+<sect> Set hostname
+
+<p>
+<enum>
+<item> Set the desired hostname in <tt>/etc/hostname</tt>
+<item> Update the hostname string in kernel by
+<tscreen><verb>
+/bin/hostname -F /etc/hostname
+</verb></tscreen>
+<item> Verify that new hostname string in kernel by
+<tscreen><verb>
+/bin/hostname
+</verb></tscreen>
+or
+<tscreen><verb>
+cat /proc/sys/kernel/hostname
+</verb></tscreen>
+</enum>
+If hostname variable is not set in <tt>/etc/network/interfaces</tt>,
+pump will use <tt>gethostname()</tt> function in libc to obtain the
+hostname string stored in the kernel database. Please refer to
+<tt>pump-0.8.11/dhcp.c</tt>.
+
+<sect> auto-save-config in web cgi
+
+<p>There is an example about the topic "auto-save-config in cgi" : 
+<tscreen><verb>/userland-sources/wgt634u-gui/cgi/login_auto.cgi	(cvs ver 1.1.2.5)
+</verb></tscreen>
+<p>The needed changes in all cgi files are :
+<enum>
+<item> Include (source) the common-functions-cgi-file :<tt>/cgi/common_funcs.cgi</tt> (the 3rd line in example)
+<item> Run the function "<tt>need_save_config</tt>" (the 8th line in example) in cgi after some config files have been changed and you want them be save into flash.
+</enum>
+PS. when save-config, all files listed in <tt>/config/config.list</tt> will be saved into flash. It is impossible for only saving parts of files.
+
+<sect> kgdb Setup
+<p>
+<sect1>kgdb setup: preparing a kernel
+<p>
+<bf>1. Extract a kernel source </bf>
+<code>
+$ cd /mnt/work/build/old-pc 
+$ bunzip2 -c ~/linux-2.4.6.tar.bz2 | tar xvf - 
+$ mv linux linux-2.4.6-kgdb 
+</code>
+
+<bf>2. Apply kgdb patch</bf>
+<code>
+$ cd linux-2.4.6-kgdb 
+$ patch -p1 &lt;~/linux-2.4.6-kgdb.patch 
+</code>
+
+<bf>3. Configure the kernel</bf>
+<code>
+$ make xconfig or make menuconfig 
+</code>
+Configure drivers and other kernel options Goto "kernel hacking" 
+Enable "Remote (serial) kernel debugging with gdb" 
+This will enable debugging support in the kernel. 
+(Optional) Enable "Console messages through gdb (NEW)" 
+
+<bf>4. Build the kernel</bf>
+<code>
+$ make dep 
+$ make bzImage 
+</code>
+
+<bf>5. Copy the kernel to target machine</bf>
+<newline>
+It is assumed that the user who is working on the developement machine 
+has rsh permissions on the test machine for root account. 
+
+<code>
+$ rcp System.map testmach:/boot/System.map-2.4.6-kgdb 
+$ rcp arch/i386/boot/bzImage testmach:/boot/vmlinuz-2.4.6-kgdb 
+</code>
+
+You can transfer the files using other methods such as ftp or floppy disk.
+
+On test machine: 
+
+<bf>6. Add a lilo entry: </bf>
+<code>
+image=/boot/vmlinuz-2.4.6-kgdb 
+        label=kgdb 
+        read-only 
+        root=/dev/hda3 
+        append="gdb gdbttyS=1 gdbbaud=115200" 
+</code>
+
+<sect1> kgdb setup: connecting to a debug kernel
+<p>
+
+On developement machine: 
+<newline>
+<bf>1. Set appropriate speed for serial line. </bf>
+<code>
+$ stty ispeed 115200 ospeed 115200 &lt; /dev/ttyS0 
+</code>
+
+<bf>2. Start gdb. </bf>
+<p>
+It will take some time because vmlinux contains a lot of 
+debugging information. If you want to debug modules also, you'll need to 
+download a gdb from this site. Please refer to module debugging setup for 
+details. I have placed it at the path /usr/local/bin/gdbmod on my machine. 
+I change the name so that I don't use that gdb accidentally for application 
+debugging also. You can use the default gdb that comes with redhat 
+installation provided you don't want module debugging.
+
+<code>
+[amit@askii-pc amit]$ cd /mnt/work/build/old-pc/linux-2.4.6-kgdb 
+[amit@askii-pc linux-2.4.6-kgdb]$ gdbmod vmlinux 
+GNU gdb 20000204 
+Copyright 2000 Free Software Foundation, Inc. 
+GDB is free software, covered by the GNU General Public License, and you are 
+welcome to change it and/or distribute copies of it under certain conditions. 
+Type "show copying" to see the conditions. 
+There is absolutely no warranty for GDB.  Type "show warranty" for details. 
+This GDB was configured as "i686-pc-linux-gnu"... 
+(gdb) 
+</code>
+
+On test machine: <newline>
+<bf> 3. Select kgdb kernel from lilo prompt </bf>
+<p>
+The kernel will start and after doing some initializations, wait for gdb to 
+connect. It will write following prompt on the console: 
+
+Waiting for connection from remote gdb... 
+
+On developement machine: 
+
+<bf>4. Connect to the test machine using gdb command "target" </bf>
+<code>
+(gdb) target remote /dev/ttyS0
+Remote debugging using /dev/ttyS0
+breakpoint () at gdbstub.c:1153 
+1153    } 
+(gdb) 
+</code>
+
+<bf>5. Now gdb is connected to the kernel. </bf>
+<p>
+It is waiting for a command. Use the continue command to let the test kernel proceed. 
+
+<code>
+(gdb) c 
+Continuing. 
+
+The test kernel continues here and the system boots as usual. If console messages 
+through gdb was selected while configuring the kernel, console log will appear here 
+from gdb as follows: 
+PCI: PCI BIOS revision 2.10 entry at 0xfb230, last bus=0 
+PCI: Using configuration type 1 
+PCI: Probing PCI hardware 
+Limiting direct PCI/PCI transfers. 
+Activating ISA DMA hang workarounds. 
+isapnp: Scanning for PnP cards... 
+isapnp: No Plug & Play device found 
+Linux NET4.0 for Linux 2.4 
+Based upon Swansea University Computer Society NET3.039 
+Starting kswapd v1.8 
+</code>
+
+Now gdb is connected to the test kernel. If a kernel panic situation occurs, instead of declaring a panic, the kernel will first give control to gdb so that it the situation can be analyzed. 
+
+
+<sect1>Module debugging setup: loading a module in a test machine
+<p>
+   
+On test machine: 
+
+<p><bf>1. Copy the module files </bf><newline>
+from /lib/modules directory (or other locations) to test machine.
+
+<p><bf>2. insmod to insert a module.</bf>
+
+<sect1>Module debugging setup: loading a module file in gdb 
+<p><bf>Procedure to be followed after running the loadmodule.sh script:</bf><newline>
+For gdb to be able to use debugging information in a module object file 
+it has to be loaded in gdb. An object file is loaded in gdb with the gdb 
+command add-symbol-file. The gdb script generated by loadmodule.sh script 
+after loading a module file in the test kernel is sourced in gdb to load 
+the module object file in gdb. To force gdb to wait for a user command, 
+press Ctrl+C in the terminal running gdb on the developement machine. 
+Then source the file in gdb. 
+Following example shows the procedure. Gdb is assumed to be connected to 
+the test kernel. 
+
+User presses Ctrl + C. 
+<code>
+Program received signal SIGTRAP, Trace/breakpoint trap. 
+breakpoint () at gdbstub.c:1153 
+1153    } 
+(gdb) source /mnt/work/gdbscripts/loadtrfs 
+add symbol table from file "/mnt/work/build/old-pc/trfs/modules/trfs/trfs" at 
+        .text_addr = 0xc1808060 
+        .text.lock_addr = 0xc180968c 
+        .rodata_addr = 0xc18097a0 
+        __ksymtab_addr = 0xc1809a44 
+        .data_addr = 0xc1809bc0 
+(gdb) 
+</code>
+gdb is now all set for debugging the module trfs. We can continue here. 
+
+<code>
+(gdb) c 
+Continuing. 
+</code>
+
+<p><bf>Procedure to be followed for loading into gdb object files for modules not 
+loaded using the loadmodule.sh script:</bf><newline>
+A module may be loaded either automatically or using modprobe or insmod commands. 
+For modules which are not loaded using loadmodule.sh script, you'll have to extract 
+module information from the target machine and give it to gdb. Use the script 
+getsyms.sh on the target machine to get the information needed by gdb. The script 
+is available from downloads page. Let's say a kernel has a module audio.o loaded 
+in it. Run the script with module name as the argument as shown below.
+
+<code>
+[amitkale@askii-pc amitkale]$ bash getsyms.sh audio.o
+add-symbol-file audio.o 0xd00b4060 -s .rodata 0xd00bc9bc -s .bss 0x -s .data 0xd00bf4e0
+[amitkale@askii-pc amitkale]$
+</code>
+
+Supply the line printed by the script to gdb.
+<code>
+(gdb) add-symbol-file audio.o 0xd00b4060 -s .rodata 0xd00bc9bc -s .bss 0x -s .data 0xd00bf4e0
+add symbol table from file "audio.o" at
+        .text_addr = 0xd00b4060
+        .rodata_addr = 0xd00bc9bc
+        .bss_addr = 0x0
+        .data_addr = 0xd00bf4e0
+(y or n) y
+Reading symbols from audio.o...done.
+(gdb)
+</code>
+
+Now gdb is ready with the debugging information about the module, so you can place breakpoints in it and debug it.
+
+
+init_module function in a module is run by the time getsyms.sh is run on a machine, hence this procedure can't be used to debug init_module function. You have to run the loadmodule.sh script and follow the procedure corresponding to it.
+
+<sect>Debugging applications with gdbserver 
+<p>
+<sect1>Preparing the applications
+<p>
+<sect2> Preparing gdbserver
+<p>
+We can find gdbserver in the directory of "usb-router/usb-router-buildroot/build/gdb-5.2.cvs20020401.orig/gdb/gdbserver"
+after successfully compiling the kernel. Just copy gdbserver to the dir "bin" of initrd.
+
+<sect2> Preparing applications to be debugged
+<p>
+After compiling the applications with mipsel-elf-gcc having "-g" on, copy the applications to the dir "bin" or any other
+dirs can be located after the target is boot. 
+<p>
+Also, we need the compiled applications on the hosts.
+<p>
+
+
+<sect1>Running gdbserver on targets
+<p>
+After target reboots, make it sure that the target get one valid ip address.
+locate the application to be debugged, assume it called "app1".
+<code>
+     gdbserver <:port> app1 [other arguments to run app1]
+     (e.g., 
+     #gdbserver :4000 app1
+     )
+</code>
+Then gdbserver will loading "app1" to wait for incoming debugging request.
+<p>
+<sect1>Running mipsel-linux-gdb on hosts
+<p>
+Start X-Window on the hosts and open one term.
+Change to dir "/projects/ntsw-sw/bcm47xx/brcm/hndtools-mipsel-linux-3.0/bin/" and run "mipsel-linux-gdb"
+<code>
+     $ cd /projects/ntsw-sw/bcm47xx/brcm/hndtools-mipsel-linux-3.0/bin/
+     $ ./mipsel-linux-gdb /tftpboot/initrd/bin/app1
+</code>
+Then the symbols of "appl" will be loaded.
+And then we shall make one connection to the target running gdbserver:
+<code>
+     (gdb)target remote <target ip address><:port>
+     (e.g.,
+       (gdb) target remote 192.168.1.1:4000
+     )
+</code>
+If successfully connected, there may be something like this:
+<code>
+     [0x8700000] in _stext () 
+</code>
+Just add some breakpoints and type "c" to start debugging.
+<p>
+<sect1>Debugging Daemons using gdbserver
+<p>
+As we know, the application to be run as daemon will fork one child process and exit.
+So we shall modify the program like this:
+<p>
+   before modifying:
+<code>
+			...
+                           if (( fork()) == 0 )
+                        {
+                                auto int fl;
+                                int num_fds = getdtablesize();
+
+                                /* This is the child closing its file descriptors. */
+                                for (fl= 0; fl <= num_fds; ++fl)
+                                {
+                                        if ( fileno(stdout) == fl && use_output )
+                                                if ( strcmp(output, "-") == 0 )
+                                                        continue;
+                                        close(fl);
+                                }
+
+                                setsid();
+                        }
+                        else
+                                exit(0);
+
+			...
+</code>
+   After modifying:
+<code>
+			...
+                        if ((pid= fork()) == 0 )
+                        {
+                                auto int fl;
+                                int num_fds = getdtablesize();
+
+                                /* This is the child closing its file descriptors. */
+                                for (fl= 0; fl <= num_fds; ++fl)
+                                {
+                                        if ( fileno(stdout) == fl && use_output )
+                                                if ( strcmp(output, "-") == 0 )
+                                                        continue;
+                                        close(fl);
+                                }
+
+                                setsid();
+                        }
+                        else
+                                waitpid(pid,& status,0);
+				// comment out "exit(0)"
+			...
+</code>
+When main process of the application runs to "waitpid()",it will suspend. And  "mipsel-linux-gdb" will switch 
+us to child process, so we can trace the child process easily.
+<p>
+
+<sect> TCP/IP Protocol Stack
+
+<sect1>Function Call Diagram (Receive and Forward)
+<p>
+<tscreen><verb>
+
++------+
+| read |
++------+
+   ^
+   |
+   |
++----------+
+| sys_read |
++----------+
+   ^
+   |
+   |
++-----------+            +---------------------+
+| sock_read |            | tcp_rcv_established |
++-----------+            +---------------------+
+   ^                                ^
+   |                                |
+   |                                |
++--------------+            +---------------+       +-----------------------+
+| sock_recvmsg |            | tcp_v4_do_rcv |------>| tcp_rcv_state_process |
++--------------+            +---------------+       +-----------------------+
+   ^                                ^
+   |                                |
+   |                                |
++---------+                  +------------+
+| udp_rcv |                  | tcp_v4_rcv |
++---------+                  +------------+
+   ^                                ^
+   |                                |
+   |                                |
++---------------------------+       |
+| 2:ip_local_deliver_finish |-------+
++---------------------------+
+   ^
+   |
+   |
++-----------+
+| ip_defrag |
++-----------+
+   ^
+   |
+   |
++------------------+
+| ip_local_deliver |
++------------------+
+   ^
+   |
+   |
++----------------+                +------------+
+| ip_route_input |--------------->| ip_forward |
++----------------+                +------------+
+   ^                                    |
+   |                                    |
+   |                                    V
++-----------------+           +---------------------+
+| 1:ip_rcv_finish |           | 3:ip_forward_finish |
++-----------------+           +---------------------+
+   ^                                    |
+   |                                    |
+   |                                    V
++--------+   +---------+           +---------+
+| ip_rcv |   | arp_rcv |           | ip_send |----> To ip_fragment
++--------+   +---------+           +---------+
+   ^          /                         |
+   |         /                          |
+   |        /                           +---------> To ip_finish_output
+   |       /
+   |      /
++-------------------+  (if defined(CONFIG_BRIDGE)) && (skb->dev->br_port)
+| netif_receive_skb |-----------------------------------------------+
++-------------------+                                               |
+   ^                                                                v
+   |                                                        +---------------+
+   |							    | handle_bridge |
++-----------------+					    +---------------+
+| process_backlog |                                                 |
+| (via dev->poll) |                                                 v
++-----------------+					+----------------------+   
+   |                                                    | br_handle_frame_hook |
+   |                                                    |  (br_handle_frame)   |
+   |							+----------------------+
++---------------+					            |
+| net_rx_action | --+						    v
++---------------+   +- Registered		       +------------------------+  
+   ^                   by net_dev_init           +-----| br_handle_frame_finish |----+
+   |                  				 |     +------------------------+    |
+   |					+--------+                  |                +--------+
++------------+                          .    			    v                         |
+| do_softirq |		                v                +--------------------+               v
++------------+		       +------------------+      |  br_pass_frame_up  |         +------------+
+   ^                           | br_flood_forward |      +--------------------+         | br_forward |
+   .			       +------------------+	            |                   +------------+
+   .					.			    v                         |
++---------------------+			v	       +-------------------------+            v
+| __cpu_raise_softirq |		+----------------+     | br_pass_frame_up_finish |     +--------------+
++---------------------+		|    br_flood	 |     +-------------------------+     | __br_forward |
+   ^                            +----------------+                  |                  +--------------+
+   .				        .                           |                         |
+   .					v			    |                         v
++---------------------+		+----------------+		    |               +---------------------+
+| __netif_rx_schedule |		|  __br_forward  |		    |               | __br_forward_finish |
++---------------------+		+----------------+		    |               +---------------------+
+   ^                                    .                           |                         |
+   .					v			    |                         v
+   .			     +----------------------+		    |              +-----------------------+
++-------------------+	     |  __br_forward_finish |		    |              | __dev_queue_push_xmit |
+| netif_rx_schedule |	     +----------------------+		    |              +-----------------------+
++-------------------+	                .                           |                         |
+   ^                                    v			    |                         v
+   .			    +-----------------------+		    |              +-----------------------+
+   .			    | __dev_queue_push_xmit |		    |              | __dev_queue_push_xmit |
++------------------+        +-----------------------+		    |              +-----------------------+
+| __skb_queue_tail |	                .                           |                         |
++------------------+			v			    |                         v
+   ^                           +----------------+		    |                 +----------------+
+   |			       | dev_queue_xmit |(to (W)NIC	    |                 | dev_queue_xmit |
+   |			       +----------------+  driver)	    |                 +----------------+
++----------+		                                            |                         |
+| netif_rx |<-------------------------------------------------------+                         v
++----------+                                                                          +---------------+
+   ^                                                                                  | qdisc_restart |
+   |                                                                                  +---------------+
+   |
++----------------+
+| eth_type_trans |
++----------------+
+</verb></tscreen>
+
+<sect1>Function Call Diagram (Forward and Transmit)
+<p>
+<tscreen><verb>
+
+                                                     +-------+
+                                                     | write |
+                                                     +-------+
+                                                         |
+                                                         |
+                                                         V
+                                                   +-----------+
+                                                   | sys_write |
+                                                   +-----------+
+                                                         |
+                                                         |
+                                                         V
+                                                  +------------+
+                                                  | sock_write |
+                                                  +------------+
+                                                         |
+                                                         |
+                                                         V
+                                                 +--------------+
+                                                 | sock_sendmsg |
+                                                 +--------------+
+                                                         |
+                                                         |
+                                                         V
+                                                  +-------------+
+                                                  | udp_sendmsg |
+                                                  +-------------+
+                                                         |
+                                                         |
+                                                         V
++-------------+                                 +-----------------+
+| tcp_sendmsg |                                 | ip_route_output |
++-------------+                                 +-----------------+
+     |                                                   |
+     |                                                   |
+     V                                                   V
++--------------+                                 +---------------+
+| tcp_send_skb |                                 | ip_build_xmit |
++--------------+                                 +---------------+
+     |                                                   |
+     |                                                   |
+     V                                                   V
++------------------+                           +--------------------+
+| tcp_transmit_skb |                           | ip_build_xmit_slow |
++------------------+                           +--------------------+
+     |                                                   |
+     |                                                   + <---------------+
+     V                                                   V                 |
++---------------+                           +------------------------+     |
+| ip_queue_xmit |                           | fragment and copy data |     |
++---------------+                           +------------------------+     |
+     |                                                   |                 |
+     |                                                   |                 |
+     V                                                   V                 |
++-----------------+                               +-------------+          |
+| ip_route_output |                               | udp_getfrag |          |
++-----------------+                               +-------------+          |
+     |                                                   |                 |
+     |                                                   |                 |
+     V                                                   V                 |
++------------------+                         +------------------------+    |
+| 5:ip_queue_xmit2 |                         | 5:output_maybe_reroute |    |
++------------------+                         +------------------------+    |
+     |        |                                             |              |
+     |        +--------------------------------------+      +---------------
+     V                                               V      V
++-------------+                                    +-----------+
+| ip_fragment |                                    | ip_output |
++-------------+                                    +-----------+
+     |                                                   |
+     |                                                   |
+     V                                                   |
++------------------+                                     |
+| ip_finish_output |<------------------------------------+
++------------------+
+     |
+     |
+     V
++---------------------+
+| 4:ip_finish_output2 |
++---------------------+
+     |
+     |
+     V
++----------------+
+| dev_queue_xmit |
++----------------+
+     |
+     |
+     V
++-----------------+
+| hard_start_xmit |
++-----------------+
+</verb></tscreen>
+
+<sect1> Ethernet Bridge Function Call Hierarchy
+<p>
+The hierarchy of <tt>net_rx_action</tt> is as follows:
+<tscreen><verb>
+
+net_rx_action
+    |
+    +- process_backlog (via dev->poll)
+        |
+        +- netif_receive_skb
+            |
+            +- handle_bridge (bridge packet goes here)
+            |   |
+            |   +- br_handle_frame (via br_handle_frame_hook)
+            |
+            +- deliver_to_old_ones (ip layer packet goes here)
+                |
+                +- ip_rcv (via pt->func)
+</verb></tscreen>
+
+
+<sect1>Function Call Hierarchy
+<p>
+The hierarchy is as follows:
+<tscreen><verb>
+
+    |- print_conntrack
+    |
+    |- print_expect
+    |
+    |
+    |   |- check_for_demasq
+    |   |
+    |   |- invert_tuplepr
+    |   |
+    |   |- icmp_error_track
+    |   |
+    |   |
+    |   |   |- check_for_demasq
+    |   |   |
+    |   |   |- do_masquerade
+    |   |   |
+    |   |   |- struct nf_hook_ops ip_conntrack_in_ops
+    |   |   |
+    |   |   |
+    |   |   |           |- fini (ip_conntrack_standalone.c)
+    |   |   |           |
+    |   |   |           |- init (ip_conntrack_standalone.c)
+    |   |   |           |
+    |   |   |       |- init_or_cleanup (ip_conntrack_standalone.c)
+    |   |   |       |
+    |   |   |   |- struct nf_hook_ops ip_conntrack_local_out_ops
+    |   |   |   |
+    |   |   |- ip_conntrack_local
+    |   |   |
+    |   |- ip_conntrack_in
+    |   |
+    |- find_proto
+    |
+__find_proto
+</verb></tscreen>
+
+
+<p>
+The hierarchy of <tt>ip_conntrack</tt> module is as follows:
+<tscreen><verb>
+init (ip_conntrack_standalone.c)
+    |
+    |- init_or_cleanup (ip_conntrack_standalone.c)
+    |   |
+    |   |- ip_conntrack_init
+    |   |   |
+    |   |   |- nf_register_sockopt
+    |   |   |
+    |   |   |- struct ip_conntrack_protocol_udp
+    |   |
+    |   |- proc_net_create
+    |   |
+    |   |- nf_register_hook (struct nf_hook_ops ip_conntrack_in_ops)
+    |   |                    = { { NULL, NULL }, ip_conntrack_in, PF_INET,
+    |   |                        NF_IP_PRE_ROUTING, NF_IP_PRI_CONNTRACK }
+    |   |
+    |   |- nf_register_hook (struct nf_hook_ops ip_conntrack_local_out_ops)
+    |   |                    = { { NULL, NULL }, ip_conntrack_local, PF_INET,
+    |   |                        NF_IP_LOCAL_OUT, NF_IP_PRI_CONNTRACK }
+    |   |
+    |   |- nf_register_hook (struct nf_hook_ops ip_conntrack_out_ops)
+    |   |                    = { { NULL, NULL }, ip_refrag, PF_INET, 
+    |   |                        NF_IP_POST_ROUTING, NF_IP_PRI_LAST }
+    |   |
+    |   |- nf_register_hook (struct nf_hook_ops ip_conntrack_local_in_ops)
+    |   |                    = { { NULL, NULL }, ip_confirm, PF_INET,
+    |   |                        NF_IP_LOCAL_IN, NF_IP_PRI_LAST-1 }
+    |   |
+    |   |- struct nf_hook_ops ip_conntrack_local_out_ops
+            |
+            |- ip_conntrack_local
+                |
+                |- ip_conntrack_in
+                    |
+                    |- find_proto
+                        |
+                        |- __find_proto
+</verb></tscreen>
+
+<p>
+The hierarchy of <tt>iptables_nat</tt> module is as follows:
+<tscreen><verb>
+init (ip_nat_standalone.c)
+    |
+    |- init_or_cleanup (ip_nat_standalone.c)
+    |   |
+    |   |- ip_nat_rule_init
+    |   |   |
+    |   |   |- ipt_register_table(nat_table)
+    |   |   |
+    |   |   |- ipt_register_target(ipt_snat_reg)
+    |   |   |
+    |   |   |- ipt_register_target(ipt_dnat_reg)
+    |   |
+    |   |- ip_nat_init
+    |   |   |
+    |   |   |- list_append(protos, ip_nat_protocol_tcp)
+    |   |   |              = { { NULL, NULL }, "TCP", IPPROTO_TCP,
+    |   |   |                  tcp_manip_pkt, tcp_in_range, tcp_unique_tuple,
+    |   |   |                  tcp_print, tcp_print_range }
+    |   |   |
+    |   |   |- list_append(protos, ip_nat_protocol_udp)
+    |   |   |              = { { NULL, NULL }, "UDP", IPPROTO_UDP,
+    |   |   |                  udp_manip_pkt, udp_in_range, udp_unique_tuple,
+    |   |   |                  udp_print, udp_print_range }
+    |   |   |
+    |   |   |- list_append(protos, ip_nat_protocol_icmp)
+    |   |                  = { { NULL, NULL }, "ICMP", IPPROTO_ICMP,
+    |   |                      icmp_manip_pkt, icmp_in_range,
+    |   |                      icmp_unique_tuple, icmp_print,
+    |   |                      icmp_print_range }
+    |   |
+    |   |- proc_net_create
+    |   |
+    |   |- nf_register_hook (struct nf_hook_ops ip_conntrack_in_ops)
+    |   |                    = { { NULL, NULL }, ip_conntrack_in, PF_INET,
+    |   |                        NF_IP_PRE_ROUTING, NF_IP_PRI_CONNTRACK }
+    |   |
+    |   |- nf_register_hook (struct nf_hook_ops ip_conntrack_local_out_ops)
+    |   |                    = { { NULL, NULL }, ip_conntrack_local, PF_INET,
+    |   |                        NF_IP_LOCAL_OUT, NF_IP_PRI_CONNTRACK }
+    |   |
+    |   |- nf_register_hook (struct nf_hook_ops ip_conntrack_out_ops)
+    |   |                    = { { NULL, NULL }, ip_refrag, PF_INET, 
+    |   |                        NF_IP_POST_ROUTING, NF_IP_PRI_LAST }
+    |   |
+    |   |- nf_register_hook (struct nf_hook_ops ip_conntrack_local_in_ops)
+    |   |                    = { { NULL, NULL }, ip_confirm, PF_INET,
+    |   |                        NF_IP_LOCAL_IN, NF_IP_PRI_LAST-1 }
+    |   |
+    |   |- struct nf_hook_ops ip_conntrack_local_out_ops
+            |
+            |- ip_conntrack_local
+                |
+                |- ip_conntrack_in
+                    |
+                    |- find_proto
+                        |
+                        |- __find_proto
+</verb></tscreen>
+
+<sect1>FIB (Forward Information Base) Data Structures
+<p>
+<tscreen><verb>
+type = struct fib_table {
+    unsigned char tb_id;
+    unsigned int tb_stamp;
+    int (*tb_lookup)();
+    int (*tb_insert)();
+    int (*tb_delete)();
+    int (*tb_dump)();
+    int (*tb_flush)();
+    int (*tb_get_info)();
+    void (*tb_select_default)();
+    unsigned char tb_data[0];
+}
+
+type = struct fn_zone {
+    struct fn_zone *fz_next;
+    struct fib_node **fz_hash;
+    int fz_nent;
+    int fz_divisor;
+    u32 fz_hashmask;
+    int fz_order;
+    u32 fz_mask;
+}
+</verb></tscreen>
+
+<sect> Linux kernel boot-up process
+
+<p>
+<tscreen><verb>
++- start_kernel
+    |
+    +- lock_kernel
+    |
+    +- printk(linux_banner)
+    |
+    +- setup_arch
+    |
+    +- printk("Kernel command line: %s\n", saved_command_line)
+    |
+    +- parse_options(command_line)
+    |
+    +- trap_init
+    |
+    +- init_IRQ
+    |
+    +- sched_init
+    |
+    +- softirq_init
+    |
+    +- time_init
+    |
+    +- console_init
+    |
+    +- init_modules
+    |
+    +- kmem_cache_init
+    |
+    +- sti
+    |
+    +- calibrate_delay
+    |
+    +- /* some code to configure initrd */
+    |
+    +- mem_init
+    |
+    +- kmem_cache_sizes_init
+    |
+    +- pgtable_cache_init
+    |
+    +- fork_init(num_mappedpages)
+    |
+    +- proc_caches_init
+    |
+    +- vfs_caches_init(num_physpages)
+    |
+    +- buffer_init(num_physpages)
+    |
+    +- page_cache_init(num_physpages)
+    |
+    +- signals_init
+    |
+    +- proc_root_init
+    |
+    +- check_bugs
+    |
+    +- printk("POSIX conformance testing by UNIFIX\n")
+    |
+    +- smp_init
+    |
+    +- ipc_init
+    |
+    +- rest_init
+        |
+        +- kernel_thread
+            |
+            +- init
+                |
+                +- lock_kernel
+                |
+                +- do_basic_setup
+		|   |
+		|   +- sysctl_init
+		|   |
+		|   +- acpi_init
+		|   |
+		|   +- pci_init
+		|   |   |
+		|   |   +- pcibios_init [i386]
+		|   |       |
+		|   |       +- pcibios_scan_root [i386]
+		|   |       |   |
+		|   |       |   +- pci_scan_bus
+		|   |       |       |
+		|   |       |       +- pci_alloc_primary_bus
+		|   |       |       |   |
+		|   |       |       |   +- pci_bus_exists
+		|   |       |       |   |
+		|   |       |       |   +- pci_alloc_bus
+		|   |       |       |
+		|   |       |       +- pci_do_scan_bus
+		|   |       |           |
+		|   |       |           +- pci_scan_slot
+		|   |       |
+		|   |       +- pcibios_sort
+		|   |
+		|   +- mca_init
+		|   |
+		|   +- sock_init
+		|   |
+		|   +- start_context_thread
+		|   |
+		|   +- do_initcalls
+		|       |
+		|       +- rtl8139_init_module
+		|           |
+		|           +- pci_module_init
+		|               |
+		|               +- pci_register_driver
+                |                   |
+                |                   +- pci_announce_device
+                |                       |
+                |                       +- pci_match_device
+                |                       |
+                |                       +- rtl8139_init_one [via drv->probe]
+                |
+                +- prepare_namespace
+		|
+		+- free_initmem
+		|
+		+- unlock_kernel
+</verb></tscreen>
+
+<sect> MAC address of bridge device
+
+<sect1> Algorithm to determine the MAC address
+<p>
+This information can be found in <tt>linux-2.4.x/net/bridge/br_stp_if.c</tt>.
+In function <tt>br_stp_recalculate_bridge_id</tt>, the bridge device will
+use the smallest MAC address among that of all interfaces.
+
+However, Broadcom added a member in <tt>struct net_bridge</tt>
+<tscreen><verb>
+bridge_id                       preferred_id
+</verb></tscreen>
+In this way, the mac address of bridge can be set by
+<tt>dev->set_mac_address</tt>
+When executing <tt>br_stp_recalculate_bridge_id</tt>, the mac address
+of each bridge port is compared with <tt>br->preferred_id.addr</tt>.
+If there is any match found, then the bridge will use this address
+as its mac address.
+
+<sect1> MAC related fuctions
+
+<p> The first MAC related functions is <tt>eth_header_cache</tt>.
+Following is a typical call stack frame in standard 2.4.20 kernel.
+<tscreen><verb>
+Breakpoint 4, eth_header_cache (neigh=0xcb9f80a0, hh=0xc13b0e20) at eth.c:220
+(gdb) bt
+#0  eth_header_cache (neigh=0xcb9f80a0, hh=0xc13b0e20) at eth.c:220
+#1  0xc01de0e0 in neigh_hh_init (n=0xcb9f80a0, dst=0xcb8ca200, protocol=8)
+    at neighbour.c:899
+#2  0xc01de27a in neigh_resolve_output (skb=0xc13a2800) at neighbour.c:955
+#3  0xc01ee1ee in ip_output (skb=0xc13a2800) at ip_output.c:176
+#4  0xc01eee43 in ip_build_xmit (sk=0xc1398060, 
+    getfrag=0xc0209124 <icmp_glue_bits>, frag=0xc12a9eb0, length=64, 
+    ipc=0xc12a9e94, rt=0xcb8ca200, flags=64) at ip_output.c:116
+#5  0xc020930e in icmp_reply (icmp_param=0xc12a9eb0, skb=0xcb938080)
+    at icmp.c:371
+#6  0xc02099ed in icmp_echo (skb=0xcb938080) at icmp.c:749
+#7  0xc0209cf9 in icmp_rcv (skb=0xcb938080) at icmp.c:937
+#8  0xc01eb94b in ip_local_deliver (skb=0xcb938080) at ip_input.c:262
+#9  0xc01ebd19 in ip_rcv (skb=0xcb938080, dev=0xcb8e8008, pt=0xc029d960)
+    at ip_input.c:367
+#10 0xc01db092 in netif_receive_skb (skb=0xcb938080) at dev.c:1483
+#11 0xc01db12d in process_backlog (blog_dev=0xc02c36ec, budget=0xc12a9fbc)
+    at dev.c:1516
+#12 0xc01db23f in net_rx_action (h=0xc02c35b0) at dev.c:1578
+#13 0xc011cb4b in do_softirq () at softirq.c:90
+#14 0xc011cfb5 in ksoftirqd (__bind_cpu=0x0) at softirq.c:389
+</verb></tscreen>
+
+<p> Another MAC related functions is <tt>eth_header</tt>.
+Following is a typical call stack frame in standard 2.4.20 kernel.
+Note that the source mac address could be set in <tt>eth_header</tt>
+if <tt>saddr</tt> is set to <tt>NULL</tt> (that is <tt>saddr=0x0</tt>).
+In this case, the device's MAC address (for example, br0) will be
+used as the source address.
+<tscreen><verb>
+(gdb) bt
+#0  eth_header (skb=0xc13a2e00, dev=0xcb8e8008, type=2048, daddr=0xcb9f80c4, 
+    saddr=0x0, len=84) at /home/changcs/linux-2.4.20/include/linux/skbuff.h:817
+#1  0xc01de2e9 in neigh_resolve_output (skb=0xc13a2e00) at neighbour.c:960
+#2  0xc01ee1df in ip_output (skb=0xc13a2e00) at ip_output.c:174
+#3  0xc01eee43 in ip_build_xmit (sk=0xc1398060, 
+    getfrag=0xc0209124 <icmp_glue_bits>, frag=0xc12a9eb0, length=64, 
+    ipc=0xc12a9e94, rt=0xcb8ca200, flags=64) at ip_output.c:116
+#4  0xc020930e in icmp_reply (icmp_param=0xc12a9eb0, skb=0xc13a2ec0)
+    at icmp.c:371
+#5  0xc02099ed in icmp_echo (skb=0xc13a2ec0) at icmp.c:749
+#6  0xc0209cf9 in icmp_rcv (skb=0xc13a2ec0) at icmp.c:937
+#7  0xc01eb94b in ip_local_deliver (skb=0xc13a2ec0) at ip_input.c:262
+#8  0xc01ebd19 in ip_rcv (skb=0xc13a2ec0, dev=0xcb8e8008, pt=0xc029d960)
+    at ip_input.c:367
+#9  0xc01db092 in netif_receive_skb (skb=0xc13a2ec0) at dev.c:1483
+#10 0xc01db12d in process_backlog (blog_dev=0xc02c36ec, budget=0xc12a9fbc)
+    at dev.c:1516
+#11 0xc01db23f in net_rx_action (h=0xc02c35b0) at dev.c:1578
+#12 0xc011cb4b in do_softirq () at softirq.c:90
+#13 0xc011cfb5 in ksoftirqd (__bind_cpu=0x0) at softirq.c:389
+</verb></tscreen>
+
+<p>In addition, <tt>ether_setup</tt> can set <tt>dev->set_mac_address</tt>
+when driver is initialized. Following is a typical call stack frame in
+standard 2.4.20 kernel.
+<tscreen><verb>
+#0  ether_setup (dev=0xc1291400) at net_init.c:411
+#1  0xc01adba0 in alloc_netdev (sizeof_priv=260, mask=0xc0242671 "eth%d",
+    setup=0xc01adeec <ether_setup>) at net_init.c:95
+#2  0xc01add36 in alloc_etherdev (sizeof_priv=260) at net_init.c:230
+#3  0xc01ae558 in rtl8139_init_board (pdev=0xc12afc00, dev_out=0xc1257f74)
+    at 8139too.c:765
+#4  0xc01ae86d in rtl8139_init_one (pdev=0xc12afc00, ent=0xc0274a8c)
+    at 8139too.c:947
+#5  0xc01cae11 in pci_announce_device (drv=<incomplete type>, dev=0xc12afc00)
+    at pci.c:642
+#6  0xc01cae77 in pci_register_driver (drv=<incomplete type>) at pci.c:669
+#7  0xc02b320e in rtl8139_init_module ()
+    at /home/changcs/linux-2.4.20/include/linux/pci.h:691
+#8  0xc02a4754 in do_initcalls () at init/main.c:455
+#9  0xc02a479e in do_basic_setup () at init/main.c:539
+#10 0xc010503a in init (unused=0x0) at init/main.c:555
+</verb></tscreen>
+
+<sect> Pppd function overview
+
+<p> In main():404
+<tscreen><verb>
+        /*
+         * If we're doing dial-on-demand, set up the interface now.
+         */
+if (demand) {
+        /*
+         * Open the loopback channel and set it up to be the ppp interface.
+         */
+        tdb_writelock(pppdb);
+        fd_loop = open_ppp_loopback();
+        set_ifunit(1);
+        tdb_writeunlock(pppdb);                           
+
+        /*
+         * Configure the interface and mark it up, etc.
+         */
+        demand_conf();
+    }
+</verb></tscreen>
+
+<sect> PCI
+
+<p>
+In this chapter, we will discuss how PCI works with Linux kernel.
+<p>
+PCI(Peripheral Component Interconnect) is a standard which describes how a system works with the peripheral components. Below disgram is an example of PCI based system.
+<tscreen><verb>
+            (PCI Bus 0)       (PCI Bus 1)        (PCI Bus 2)
+                 |                 |                  |
+                 |    +-------+	   |  +---------+     |
+                 +----+ Video |	   |  |   PCI   |     |
+                 |    +-------+	   +--+  Bridge +-----+
+      +-----+    |		   |  +---------+     |
+      | CPU +----+		   |		      |
+      +-----+    |		   |		      |
+                 |   +---------+   |		      |   +-------+
+                 +---+   PCI   +---+		      +---+ Sound |
+                 |   |  Bridge |   |		      |   | Card  | 
+                 |   +---------+   |   +----------+   |   +-------+
+                 |                 +---+ Ethernet |   |
+		 |                 |   +----------+   |
+                 |		   |	              |
+            (PCI Bus 0)       (PCI Bus 1)        (PCI Bus 2)
+</verb></tscreen>
+<sect1> PCI Configuration
+<p>
+<sect2> PCI Configuration Header
+<p>
+PCI has a standard configuration header for system identifing peripheral devices by accessing the registers on configuration header. Below diagram is the standardized PCI configuration header.
+<tscreen><verb>
+     0               15              31
+     +---------------+---------------+
+0x00 |  Verdor ID    |   Device ID   |
+     +---------------+---------------+
+0x04 | Command Reg   |   Status Reg  |
+     +-------+-------+---------------+
+0x08 |Rev. ID|        Class Code     |      Rev.ID : Revision ID
+     +-------+-------+-------+-------+	    C.L.   : Cache Line
+0x0C |  C.L. |  L.T. |  H.T. | BIST  |      L.T.   : Latency Timer
+     +-------+-------+-------+-------+      H.T.   : Herader Type
+0x10 |        Base Address 0         |      
+     +-------------------------------+
+0x14 |        Base Address 1         |
+     +-------------------------------+
+0x18 |        Base Address 2         |
+     +-------------------------------+
+0x1C |        Base Address 3         |
+     +-------------------------------+
+0x20 |        Base Address 4         |
+     +-------------------------------+
+0x24 |        Base Address 5         |
+     +-------------------------------+
+0x28 |      CardBus CIS pointer      |
+     +-------------------------------+
+0x2C | Subsystem V.ID| Subsystem D.ID|      V.ID   : Vendor ID
+     +---------------+---------------+      D.ID   : Device ID
+0x30 |  Expansion ROM Base Address   |
+     +-------------------------------+
+0x34 |            Reserved           |
+     +-------------------------------+
+0x38 |            Reserved           |
+     +-------+-------+-------+-------+
+0x3C | IRQ L.| IRQ P.|Min_Gnt|Max_Lat|      IRQ L. : IRQ Line
+     +-------------------------------+      IRQ P. : IRQ Pin
+
+</verb></tscreen>
+<p>
+A system look up registers Vendor ID, Device ID and Class Code to identify device. For differentiating similar devices, Subsytem Verdor ID and Subsytem Device ID would be set by Vendor. 
+<descrip>
+<tag/Vendor ID/ is a unique number describing the producer of the PCI device, like intel's Vendor ID is 0x8086 and Atheros's is 0x168C.
+<tag/Device ID/ is a unique number describing the device itself, like Atheros ar5212 chip has a Device ID of 0x0013.
+<tag/Base Addresses/ determine the amount, type and location of PCI I/O and PCI memory space that the device can use.
+</descrip>
+
+<sect1>i386 PCI Config Request
+<p>
+The PCI spec originally defined two configuration mechanisms for i386 PCs. Later specs have done away with Configuration Mechanism Two.
+<p>
+Configuration Mechanism One has two IO port rages associated with it. The address port(0xcf8-0xcfb) and the data port(0xcfc-0xcfc). A configuration cycle consists of writing to the address port to specify which device and register you want to access and then reading or writing the data to the data port.
+<p>
+The format of the data written to the address port is as follows:
+<table loc="ht">
+<tabular ca="|c|c|"><hline>                      
+ <bf/Bits/   |     <bf/Description/  		                  |@
+   0..1      | 00b (always 0)	                                  |@
+   2..7      | Which 32-bit space in the config space to access   |@
+   8..10     | Device function                                    |@
+   11..15    | Device Number                                      |@
+</tabular>
+<caption><label id="TableRef"></caption>
+</table>
+
+<sect1> PCI Addressing
+<p>
+<sect2> PCI I/O and PCI Memorry Addresses
+<p>
+<descrip>
+<tag/PCI Memory Space/
+<p>
+<tscreen><verb>
+    31                          4 3 21 0
+    +----------------------------+-+--+-+
+    |          Base Address      | |  |0|
+    +----------------------------++++-+-+
+                                  | |
+                 prefetchable<----+ +---->Type
+
+</verb></tscreen>
+<tag>PCI I/O Space</tag>
+<p>
+<tscreen><verb>
+     31                            2 1 0
+     +------------------------------+-+-+
+     |          Base Address        | |1|
+     +------------------------------+++-+
+                                     | 
+                        Reserved<----+ 
+
+</verb></tscreen>
+</descrip>
+<sect1> PCI Initialization on Linux
+<p>
+<sect2> The Linux Kernel PCI Data Structures
+<p>
+<tscreen><verb>
+
+       pci_bus(0)
+    +------------+
+    |  parent    |
+    |  children  +--+
+    |  next      |  |
+    |  self      |   \
+    |  devices   +-------+
+    |            |   /   |
+    +------------+  |    |
+                    |    |     pci_dev          pci_dev
+		    |	 +--> +--------+ +---> +--------+
+		    |	      | bus    | | +-> | bus    |
+		    |	      | sibling| | |   | sibling|
+       +------------+	      | next   +-+ |   | next   |
+       |	    	      |	       |   |   |        |
+       |	    	      +--------+   |   +--------+
+       |	    	       (Video)     |   (PCI Bridge)
+       |			       	   |
+       |				   |
+       |     pci_bus(1)                    |
+       +--->+------------+		   |			    	    
+            |  parent    |		   |				    
+	    |  children  +--+              |
+	    |  next	 |   \             |
+	    |  self      +-----------------+   
+	    |  devices   +-------+
+	    |            |   /   |
+	    +------------+  |    |
+		            |    |
+			    |    |      pci_dev          pci_dev
+			    |	 +---->+--------+ +---> +--------+
+			    |	       | bus    | | +-> | bus    |
+			    |	       | sibling| | |   | sibling|
+			    |	       | next   +-+ |   | next   |
+			    |	       |        |   |   |        |
+			    |	       +--------+   |   +--------+
+			    |	       (Ethernet)       (PCI Bridge)
+			    |
+			    V
+</verb></tscreen>
+<sect2> The Discussion of PCI Functions Supported by Linux Kernel <label id="pci-func">
+<p>
+<descrip>
+<tag/int pci_read_config_byte(struct pci_dev *dev, int where, u8 *val);/
+<p>
+<tag/int pci_read_config_word(struct pci_dev *dev, int where, u16 *val);/
+<p>
+<tag/int pci_read_config_dword(struct pci_dev *dev, int where, u32 *val);/
+<p>
+Read one, two, or four bytes from the configuration space of the device identified by <tt/dev/
+<p>
+<tag/int pci_write_config_byte(struct pci_dev *dev, int where, u8 val);/
+<p>
+<tag/int pci_write_config_word(struct pci_dev *dev, int where, u16 val);/
+<p>
+<tag/int pci_write_config_dword(struct pci_dev *dev, int where, u32 val);/
+<p>
+Write one, two, or four bytes to the configuration space of the device identified by <tt/dev/. In kernel 2.4.20, the above six functions are defined in <tt>driver/pci/pci.c</tt> from line 868 to 885.
+<p>
+<code>
+868 #define PCI_OP(rw,size,type) \
+869 int pci_##rw##_config_##size (struct pci_dev *dev, int pos, type value) \
+870 {                                                                       \
+871         int res;                                                        \
+872         unsigned long flags;                                            \
+873         if (PCI_##size##_BAD) return PCIBIOS_BAD_REGISTER_NUMBER;       \
+874         spin_lock_irqsave(&amp;pci_lock, flags);                            \
+875         res = dev->bus->ops->rw##_##size(dev, pos, value);              \
+876         spin_unlock_irqrestore(&amp;pci_lock, flags);                       \
+877         return res;                                                     \
+878 }
+879 
+880 PCI_OP(read, byte, u8 *)
+881 PCI_OP(read, word, u16 *)
+882 PCI_OP(read, dword, u32 *)
+883 PCI_OP(write, byte, u8)
+884 PCI_OP(write, word, u16)
+885 PCI_OP(write, dword, u32)
+</code>
+<p>
+<tag/int pci_enable_device(struct pci_dev *dev);/
+<p>
+Enable the device <tt/dev/.
+<p>
+<tag/int pci_disable_device(struct pci_dev *dev);/
+<p>
+As name implied, this function disables the device <tt/dev/.
+<p>
+<tag/void pci_set_master(struct pci_dev *dev);/
+<p>
+Enables bus-mastering for device <tt/dev/. Devices are set to bus master to take control of the bus, in order to transfer its data to and from the computer's RAM. Multiple bus masters can coexist in a single system, as long as they leave enough time for one another to operate; this is why it is sometimes necessary to scale back video or SCSI acceleration
+<p>
+<tag/int pci_set_dma_mask(struct pci_dev *dev, u64 mask);/
+<p>
+This function returns 0 with given mask if DMA can be supported; otherwise -EIO is returned.
+</descrip>
+
+<sect> Estimating Virtual Memory Usage of a Process
+
+<p>This infomation can be found by
+<tscreen><verb>
+# cat /proc/??/status
+</verb></tscreen>
+and read the value of VmRSS.
+<sect> Using GDB to debug Madwifi (Wireless driver)
+
+<sect1> Preparations
+<p>
+<enum>
+<item> The kernel source version on Atheros LSDK 1.1 is 2.4.25, hence, we also focus on 2.4.25. Please get the Linux kernel source 2.4.25 from Internet or any place you can get it.
+<item> Patch the GDB patch for 2.4.25. Please get it <htmlurl url="http://172.16.5.244/~spencer/linux-2.4.23-kgdb-1.9.patch" name="here.">. This patch was modified to fix the conflict between gdb and encryption feature.
+<item> Enable 
+<tscreen><verb>
+Kernel hacking   --->
+     [*] KGDB: Remote (serial) kernel debugging with gdb
+</verb></tscreen>
+<item> Enable 
+<tscreen><verb>
+Cryptographic options   --->
+     <*> Cryptographic API
+     [*]   HMAC support
+     [*]   MD4 digest algorithm  
+     [*]   MD5 digest algorithm  
+     [*]   SHA1 digest algorithm 
+     [*]   SHA256 digest algorithm  
+     [*]   SHA384 and SHA512 digest algorithms       
+     [*]   DES and Triple DES EDE cipher algorithms  
+     [*]   Blowfish cipher algorithm
+     [*]   Twofish cipher algorithm 
+     [*]   Serpent cipher algorithm 
+     [*]   AES cipher algorithms    
+     [*]   CAST5 (CAST-128) cipher algorithm  
+     [*]   CAST6 (CAST-256) cipher algorithm  
+     [*]   Deflate compression algorithm  
+</verb></tscreen>
+Those features are needed for the encryption in madwifi. I do not verify which features are not needed yet, hence enable all first.:)
+</enum>
+
+<sect1> Put madwifi into kernel source
+<p>
+<enum>
+<item> First time, excute <tt>install.sh ${KERNEL_PATH}</tt>, which is in <tt>madwifi</tt>/patch/2.4/, the <tt>madwifi</tt> is the location where you put the madwifi source code checked out from cvs userland-sources/madwifi-forge. Please replace the <tt>${KERNEL_PATH}</tt> with the location where the patched kernel source is. For example:
+<tscreen><verb>
+    $ ./install.sh /home/spencer/kgdb/linux-2.4.25-KGDB
+</verb></tscreen> 
+<item> At first time, some patch actions are for Makefile and Config.in in kernel source. Those are not needed when we just want to copy modified madwifi code into kernel. Therefore, in such case, please execute <tt>update.sh ${KERNEL_PATH}</tt>, which is also in <tt>madwifi</tt>/patch/2.4/. For example:
+<tscreen><verb>
+    $ ./update.sh /home/spencer/kgdb/linux-2.4.25-KGDB
+</verb></tscreen> 
+</enum>
+
+<sect1> Enable Madwifi feature in Linux kernel 
+<p>
+<enum> 
+<item> Execute <tt>make menuconfig</tt> in kernel source directory.
+<item> Enable
+<tscreen><verb>
+    Networking options  --->
+	 <*> 802.11 State machine
+</verb></tscreen>
+<item> Enable
+<tscreen><verb>
+    Network device support  --->
+	 Wireless LAN (non-hamradio)  --->
+	      <*>   Atheros cards
+</verb></tscreen>
+</enum>
+
+<sect1> Build kernel image
+<p>
+For building kernel image and the steps to setup kgdb, please refer to <htmlurl url="http://172.16.5.244/~spencer/doc/usb-router-14.html" name="kgdb setup.">
+
+<sect> Creating a certificates for mini_httpds with OpenSSL
+
+<p>
+Following are some makefile rules copied from <tt>mini_httpd-1.19.tar.gz.</tt>
+<tscreen><verb>
+cert: mini_httpd.pem
+mini_httpd.pem: mini_httpd.cnf
+openssl req -new -x509 -days 365 -nodes -config mini_httpd.cnf -out mini_httpd.pem -keyout mini_httpd.pem
+openssl x509 -subject -dates -fingerprint -noout -in mini_httpd.pem
+chmod 600 mini_httpd.pem
+</verb></tscreen>
+Note that only the first command is required. The second command is only used
+to display certificate information.
+
+<p>
+Following are copied from <tt>mini_httpd.8.</tt>
+<tscreen><verb>
+You can also create one for yourself, using the openssl tool.  Step one
+- create the key and certificate request:
+   openssl req -new > cert.csr
+Step two - remove the passphrase from the key:
+   openssl rsa -in privkey.pem -out key.pem
+Step three - convert the certificate request into a signed certificate:
+   openssl x509 -in cert.csr -out cert.pem -req -signkey key.pem -days  365
+This  creates  four files.  The ones you want are cert.pem and key.pem.
+You don't need cert.csr and privkey.pem, and may remove them.
+</verb></tscreen>
+
+<p>
+Following are copied from <tt>CA.pl</tt> man page.
+<tscreen><verb>
+Create a CA hierarchy:
+
+CA.pl -newca
+
+Complete certificate creation example: create a CA, create a request,
+sign the request and finally create a PKCS#12 file containing it.
+
+CA.pl -newca
+CA.pl -newreq
+CA.pl -signreq
+CA.pl -pkcs12 "My Test Certificate"
+</verb></tscreen>
+
+By combining these three instruction sets, the complete steps are:
+
+<sect1> Step 1: In the Certificate Authority PC
+
+<p>
+<enum>
+<item> Create a CA hierarchy:
+<tscreen><verb>
+mkdir ~/myca
+cd ~/myca
+/usr/lib/ssl/misc/CA.pl -newca
+</verb></tscreen>
+<item> A CA certificate can be found in <tt>~/myca/demoCA/cacert.pem.</tt>
+This CA certificate can be publicly distributed such that any one trusting
+this CA can import it into their Mozilla Web browsers.
+</enum>
+
+<sect1> Step 2: In the webserver PC
+
+<p>
+<enum>
+<item> create the key and certificate signing request (CSR)
+<tscreen><verb>
+openssl req -new -nodes -config mini_httpd.cnf -out mini_httpd.csr -keyout privkey.pem
+</verb></tscreen>
+where a valid <tt>mini_httpd.cnf</tt> looks like
+<tscreen><verb>
+# create RSA certs - Server
+
+RANDFILE = mini_httpd.rnd
+
+[ req ]
+default_bits = 1024
+encrypt_key = yes
+distinguished_name = req_dn
+x509_extensions = cert_type
+
+[ req_dn ]
+countryName = Country Name (2 letter code)
+countryName_default             = PL
+countryName_min                 = 2
+countryName_max                 = 2
+
+stateOrProvinceName             = State or Province Name (full name)
+stateOrProvinceName_default     = Some-State
+
+localityName                    = Locality Name (eg, city)
+
+0.organizationName              = Organization Name (eg, company)
+0.organizationName_default      = Mini Webservice Ltd
+
+organizationalUnitName          = Organizational Unit Name (eg, section)
+#organizationalUnitName_default =
+
+0.commonName                    = Common Name (FQDN of your server)
+
+# To create a certificate for more than one name uncomment:
+# 1.commonName                  = DNS alias of your server
+# 2.commonName                  = DNS alias of your server
+# ...
+# See http://home.netscape.com/eng/security/ssl_2.0_certificate.html
+# too see how Netscape understands commonName.
+
+[ cert_type ]
+nsCertType = server
+</verb></tscreen>
+Note that <tt>commonName</tt>, when prompted by openssl, is the FQDN of
+your server.
+<item> Submit the CSR <tt>mini_httpd.csr</tt> to CA.
+</enum>
+
+<sect1> Step 3: In the Certificate Authority PC
+
+<p>
+<enum>
+<item> Change to our CA directory.
+<tscreen><verb>
+cd ~/myca
+</verb></tscreen>
+<item> Rename the received CSR to <tt>newreq.pem.</tt>
+<item> convert the certificate request into a signed certificate by
+<tscreen><verb>
+/usr/lib/ssl/misc/CA.pl -signreq
+</verb></tscreen>
+<item> Send back <tt>newcert.pem</tt> back to the webserver.
+</enum>
+
+<sect1> Step 4: In the webserver PC
+
+<p>
+Combine <tt>privkey.pem</tt> and signed certificate
+<tt>newcert.pem</tt> into a single <tt>mini_httpd.pem.</tt>
+
+<sect>How to extend SNMP agents with Net-SNMP
+<p>
+This section is extracted from lecture of J. Won-Ki Hong
+<htmlurl url="mailto:jwkhong@postech.ac.kr" Name="(Email:jwkhong@postech.ac.kr)">
+
+<sect1>Define a private MIB
+<p>Example of Cluster MIB(<tt>cluster.my</tt>)
+<tscreen><verb>
+-- Defines cluster-MIB for Load Cluster Management System
+--
+--  April , 2003 by  Mi-jung Choi
+
+Cluster-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+     experimental, IpAddressFROM RFC1155-SMI
+     OBJECT-TYPE    FROM SNMPv2-SMI
+     DisplayString  FROM SNMPv2-TC;   
+
+     cluster	    OBJECT IDENTIFIER ::= { experimental 1 }    
+
+     generalInfo    OBJECT IDENTIFIER ::= { cluster 1 }     
+
+clusterName OBJECT-TYPE
+     SYNTAX  DisplayString
+     ACCESS  read-write
+     STATUS  current  
+     DESCRIPTION
+     "cluster Name"
+     ::= { generalInfo 1}   
+
+lbType OBJECT-TYPE
+     SYNTAX INTEGER   
+     {   
+          lvs-nat(0),
+          lvs-dr(1),
+          lvs-tun(2)
+     }
+     ACCESS read-write 
+     STATUS current
+     DESCRIPTION                           
+     "Load Balancer Method"
+     ::= { generalInfo 2}   
+     
+adminName OBJECT-TYPE
+     SYNTAX  DisplayString
+     ACCESS  read-write 
+     STATUS  current
+     DESCRIPTION                           
+     "admin name"
+     ::= { generalInfo 3}
+     
+loadBalancer OBJECT IDENTIFIER ::= { cluster 3 } 
+
+serviceTable OBJECT-TYPE
+     SYNTAX  SEQUENCE OF ServiceEntry
+     ACCESS  not-accessible
+     STATUS  mandatory
+     DESCRIPTION
+           "serviceTable"
+     ::= { loadBalancer 1 }
+                                                                            
+serviceEntry   OBJECT-TYPE
+     SYNTAX    ServiceEntry
+     ACCESS    not-accessible
+     STATUS    mandatory
+     DESCRIPTION
+               "serviceEntry"
+     INDEX   { srIndex }
+     ::= { serviceTable 1 }
+
+ServiceEntry ::= SEQUENCE {
+	     srIndex	  INTEGER, 
+	     srVirtualIP  IpAddress,
+	     srPort       INTEGER,  
+             srProtocol   INTEGER
+     }
+     srIndex	    OBJECT-TYPE
+     SYNTAX	    INTEGER
+     ACCESS	    read-only
+     STATUS	    mandatory
+     DESCRIPTION
+                  ""
+     ::= { serviceEntry 1 }
+ 
+srVirtualIP OBJECT-TYPE
+     SYNTAX	IpAddress
+     ACCESS	read-write 
+     STATUS	current
+     DESCRIPTION
+	"Load Balancer Virtual IP"
+     ::= { serviceEntry 2 }
+	
+srPort      OBJECT-TYPE
+     SYNTAX  INTEGER 
+     ACCESS  read-write
+     STATUS  mandatory
+     DESCRIPTION
+            "service port"
+     ::= { serviceEntry 3 }
+    
+srProtocol OBJECT-TYPE
+     SYNTAX     INTEGER     
+     {     
+	tcp(0),
+	udp(1) 
+     }
+     ACCESS    read-write
+     STATUS    mandatory
+     DESCRIPTION
+               "service protocol"
+     ::= { serviceEntry 4 }   
+
+END
+</verb></tscreen>
+<sect1> Install SNMP perl module for using <tt>mib2c</tt>.
+
+<p>
+<tscreen><verb>
+cd net-snmp-5.1.1
+cd perl
+perl Makefile.PL -NET-SNMP-CONFIG="sh ../net-snmp-config" -NET-SNMP-IN-SOURCE=true 
+make 
+make test
+make install
+</verb></tscreen>
+<sect1> Compile the private MIB file using <tt>mib2c</tt>.
+<p>
+<tscreen><verb>
+cd net-snmp-5.1.1
+cd local
+mkdir cluster
+copy the private mib in the current directory
+ex) cp ~mjchoi/cluster.my ./cluster.my
+export MIBS=ALL
+MIBS=./cluster.my
+mib2c -c mib2c.scalar.conf generalInfo
+mib2c -c mib2c.scalar.conf currentStatus
+mib2c -c mib2c.array-user.conf loadBalancer
+mv generalInfo.* cluster
+mv currentStatus.* cluster
+mv loadBalancer.* cluster
+cp -r cluster ../agent/mibgroup/.
+</verb></tscreen>
+
+<sect1> Code the extension agent
+
+<p>Header file: add necessary definitions
+<p>C file
+<p>
+<enum>
+<item> Module definition: 
+<p>
+the code defining the contents of the MIB 
+<p>
+e.g.
+<tscreen><verb> 
+static oid clusterName_oid[] = {1, 3, 6, 1, 3, 1, 1, 1, 0}; 
+</verb></tscreen>
+<item> Module initialization: 
+<p>
+initialization before they can start providing the necessary information
+<p>
+e.g. 
+<tscreen><verb>
+netsnmp_register_instance(netsnmp_create_handler_registration
+                              ("clusterName",  do_clusterName, clusterName_oid,
+                               OID_LENGTH(clusterName_oid),  
+                               HANDLER_CAN_RWRITE));
+</verb></tscreen>
+<item> Variable handling
+actually handles a request for a particular variable instance
+e.g. 
+<tscreen><verb>
+     char clusterName[NAME_LEN]; 
+     int *var_len;
+</verb></tscreen>
+<item> Non-table-based modules: the request handling routine is to 
+retrieve any necessary scalar data
+<p>
+e.g.
+<tscreen><verb> 
+switch (reqinfo->mode) {
+     case MODE_GET:
+         snmp_set_var_typed_value(requests->requestvb, ASN_OCTET_STR,
+                 (u_char *) clusterName, var_len); 
+         break;
+     ...
+}
+</verb></tscreen>
+<item> Simple tables: process a simple table with limited table index
+<p>e.g. 
+<tscreen><verb>
+int serviceTable_handler(netsnmp_mib_handler *handler,
+                     netsnmp_handler_registration *reginfo,
+                     netsnmp_agent_request_info *reqinfo,
+                     netsnmp_request_info *requests)  { 
+      ...
+      switch (reqinfo->mode) {
+        case MODE_GET: 
+             switch (table_info->colnum) {
+                case COLUMN_SRINDEX:
+                   snmp_set_var_typed_value(var, ASN_INTEGER,...);
+                   break;  
+                ...
+             }
+        ...
+      }
+      ...
+}
+</verb></tscreen>
+<item> General tables: process a general table, which the maximum index 
+is not determinable 
+<p>
+e.g. 
+<tscreen><verb>
+        Init_{Name}_Entry();  // Perform any necessary initialization 
+        while (( index = Get_Next_{Name}_Entry() ) != EndMarker ) { 
+              construct OID from vp->name and index 
+              compare new OID and request 
+              if valid { 
+                  save current data 
+                  if finished // exact match, or ordered table 
+                  break; // so don't look at any more entries 
+              }
+         }
+</verb></tscreen> 
+<item> Set-able object: the handling of SNMPSET
+<p>
+e.g.
+<tscreen><verb> 
+switch (reqinfo->mode) {
+   ...
+   case MODE_SET_ACTION:
+        // XXX: perform the value change here 
+        if ( /* XXX: error? */ ) {
+            netsnmp_set_request_error(reqinfo, requests,"error_msg.");
+        }
+        break;
+   case MODE_SET_COMMIT:
+        //  XXX: delete temporary storage
+        if ( /* XXX: error? */ ) {
+             netsnmp_set_request_error(reqinfo, requests,
+                                      SNMP_ERR_COMMITFAILED);
+        }
+        break;
+  }
+...
+</verb></tscreen>
+<item> Compile the MIB extension and generate SNMP daemon
+<tscreen><verb>
+./configure --with-mib-modules="cluster/generalInfo, cluster/currentStatus, cluster/loadBalancer"
+./snmpd -c config_file 
+(ex) ./snmpd -c /etc/snmp/snmpd.conf
+snmpd [OPTIONS] [LISTENING ADDRESSES]
+</verb></tscreen>
+<p>
+SNMP agent which binds to a port and awaits requests from SNMP management software. 
+collects the requested information and/or performs the requested operations and returns the information to the sender. 
+By default, snmpd listens for SNMP requests on  UDP port 161. 
+</enum>
+
+<sect>Setting up PXE environment via PXELINUX
+
+<sect1> Preface
+<p>
+This section only briefly describes what is PXELINUX and how to setup PXE 
+environment. For more information about PXELINUX and SYSLINUX, please refer 
+to their web pages, respectively, as showed in <ref id="sect-pxe-ref" name="Reference">.
+<p>
+If there is any question or advice, please contact with <htmlurl url="mailto:spencer.chang@delta.com.tw" name="Spencer Chang">.
+
+<sect1> What is PXELINUX
+<p>
+PXELINUX is a SYSLINUX derivative, for booting Linux off a network server, using a network ROM conforming to the Intel PXE (Pre-Execution Environment) specification. PXELINUX is not a program that is intended to be flashed or burned into a PROM on the network card; if you want that, check out <url url="http://www.etherboot.org/" name="Etherboot">.
+
+<sect1> My PXE environment 
+<p>
+<sect2> Equipment
+<p>
+<enum> 
+<item> DHCP server
+<item> TFTP server
+<item> A PC as PXE client
+<item> A floppy (simulate the boot from NIC ROM)
+</enum>
+
+<sect2> Environment Diagram
+<p>
+<code>
+
+  +------------+              +------------+       +--------------+
+  |     PC     |              |  WGT634U   |       |   TFTP SV    |
+  | PXE client |--------------|  DHCP SV   |-------|   PXELINUX   |
+  |            |              | 192.168.1.1|       | 192.168.1.88 |
+  +------------+              +------------+       +--------------+
+ 00:40:F4:8D:C1:8E
+
+</code>
+<sect2> Steps
+<p>
+<enum>
+<item> Setting DHCP server
+<p> Following is the DHCP configuration file on WGT634U in My testing
+<code>
+ default-lease-time 604800;
+ max-lease-time 1209600;
+
+ subnet 192.168.1.0 netmask 255.255.255.0 {
+    option routers 192.168.1.1;
+    option domain-name-servers 192.168.1.1;
+    option netbios-name-servers 192.168.1.1;
+    option netbios-node-type 1;
+    range 192.168.1.2 192.168.1.51;
+ }
+ group {
+    filename "pxelinux.0";
+    next-server 192.168.1.88;
+    host pxe1 { hardware ethernet 0:40:f4:8d:c1:8e; }
+ }
+</code>
+The <tt>group</tt> option can be explained to "If the DHCP request is from 00:40:F4:8D:C1:8E, tells it that it should get a file named pxelinux.0 from server 192.168.1.88 after it gets a IP successfully".
+<item> Setting TFTP server
+<enum>
+<item> Install tftp server package (eg. the atftpd package ) on host PC.
+<item> Check where is the root directory (eg. /tftpboot ) of tftp server.
+<item> Put <url url="http://172.16.5.231/~spencer/pxelinux.0" name="pxelinux.0"> to your tftp root directory.
+<item> Put your kernel image (bzImage) to tftp root directory.
+<item> Create a directory named <tt>pxelinux.cfg</tt> in tftp root directory
+<item> Place a file named <tt>default</tt> in directory <tt>pxelinux.cfg</tt>. 
+The file is the PXELINUX configuration file.
+Following is a sample that <tt>default</tt> should be.<p>
+<code>
+SERIAL 0 19200 0x303
+TIMEOUT 1
+LABEL linux
+KERNEL bzImage
+APPEND root=/dev/hda2 rw 
+IPAPPEND 1
+</code>
+For more information about the setting in PXE configuration file, please refer to <url url="http://syslinux.zytor.com/index.php" name="SYSLINUX">.
+</enum>
+
+
+<item> Prepare a testing PC to be as PXE client
+<p>
+There is no special requirement for the testing PC, just take any PC you like.
+In addition, please prepare a 8139 network card and plug it into the testing PC.
+If you have a Intel NIC supporting PXE boot, just use the Intel NIC and skip
+next step.
+
+<item> Create a PXE bootable floppy
+<p>
+This floppy is used to simulate the Network Boot from the ROM plugged in the NIC.
+<p>
+<enum>
+<item> Download <url url="http://172.16.5.231/~spencer/8139dsk.tgz" name="8139dsk.tgz">
+<item> Decompress it and then a folder named 8139dsk should be created
+<item> Plug a formatted floppy into disk A: on host PC.
+<item> Execute 8139dsk.bat which is in the folder 8139dsk. 8139dsk.bat is a MS-DOS command, please execute it in MS platform.
+</enum>
+
+<item> Boot from floppy
+<p>
+<enum>
+<item> Set the floppy boot as first priority on the testing PC.
+<item> Just insert the floppy into the testing PC.
+<item> Boot it.
+</enum>
+If everything described above is done, you should see the testing PC will  
+ask for a IP from DHCP server, get the kernel image from TFTP server and 
+boot the Linux via the kernel image.
+</enum>
+
+<sect1> My PXE environment with CB3000
+<p>
+The only difference between with and without CB3000 in PXE environment is 
+there is a CB3000 among testing PC and WGT634U. :Q
+<p>
+Please follow below diagram to setup the PXE environment with CB3000.
+It should not be a difficulty in setting up such environment.
+<code>
+
+  +------------+              +--------+
+  |     PC     |              | CB3000 |
+  | PXE client |--------------|        |.....
+  | 192.168.1.4|              +--------+    :
+  +------------+                            :(wireless)
+                                            :
+                                            :
+                                        +------------+       +--------------+
+                                        |  WGT634U   |       |   TFTP SV    |
+                                        |  DHCP SV   |-------|   PXELINUX   |
+                                        | 192.168.1.1|       | 192.168.1.88 |
+                                        +------------+       +--------------+
+
+</code>
+
+<sect1> Reference<label id="sect-pxe-ref">
+<p>
+<enum>
+<item> <url url="http://syslinux.zytor.com/index.php" name="SYSLINUX"><label id="ref-syslinux">
+<item> <url url="http://syslinux.zytor.com/pxe.php" name="PXELINUX">
+<item> <url url="http://www.etherboot.org/" name="etherboot"><label id="ref-etherboot">
+<item> <url url="http://www.realtek.com.tw/" name="Realtek">
+</enum>
+
+<sect> Softirq and bottom half
+
+<sect1> Kernel 2.4.28
+
+<sect2> Initial functions
+<p>
+<code>
++- softirq_init()
+   |
+   +-- tasklet_init(...)
+   |    |
+   |    +-- bh_task_vec[0-31].func = bh_action()
+   |	
+   +-- open_softirq(...)
+   |    |
+   |	+-- softirq_vec[TASKLET_SOFTIRQ].action = tasklet_action
+   |
+   +-- open_softirq(...)
+   |    |
+   |	+-- softirq_vec[HI_SOFTIRQ].action = tasklet_hi_action
+   |
+
++- sched_init()
+   |
+   +-- init_bh(IMMEDIATE_BH, immediate_bh)
+   |    |
+   |	+-- bh_base[IMMEDIATE_BH] = immediate_bh()
+   |
+   :
+   :
+
++- INIT_TQUEUE(_tq, _routine, _data) (_tq is struct tq_struct*)
+   |
+   +-- PREPARE_TQUEUE((_tq), (_routine), (_data))
+   |    |
+   |	+-- _tq->routine = _routine
+   |	|
+   |	+-- _tq->data = _data
+   |
+</code>
+
+<sect2> Running functions
+<p>
+<code>
+
++- queue_task(bh_pointer, bh_list) (bh_pointer is struct tq_struct*)
+   |
+   +-- list_add_tail(&amp;bh_pointer->list, bh_list) (bh_list, ex tq_immediate)
+
++- mark_bh(...)
+   |
+   +-- tasklet_hi_schedule(struct tasklet_struct *t)
+   |    |
+   |	+-- __tasklet_hi_schedule(struct tasklet_struct *t)
+   |	     |
+   |	     +- (add t(bh_task_vec+nr, ex nr=IMMEDIATE_BH) to tasklet_hi_vec)
+   |
+
++- ksoftirqd(...)
+   |
+   +-- do_softirq()
+   |    |
+   |	+-- h->action(h) (ex, tasklet_hi_action())
+   |
+
++- tasklet_hi_action(...)
+   |
+   +-- (take out tasklet_hi_vec)
+   |
+   +-- (call each func()(t->func(t->data)) in the tasklet_hi_vec list, ex bh_action)
+   |
+
++- bh_action(nr)
+   |
+   +-- bh_base[nr]()
+
++- immediate_bh()
+   |
+   +-- run_task_queue(&amp;tq_immediate)
+   |    |
+   |	+-- __run_task_queue(&amp;tq_immediate)
+   |	|    |
+   |	|    +-- (call each routine(p->routine) on the task_queue, tq_immediate)
+   |    |
+</code>
+
+</article>

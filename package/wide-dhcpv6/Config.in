@@ -1,0 +1,20 @@
+config WIDE_DHCPV6_CLIENT_GIT_TREEISH
+	string
+	prompt "treeish of wide-dhcpv6 client git repository"
+	default "wide-dhcpv6-dni81"
+	help
+           Input the treeish of wide-dhcpv6 client git repository which you want to build
+
+config WIDE_DHCPV6_CLIENT_GIT_REPOSITORY
+	string
+	prompt "name of wide-dhcpv6 client git repository"
+	default "wide-dhcpv6.git"
+	help
+	   Input the name of wide-dhcpv6 client git repository which you want to build
+
+config WIDE_DHCPV6_CLIENT_GIT_URL
+	string
+	prompt "url of wide-dhcpv6 client git repository"
+	default "ssh://dniserver/scm/dnigit/common/apps/wide-dhcpv6.git"
+	help
+	   Input the url of wide-dhcpv6 client git repository which you want to build

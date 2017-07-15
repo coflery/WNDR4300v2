@@ -1,0 +1,21 @@
+# kmod-ipv6-cone configuration
+config IPV6_CONE_GIT_TREEISH
+	string
+	prompt "treeish of ipv6-cone git repository"
+	default "kmod-ipv6-cone-v1.0.1-dni8"
+	help
+           Input the treeish of ipv6-cone git repository which you want to build
+
+config IPV6_CONE_GIT_REPOSITORY
+        string
+        prompt "name of ipv6-cone git repository"
+        default "kmod-ipv6-cone.git"
+        help
+           Input the name of ipv6-cone git repository which you want to build
+
+config IPV6_CONE_GIT_URL
+        string
+        prompt "url of ipv6-cone git repository"
+        default "ssh://dniserver/scm/dnigit/common/kmods/kmod-ipv6-cone.git"
+        help
+           Input the url of ipv6-cone git repository which you want to build

@@ -1,0 +1,392 @@
+#!/bin/sh
+####################################################################################
+##
+## set_random_ssid 
+##
+## Set a random SSID for the given interface
+## arguments
+## $1 - APNAME - name of the interface eg. ath0
+## 
+set_random_ssid() {
+    apname=$1
+    apindex=$2
+
+    if [ "${apindex}" != "0" ]; then
+        vapident="_$apindex"
+    else
+        vapident=""
+    fi
+       
+    RAND_SSID="AP_SSID$vapident"
+    eval RAND_SSID=\$$RAND_SSID
+    
+    if [ "${RANDOM_SSID}" -eq "1" ]; then
+        TEMP_SSID=$RAND_SSID:`ifconfig $apname | grep HWaddr | cut -d ' ' -f 11 | cut -d ":" -f 4-`
+        TEMP_SSID_1=`echo $TEMP_SSID | cut -d ":" -f 1`
+        TEMP_SSID_2=`echo $TEMP_SSID | cut -d ":" -f 2`
+        TEMP_SSID_3=`echo $TEMP_SSID | cut -d ":" -f 3`
+        TEMP_SSID_4=`echo $TEMP_SSID | cut -d ":" -f 4`
+        AP_RANDOM_SSID="$TEMP_SSID_1$TEMP_SSID_2$TEMP_SSID_3$TEMP_SSID_4"
+    else
+        AP_RANDOM_SSID=$RAND_SSID
+    fi
+    cfg -a AP_RANDOM_SSID$vapident=$AP_RANDOM_SSID
+    
+
+}
+#end set_random_ssid
+####################################################################
+## activateVAP
+##
+## This script is used to activate a VAP that was created earlier.
+## Activation involves bringing the interface up, associating with
+## a bridge, and configuring the security mode.  The VAP MUST EXIST
+## prior to calling the activate script.
+##
+## The form of the command is
+##
+## activateVAP <vap> <BR> <Security> <SEC Args> <WSC>  <VAP_TIE>
+##
+## Where
+##      vap:    Vap ID (e.g. ath0)
+##       BR:    Bridge to join (or - if not bridged)
+## Security:    Security mode (WEP,WPA,WSC,NONE)
+## Sec Args:    File containing security configuration.  For WPA this is the hostapd
+##              conf file.  For WEP this is a list of iwconfig commands setting the
+##              keys.
+##
+## Examples:
+##   Open Access Point
+##      activateVAP ath0 br0 NONE
+##   WPA Access Point
+##      activateVAP ath1 br0 WPA wpa2-psk.conf
+##   WEP Station
+##      activateVAP ath0 br0 WEP wep.conf
+##
+###################################################################
+
+. /etc/ath/apcfg
+
+if [ "${1}" = "" ]; then
+    echo "activateVAP usage"
+    echo "activateVAP vapid bridge Security Security_file"
+    echo
+    echo "vapid: e.g. ath0"
+    echo "bridge:  Name of bridge to add to,(typically br0)"
+    echo "Security: [ WPA | WEP | WSC | NONE ]"
+    echo "Security_file: Name of file in /etc/ath containing security config"
+    echo
+    exit
+fi
+
+APNAME=$1
+BRIDGE=$2
+SECMODE=$3
+SECFILE=$4
+WSCMODE=$5
+VAPTIE=$6
+
+KVER=`uname -r | cut -f 1 -d '-'`
+MODULE_PATH=/lib/modules/$KVER/net
+MODE=`iwconfig ${APNAME} | grep "Mode:Master"`
+HOSTAPD_VER=`hostapd -v 2>&1|grep hostapd|cut -f2 -d' '`
+
+if [ "${HOSTAPD_VER}" != "v0.5.9" ]; then
+    if [ "${SECMODE}" = "WEP" -a "${WSCMODE}" != "0" ]; then
+        echo "*** WARNING: WPS is enabled in WEP mode!! ***"
+        echo "*** WARNING: WPS is disabled  ***"
+        WSCMODE=0
+    fi
+    if [ "${SECMODE}" = "WPA" -a "${AP_CYPHER}" = "TKIP" -a "${WSCMODE}" != "0" ]; then
+        echo "*** WARNING: WPS is enabled in TKIP only mode!! ***"
+        echo "*** WARNING: WPS is disabled  ***"
+        WSCMODE=0
+    fi
+fi
+
+if [ "${WSCMODE}" = "1" -o "${WSCMODE}" = "2" ]; then
+    if [ "${SECMODE}" != "WPA" ]; then
+        echo "*** WARNING: WPS is enabled with No/Incorrect Security settings !! ***"
+    fi
+fi
+
+if [ "${AP_HIDESSID}" = "1" ]; then
+    echo "*** WARNING: invalid config WPS is enabled with hidden ssid !! ***"
+    echo "*** WARNING: WPS is disabled  ***"
+    WSCMODE=0
+fi
+
+##
+## Create an AP index, based on the VAP (ath) number
+##
+
+APINDEX=`echo ${APNAME}| sed -e 's/[a-z]//g'`
+
+if [ "$APINDEX" != "0" ]; then
+    APINDEX=`expr ${APINDEX} + 1`
+fi
+##
+## First, let us see if the indicated VAP exists.  If not, it must be created
+##
+
+VAPLIST=`iwconfig | grep ${APNAME} | cut -d ' ' -f 1`
+
+if [ "${VAPLIST}" = "" ]; then
+    echo "VAP ${APNAME} must be created first!! (use makeVAP)"
+    exit
+fi
+
+##
+## Must determine if the scan modules need to be loaded.  Remember, only once!
+## This is in station mode if the MODE value is blank
+##
+
+STATIONSCAN=`lsmod | grep wlan_scan_sta`
+
+if [ "${MODE}" = "" -a "${STATIONSCAN}" = "" ]; then
+    
+    #
+    # Check for a specific MAC address that is specified.  Only valid for stations
+    #
+
+    if [ "${AP_REQ_MAC}" != "" ]; then
+        iwconfig $APNAME ap $AP_REQ_MAC
+    fi
+fi
+
+#
+# Bring the interface up at this point!!
+# configure bridge, or set an IP address for the WLAN interface
+#
+
+if [ "${BRIDGE}" != "none" -a "${BRIDGE}" != "-" ]; then
+    ifconfig ${APNAME} up
+    brctl addif ${BRIDGE} ${APNAME}
+    echo -e "\tinterface ${APNAME}" >> /tmp/$BRIDGE_IF
+    #
+    # Add the arping command to ensure all nodes are updated on the network!
+    #
+    
+    arping -U -c 1 -I ${BRIDGE} $AP_IPADDR
+
+else
+    ifconfig ${APNAME} up ${WAN_IPADDR}
+fi
+
+#
+# We need to determine if WSC is enabled or not.  If not, we do the standard "stuff"
+#
+
+echo ">>>>> WPS MODE, ${WSCMODE}"
+
+if [ "${WSCMODE}" = "1" -o "${WSCMODE}" = "2" ]; then
+    echo ">>>>> WPS ENABLED, ${SECFILE}"
+    iwpriv ${APNAME} wps 1
+    ##
+    ## WSC VAP.  Determine the file correctly.
+    ##
+#EV 89918 
+    isa=`expr match $AP_CHMODE .*A.*`
+    isg=`expr match $AP_CHMODE .*G.*`
+    if [ "${isa}" != 0 ] 
+    then
+        sed -i 's/hw_mode=[bg]/hw_mode=a/g' /etc/ath/WSC.conf
+    else
+    if [ "${isg}" != 0 ] 
+    then
+        sed -i 's/hw_mode=[ab]/hw_mode=g/g' /etc/ath/WSC.conf
+    
+    else
+          sed -i 's/hw_mode=[ga]/hw_mode=b/g' /etc/ath/WSC.conf
+    fi
+    fi
+ 
+    if [ "${SECFILE}" = "EAP" ]; then
+        echo "Cannot use EAP modes with WPS"
+        exit 255
+    fi
+
+    if [ "${HOSTAPD_VER}" = "v0.5.9" ]; then
+        if [ "${VAPTIE}" != "" ]; then
+	    echo ">>> VAP Tied: ${VAPTIE}"
+	    fname="WSC_${VAPTIE}.conf"
+        else
+            if [ "${AP_STARTMODE}" = "repeater" -a "${APNAME}" = "ath1" ]; then
+                fexist=`ls /etc/wpa2 | grep WSC_sta.conf`
+	        if [ "${fexist}" = "" ]; then
+                    if [ "${SECMODE}" = "WPA" ]; then
+	                cfg -t${APINDEX} /etc/ath/PSK.sta   > /etc/wpa2/WSC_sta.conf
+                    fi
+	        cat /etc/ath/WSC_sta.conf >> /etc/wpa2/WSC_sta.conf
+	        else
+	            WSC_configupdate /etc/wpa2/WSC_sta.conf > /etc/wpa2/WSC_sta.conf-tmp
+                    if [ "${SECMODE}" = "WPA" ]; then
+	                cfg -t${APINDEX} /etc/ath/PSK.sta   > /etc/wpa2/WSC_sta.conf
+                        cat /etc/wpa2/WSC_sta.conf-tmp >> /etc/wpa2/WSC_sta.conf
+		    else
+                        cat /etc/wpa2/WSC_sta.conf-tmp > /etc/wpa2/WSC_sta.conf
+		    fi
+	            rm /etc/wpa2/WSC_sta.conf-tmp	
+	        fi
+	        echo -e "\tsta ${APNAME}" >> /tmp/stalist0
+	        echo -e "\t{" >> /tmp/stalist0
+	        echo -e "\t\tconfig /etc/wpa2/WSC_sta.conf" >> /tmp/stalist0
+	        echo -e "\t}" >> /tmp/stalist0
+            fi
+            if [ "${AP_STARTMODE}" != "repeater"  -o "${APNAME}" != "ath1" ]; then
+	        fname="WSC_${APNAME}.conf"
+	        fexist=`ls /etc/wpa2 | grep ${APNAME}`
+	        unconf=`cat /etc/wpa2/WSC_${APNAME}.conf | grep "wps_configured=1"`
+                if [ "${fexist}" = "" -o "${unconf}" = "" ]; then
+                    #
+                    # We have to use this file "in place" to have WSC work
+                    # properly.
+                    #
+	            echo ">>>>> WPS Translate, Index:${APINDEX}"
+                    cfg -t${APINDEX} /etc/ath/WSC.conf > /etc/wpa2/WSC_${APNAME}.conf
+                fi
+            fi
+        fi
+    
+        if [ "${AP_STARTMODE}" != "repeater"  -o "${APNAME}" != "ath1" ]; then
+            echo -e "\t\tbss ${APNAME}" >> /tmp/aplist0
+            echo -e "\t\t{" >> /tmp/aplist0
+            echo -e "\t\t\tconfig /etc/wpa2/${fname}" >> /tmp/aplist0
+            echo -e "\t\t}" >> /tmp/aplist0
+        fi
+    else
+        if [ "${MODE}" = "" ]; then
+             #
+             # For client mode and WPS is Enabled use WSC_sta.conf
+             #
+             fname="WSC_sta.conf"
+             fexist=`ls /etc/wpa2 | grep ${fname}`
+             if [ "${fexist}" = "" ]; then
+              cp /etc/ath/WSC_sta.conf /etc/wpa2/
+            fi
+		echo -e "-c/etc/wpa2/WSC_sta.conf -i${APNAME} -bbr0" > /tmp/sta_conf_filename
+	else
+	    fname="WSC_${APNAME}.conf"
+		fexist=`ls /etc/wpa2 | grep ${APNAME}`
+	    if [ "${HOSTAPD_VER}" = "v0.7.1" -o "${HOSTAPD_VER}" = "v0.7.2" -o "${HOSTAPD_VER}" = "v0.8.x" ]; then
+			unconf=`cat /etc/wpa2/WSC_${APNAME}.conf | grep "^wps_state=2"`
+		else
+			unconf=`cat /etc/wpa2/WSC_${APNAME}.conf | grep "wps_configured=1"`
+		fi
+        if [ "${fexist}" = "" -o "${unconf}" = "" ]; then
+            #
+            # We have to use this file "in place" to have WSC work
+            # properly.
+            #
+	        echo ">>>>> WPS Translate, Index:${APINDEX}"
+	        set_random_ssid ${APNAME} ${APINDEX} 
+            cfg -t${APINDEX} /etc/ath/WSC.conf > /etc/wpa2/WSC_${APNAME}.conf
+    	fi
+	fi
+	fi
+    if [ "${MODE}" != "" ]; then
+    if [ "${AP_STARTMODE}" != "repeater"  -o "${APNAME}" != "ath1" ]; then
+	if [ "${HOSTAPD_VER}" = "v0.7.1" -o "${HOSTAPD_VER}" = "v0.7.2" -o "${HOSTAPD_VER}" = "v0.8.x" ]; then
+		echo -e "/etc/wpa2/WSC_${APNAME}.conf \c\h" >> /tmp/conf_filename
+	else
+        	echo -e "\t\tbss ${APNAME}" >> /tmp/aplist0
+        	echo -e "\t\t{" >> /tmp/aplist0
+        	echo -e "\t\t\tconfig /etc/wpa2/${fname}" >> /tmp/aplist0
+        	echo -e "\t\t}" >> /tmp/aplist0
+	fi
+    fi
+   fi
+else
+    ##
+    ## Non WSC VAP.  Use Standard Security
+    ##
+    if [ "${SECMODE}" = "WPA" -o "${SECMODE}" = "RADIUS_MAC" ]; then
+        #
+        # WPA now processes all WPA sub modes
+        # Here the file is "translated" from the template.
+        #
+        if [ "${MODE}" != "" ]; then
+            #
+            # This is the method using the "translation" mode of cgiMain to
+            # create an appropriate security file for PSK or Enterprise mode
+            #
+            	cfg -t${APINDEX} /etc/ath/${SECFILE}.ap_bss ${APNAME} > /tmp/sec${APNAME}
+
+		if [ "${HOSTAPD_VER}" = "v0.5.9" ]; then
+                	echo -e "\t\tbss ${APNAME}" >> /tmp/aplist0
+                	echo -e "\t\t{" >> /tmp/aplist0
+                	echo -e "\t\t\tconfig /tmp/sec${APNAME}" >> /tmp/aplist0
+                	echo -e "\t\t}" >> /tmp/aplist0
+	    	else
+			echo -e "/tmp/sec${APNAME} \c\h" >> /tmp/conf_filename
+	   	fi
+        else
+            #
+            # This is a managed (station) node
+            #
+            cfg -t${APINDEX} /etc/ath/${SECFILE}.sta ${APNAME} > /tmp/sup${APNAME}
+ 	
+            if [ "${HOSTAPD_VER}" = "v0.7.1" -o "${HOSTAPD_VER}" = "v0.7.2" -o "${HOSTAPD_VER}" = "v0.8.x"  ]; then
+                echo -e "-c/tmp/sup${APNAME} -i${APNAME} -b${BRIDGE_IF}" > /tmp/sta_conf_filename
+
+            if [ "${AP_STARTMODE}" != "adhoc" ]; then
+                cfg -t${APINDEX} /etc/ath/${SECFILE}.sta ${APNAME} > /tmp/sup${APNAME}
+            else
+                cfg -t${APINDEX} /etc/ath/${SECFILE}.adhoc ${APNAME} > /tmp/sup${APNAME}
+            fi
+ 	
+            if [ "${HOSTAPD_VER}" = "v0.5.9" ]; then
+                echo -e "\tsta ${APNAME}" >> /tmp/stalist0
+                echo -e "\t{" >> /tmp/stalist0
+                echo -e "\t\tconfig /tmp/sup${APNAME}" >> /tmp/stalist0
+                echo -e "\t}" >> /tmp/stalist0
+            else
+                echo -e "-c/tmp/sup${APNAME} -i${APNAME} -bbr0" > /tmp/sta_conf_filename
+           fi
+        fi
+    fi
+
+    if [ "${SECMODE}" = "WEP" -a "${STA_TDLS_MODE}" != "1" ]; then
+        #
+        # Insert the keys as required
+        #
+        if [ "${AP_WEP_MODE}" != "" -a "${AP_WEP_MODE}" != "1" ]; then
+            iwpriv ${APNAME} authmode ${AP_WEP_MODE}
+        fi
+        if [ "${WEPKEY_1}" != "" ]; then
+			cfg -h ${WEPKEY_1} 1
+            if [ $? = 1 ]; then
+			    iwconfig ${APNAME} enc ${WEPKEY_1} [1]
+			else
+			    iwconfig ${APNAME} enc s:${WEPKEY_1} [1]
+			fi
+        fi
+        if [ "${WEPKEY_2}" != "" ]; then
+			cfg -h ${WEPKEY_2} 1
+            if [ $? = 1 ]; then
+			    iwconfig ${APNAME} enc ${WEPKEY_2} [2]
+			else
+			    iwconfig ${APNAME} enc s:${WEPKEY_2} [2]
+			fi
+        fi
+        if [ "${WEPKEY_3}" != "" ]; then
+			cfg -h ${WEPKEY_3} 1
+            if [ $? = 1 ]; then
+			    iwconfig ${APNAME} enc ${WEPKEY_3} [3]
+			else
+			    iwconfig ${APNAME} enc s:${WEPKEY_3} [3]
+			fi
+        fi
+        if [ "${WEPKEY_4}" != "" ]; then
+			cfg -h ${WEPKEY_4} 1
+            if [ $? = 1 ]; then
+			    iwconfig ${APNAME} enc ${WEPKEY_4} [4]
+			else
+			    iwconfig ${APNAME} enc s:${WEPKEY_4} [4]
+			fi
+        fi
+        if [ "${AP_PRIMARY_KEY}" != "" ]; then
+            iwconfig ${APNAME} enc [${AP_PRIMARY_KEY}]
+        fi
+    fi
+fi

@@ -1,0 +1,20 @@
+config DNISTARCRAFT_ALG_GIT_TREEISH
+	string
+	prompt "treeish of kmod-dnistarcraft-alg git repository"
+	default "alg-starcraft-v2.6.31-dni2"
+	help
+           Input the treeish of kmod-starcraft git repository which you want to build
+
+config DNISTARCRAFT_ALG_GIT_REPOSITORY
+	string
+	prompt "name of kmod-dnistarcraft-alg git repository"
+	default "kmod-starcraft.git"
+	help
+	   Input the name of kmod-starcraft git repository which you want to build
+
+config DNISTARCRAFT_ALG_GIT_URL
+	string
+	prompt "url of kmod-dnistarcraft-alg git repository"
+	default "ssh://dniserver/scm/dnigit/common/kmods/kmod-starcraft.git"
+	help
+	   Input the url of kmod-starcraft git repository which you want to build

@@ -1,0 +1,52 @@
+  # Script to transfer pktlog and stats files to the laptop. 
+  # This script copies 2 athstats files( along with other important states)
+  #  and 6 pktlogs to the laptop, which are extremely useful for debugging.
+  # It takes two arguments,
+  # arg 1: ip address of the laptop
+  # arg 2: testname
+  #
+  # Note1: This Script should be run at both AP and client.
+  # Note2: It should be run at the time when the problem is seen. For eg, if 
+  # the issue is 'lower throughput', then run the script while traffic is 
+  # running.
+  # 
+  # Steps to run the script:
+  # Open tftp server at the laptop ( For eg. pumpkin, tftpd etc ... ).
+  # Telnet to the AP/cleint ( or connect throught UART ) 
+  # Run following commands at the terminal
+  #   get_debug_logs < ipaddress > log1
+  #  ===================
+
+  pktlogconf -e -s 1048576
+  i=0
+  athstats > /tmp/ath
+  ifconfig >> /tmp/ath
+  iwconfig >> /tmp/ath
+  wlanconfig ath0 list >> /tmp/ath
+  athstatsclr
+  str="initial_stats$2.txt"
+  tftp -l /tmp/ath -r $str -p $1
+  rm /tmp/ath
+
+  sleep 1
+  while test $i -le 5
+  do
+    pktlogconf -d
+    cp /proc/ath_pktlog/system /tmp/pktlog_$i.dat
+    pktlogconf -e -s 1048576 
+    str="pktlog_$i$2.dat"
+    tftp -l /tmp/pktlog_$i.dat -r $str -p $1
+    rm /tmp/pktlog_$i.dat
+    echo Log $i
+    i=`expr $i + 1`
+    sleep 1
+  done
+  pktlogconf -d
+  athstats > /tmp/ath
+  ifconfig >> /tmp/ath
+  iwconfig >> /tmp/ath
+  wlanconfig ath0 list >> /tmp/ath
+  str="final_stats$2.txt"
+  tftp -l /tmp/ath -r $str -p $1
+  rm /tmp/ath
+  echo Logging complete

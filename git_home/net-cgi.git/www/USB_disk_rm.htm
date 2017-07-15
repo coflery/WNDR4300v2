@@ -1,0 +1,28 @@
+<% http_header("style/form.css", "/funcs.js") %>
+<body>
+<script>
+var result="<% cat_rm_file("/tmp/umount_result") %>";
+
+getDevName=location.href.indexOf("dev_name=",0);
+len=location.href.length-getDevName-9;
+dev_name=location.href.substr(getDevName+9,len);
+dev_name=dev_name.replace(/%20/g,"&nbsp;").replace(/%A0/g,"&nbsp;");
+
+
+if (result == "") {
+	setTimeout('location.href="USB_disk_rm.htm?dev_name='+dev_name+'"', 3000);
+	document.write('<div  align="center"><BR><BR><B>$wizard_pls_wait</B><BR><BR></div>');
+	document.write('<div class="waiting_img_div" align="center"><img src="image/wait30.gif" /></div>');
+} else {
+	if (result == "0") {
+		document.write("$samba_remove_disk_ok");
+	} else if (result == "1"){
+		document.write("$samba_remove_disk_failed");
+	}
+	if ( opener.parent.formframe.location.href.indexOf("apply.cgi") == -1 )
+		opener.parent.formframe.location.reload();
+}
+
+</script>
+</BODY>
+</HTML>

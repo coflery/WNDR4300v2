@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<!--link rel="stylesheet" type="text/css" href="hdd_cd_less.css" /-->
+<link rel="stylesheet" type="text/css" href="style/hijack_style.css" />
+<link rel="stylesheet" type="text/css" href="style/form.css" />
+<script language="javascript" type="text/javascript" src="brs_hijack.js"></script>
+<!--script language="javascript" type="text/javascript" src="script/brs_hijack_success.js"--></script>
+<!--% hijack_success_page() %--><!--if hijack_process not 3 set it to 2, old when this page apply set hijack_process to 3-->
+</head>
+<body onload="loadvalue();">
+<form method="post" action="">
+<script language="javascript" type="text/javascript">
+<% cfg_set("from_download", "0") %>
+var ts = "<% hijack_get_timestamp("hijack_success") %>";
+<% hijack_hdd_success() %><!--set hijack_process to 3 and set dns_hijack to 0, and run /usr/sbin/dns-hijack-->
+//var have_click_take_me_to_internet = "<% cfg_get("have_click_take_me_to_internet") %>";
+//var an_router_flag = "<% get_an_router_flag() %>";
+//var wl_sectype="<% cfg_get("wl_sectype") %>";
+//var wla_sectype="<% cfg_get("wla_sectype") %>";
+function loadvalue()
+{
+	//var cf=document.forms[0];
+	//cf.hid_wireless_tag.value="1";
+	//cf.action="apply.cgi?/BRS_hdd_success.htm timestamp=" + ts;
+	//cf.submit_flag.value = "hijack_success";
+	//cf.target="_self";
+	//cf.submit();
+	location.href="BRS_netgear_success.html";
+	/*var sn="<% get_sn() %>"; //if want show success html page, just use this snippet
+if( "<%cfg_get("dns_hijack") %>" == "1" && "<%cfg_get("hijack_process") %>" == "2" )
+	setTimeout('location.href = "$success_href"+"?sn="+sn;', 2000);
+else
+	location.href = "$success_href"+"?sn="+sn;*/
+}
+</script>
+<input type="hidden" name="submit_flag" value="hijack_success" />
+<input type="hidden" name="click_flag" value="0" />
+
+<script language="javascript" type="text/javascript">var ts="";</script>
+
+<!--div class="wizard_content_div">
+		<TABLE width=650px; align=center ><TR><TD align="center"><img width=600px; src="../image/hdd/success.jpg" onclick="">
+			</TD></TR>
+		</TABLE>
+</div-->
+<!--div class="wizard_words_div">
+		<h1>Contratulstions</h1>
+
+		<br>
+		<p>You are successfully connected to the Internet.</p>
+		<p>Wireless security is not enabled on this router. NETGEAR highly recommends that you <a style="color:#00ff00; cursor:pointer;" onclick="click_here();">click here</a> to enable wireless security and protect your network.</p>
+</div-->
+
+	<!--div id="buttons_div_02" class="wizard_buttons_div" align="center">
+		<TABLE width=650px; align=center >
+			<TR><TD align="left">
+			<INPUT  class="short_common_bt" type='button' name="print" value='print_this' onClick='print_button()'></TD>
+			<TD align="right">
+			<INPUT class="common_big_bt" type='button' name="Take" value='Take me to the Internet' onClick='to_internet()'>
+			</TD></TR>
+		</TABLE>
+	</div-->
+<script>
+/*var cf=document.forms[0];
+function print_button()
+{
+	if (window.print)
+		window.print();
+	else
+	{
+		alert("Computer does not support a printer.");
+		return false;
+	}
+}
+
+function click_here()
+{
+	cf.click_flag.value="1";
+
+	cf.action="apply.cgi?/BRS_hdd_success.htm timestamp=" + ts;
+	cf.submit_flag.value = "hijack_success";
+	
+	if(cf.encoding)
+		cf.encoding = "application/x-www-form-urlencoded";
+	else if(cf.enctype)
+		cf.enctype = "application/x-www-form-urlencoded";
+	
+	cf.submit();
+	location.href="BRS_hdd_success.htm";
+	var winoptions = "width=960,height=800,menubar=yes,scrollbars=yes,toolbar=yes,status=yes,location=yes,resizable=yes";
+	window.open("change_to_wireless.htm","chge_towl",winoptions);
+	//location.href="BRS_netgear_success.html";
+}
+
+function to_internet()
+{
+	//location.href="hdd_check_wait.htm";
+	//cf.have_click_take_me_to_internet.value="1";
+	//cf.click_flag.value="0";
+	cf.action="apply.cgi?/BRS_hdd_success.htm timestamp=" + ts;
+	
+		if(cf.encoding)
+		cf.encoding = "application/x-www-form-urlencoded";
+	else if(cf.enctype)
+		cf.enctype = "application/x-www-form-urlencoded";
+	
+	
+	cf.submit_flag.value = "hijack_success";
+	
+	//if(have_click_take_me_to_internet != "1" )
+		cf.submit();
+	
+	location.href="BRS_netgear_success.html";
+	//var winoptions = "width=960,height=800,menubar=yes,scrollbars=yes,toolbar=yes,status=yes,location=yes,resizable=yes";
+	//window.open("BRS_netgear_success.html","brs_ng",winoptions);
+}
+<!--
+function AF_success()
+{
+  top.wait_TM = 1;
+  
+  window.open("BRS_netgear_success.html",null,'width=625,height=550,top=50,left=200,status=yes');
+}*/
+//-->
+</script>   
+</form>
+</body>
+</html>

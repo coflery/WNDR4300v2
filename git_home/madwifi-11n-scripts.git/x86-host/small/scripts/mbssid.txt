@@ -1,0 +1,22 @@
+
+         MBSSID commands
+         ==============
+/* Create  first VAP */
+wlanconfig wlan create wlandev wifi0 wlanmode  ap
+
+/* Create second VAP */
+wlanconfig wlan create wlandev wif0 wlanmode  ap
+
+/* Assign SSID to first VAP */
+iwconfig wlan0 essid <ssid_1> mode master freq 1
+
+/* Assign SSID to second VAP */
+iwconfig wlan1 essid <ssid_2>
+
+/* Activate first VAP */
+ifconfig wlan0 up
+
+/* Activate second VAP */
+ifconfig wlan1 up
+
+

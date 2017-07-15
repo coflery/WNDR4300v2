@@ -1,0 +1,132 @@
+#!/bin/sh /etc/rc.common
+START=81
+
+CONFIG=/bin/config
+gui_region=$($CONFIG get GUI_Region)
+firmware_region=`cat /tmp/firmware_region | awk '{print $1}'`
+
+is_interface_exist()
+{
+	brctl show | awk '/br1/, /^$/' | grep $1 1>/dev/null
+
+        if [ $? = 0 ]; then
+                echo "1"
+        else
+                echo "0"
+        fi
+
+}
+
+config_wireless_iptv()
+{
+	local cur_ssid1="$($CONFIG get wan_brig_ssid1)"
+	local last_ssid1="$($CONFIG get last_wan_brig_ssid1)"
+	local cur_guest_ssid1="$($CONFIG get wan_brig_guest_ssid1)"
+	local last_guest_ssid1="$($CONFIG get last_wan_brig_guest_ssid1)"
+
+        if [ "x$1" = "x1" ]; then
+		if [ "$cur_ssid1" = "1" ] && [ `is_interface_exist "ath0"` = "0" ]; then
+                	brctl delif br0 ath0
+                	brctl addif br1 ath0
+        	elif [ "$cur_ssid1" = "0" ] && [ `is_interface_exist "ath0"` = "1" ]; then
+                	brctl delif br1 ath0
+                	brctl addif br0 ath0
+        	fi
+
+		if [ "$cur_guest_ssid1" = "1" ] && [ `is_interface_exist "ath1"` = "0" ]; then
+			brctl delif br0 ath1
+			brctl addif br1 ath1
+		elif [ "$cur_guest_ssid1" = "0" ] && [ `is_interface_exist "ath1"` = "1" ]; then
+			brctl delif br1 ath1
+			brctl addif br0 ath1
+		fi
+		if [ $cur_ssid1 = "1" -o $cur_guest_ssid1 = "1" -o $cur_ssid1 != $last_ssid1 -o $cur_guest_ssid1 != $last_guest_ssid1 ]; then
+			/sbin/wlan down
+			/sbin/wlan up
+			$CONFIG set last_wan_brig_ssid1=$cur_ssid1
+			$CONFIG set last_wan_brig_guest_ssid1=$cur_guest_ssid1
+		fi
+	elif [ "x$1" = "x0" ]; then
+		if [ `is_interface_exist "ath0"` = "1" ]; then
+			brctl delif br1 ath0
+			brctl addif br0 ath0
+		fi
+
+		if [ `is_interface_exist "ath1"` = "1" ]; then
+			brctl delif br1 ath1
+			brctl addif br0 ath1
+		fi
+		if [ $last_ssid1 = "1" -o $last_guest_ssid1 = "1" ]; then
+			/sbin/wlan down
+			/sbin/wlan up
+			$CONFIG set last_wan_brig_ssid1=0
+			$CONFIG set last_wan_brig_guest_ssid1=0
+		fi
+	fi
+}
+
+config_wire_port(){
+	local cur_iptv_mask=$($CONFIG get iptv_mask)
+	local last_iptv_mask=$($CONFIG get last_iptv_mask)
+	if [ "x$1" = "x1" ]; then
+		local restart_ports=$((($cur_iptv_mask ^ $last_iptv_mask) | $cur_iptv_mask))
+		vlan-set $($CONFIG get iptv_mask) 1>/tmp/vlan-set-result
+		dni_eth --switch-lan-phy 9 --switch-lan-mask $restart_ports
+		$CONFIG set last_iptv_mask=$cur_iptv_mask
+	elif [ "x$1" = "x0" ]; then
+		local restart_ports=$last_iptv_mask
+		vlan-set 0 1>/tmp/vlan-set-result
+		dni_eth --switch-lan-phy 9 --switch-lan-mask $restart_ports
+		$CONFIG set last_iptv_mask=0
+	fi
+}
+
+iptv_function=0
+if [ "$firmware_region" = "" ] || [ "$firmware_region" = "WW" ]; then
+	if [ "$gui_region" = "Russian" ]; then
+		iptv_function=1
+	else
+		iptv_function=0
+	fi
+elif [ "$firmware_region" = "RU" ]; then
+	iptv_function=1
+else
+	iptv_function=0
+fi
+$CONFIG set wan_iptv_function=$iptv_function
+
+#iptv_port_enable=0
+#if [ "x$iptv_function" = "x1" ]; then
+#	if [ "$($CONFIG get wan_brig_ssid1)" = "1" ] || [ "$($CONFIG get wan_brig_guest_ssid1)" = "1" ]; then
+#		iptv_port_enable=1
+#	fi
+#
+#	i=1
+#	while [ $i -le 4 ]; do
+#		if [ "$($CONFIG get wan_bri_lan$i)" = "1" ]; then
+#			iptv_port_enable=1
+#		fi
+#		i=`expr $i + 1`
+#	done
+#fi
+#if [ "x$iptv_port_enable" = "x1" ]; then
+#	$CONFIG set wan_iptv_port_enable=1
+#	echo 0 > /proc/br_iptv_enable
+#else
+#	$CONFIG set wan_iptv_port_enable=0
+#	echo 0 > /proc/br_iptv_enable
+#fi
+
+case "$1" in
+	config_wireless)
+		config_wireless_iptv $iptv_function
+		;;
+	config_wire)
+		config_wire_port $iptv_function
+		;;
+	*)
+		config_wire_port $iptv_function
+		config_wireless_iptv $iptv_function
+		;;
+esac
+

@@ -1,0 +1,69 @@
+# rules file for hotplug2
+
+SUBSYSTEM == block, DEVPATH is set, MAJOR is set, MINOR is set {
+        makedev /dev/%DEVICENAME% 0644
+}
+
+#For debugging
+#ACTION is set {
+#       printdebug
+#}
+
+# Load modules (what old hotplug did)
+ACTION == add, MODALIAS is set, INTERFACE is set {
+       exec modprobe -q %MODALIAS% ;
+               exec /sbin/manage_usb_led.sh ;
+               exec /etc/usb_modem_hotplug  %INTERFACE% on ;
+}
+
+ACTION == remove, MODALIAS is set, INTERFACE is set {
+               exec /sbin/manage_usb_led.sh ;
+               exec /etc/usb_modem_hotplug  %INTERFACE% off ;
+}
+# Create device nodes
+DEVPATH is set, MAJOR is set, MINOR is set {
+        makedev /dev/%DEVICENAME% 0644
+}
+
+# Mount a USB flashdisk
+#ACTION == add, PHYSDEVPATH ~~ "/usb[0-9]*/", DEVICENAME ~~ "^sd[a-z][0-9]+$", DEVPATH is set, MAJOR is set, MINOR is set {
+#	makedev /dev/%DEVICENAME% 0644
+#	run "/sbin/hotplug2.mount %DEVICENAME%"
+#	run "/usr/sbin/usb_cfg approve %DEVICENAME%"
+#	run "/bin/sleep 2"
+#	run "/usr/sbin/update_smb -a %DEVICENAME%"
+#	run "/sbin/cmdftp start"
+#	run "/usr/sbin/chkfuppes"
+#}
+
+# Unmount a USB flashdisk
+ACTION == remove, DEVPATH ~~ "/usb[0-9]*/", DEVICENAME ~~ "^sd[a-z][0-9]*$", MAJOR is set, MINOR is set {
+	run "/usr/sbin/detach_afp_shares %DEVICENAME% hotplug2"
+	exec /sbin/hotplug2.umount %DEVICENAME% ;
+	run "/usr/sbin/chkfuppes"
+	exec /bin/rm /tmp/umount_result ;
+}
+
+# WLAN Toggle
+SUBSYSTEM == button, BUTTON == wlan_toggle, ACTION == pressed {
+        exec /etc/ath/wifi_toggle ;
+}
+
+# WLAN logger
+SUBSYSTEM == wlan-log, TYPE == acl {
+        exec logger "[WLAN access %REPORT_ACTION%] from MAC: %MAC%," ;
+}
+
+SUBSYSTEM == wlan-log, TYPE == auth {
+        exec logger "[WLAN access %REPORT_ACTION%: incorrect security] from MAC address %MAC%," ;
+}
+
+# WPS Button
+SUBSYSTEM == button, BUTTON == wps_button, ACTION == pressed {
+        exec /sbin/wps_led_control pressed;
+}
+
+SUBSYSTEM == button, BUTTON == wps_button, ACTION == released {
+        exec /sbin/wps_led_control released;
+}
+

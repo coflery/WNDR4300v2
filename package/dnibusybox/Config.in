@@ -1,0 +1,21 @@
+config DNI_BUSYBOX_GIT_TREEISH
+	string
+	prompt "treeish of dni busybox git repository"
+	default "busybox-v1.4.2-dni65"
+	help
+           Input the treeish of dni busybox git repository which you want to build
+
+config DNI_BUSYBOX_GIT_REPOSITORY
+	string
+	prompt "name of dni busybox git repository"
+	default "busybox.git"
+	help
+	   Input the name of dni busybox git repository which you want to build
+
+config DNI_BUSYBOX_GIT_URL
+	string
+	prompt "url of dni busybox git repository"
+	default "ssh://dniserver/scm/dnigit/common/apps/busybox.git"
+	help
+	   Input the url of dni busybox git repository which you want to build
+

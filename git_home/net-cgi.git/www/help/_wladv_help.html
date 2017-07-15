@@ -1,0 +1,33 @@
+<% help_head() %>
+</head>
+<script language="javascript" type="text/javascript">
+var video_router_flag = parent.video_router_flag;
+var guest_router_flag=parent.guest_router_flag;
+var wps_protect_pin_flag = top.wps_protect_pin_flag;
+var adv_coexistence_flag = top.adv_coexistence_flag;
+var is_pr_version=top.is_pr_version;
+</script>
+$h_wladv
+<script language="javascript" type="text/javascript">
+		if( adv_coexistence_flag == 1 )
+			document.write("$h_wladv_coexistence");
+		if( video_router_flag == 0 ){
+			document.write("$h_wladv_ssid_broad");
+		}
+		if( parent.qos_router_flag == 0 )
+			document.write("$h_wladv_2");
+		if( is_pr_version == 1)
+			document.write("$pr_super_wifi");	
+
+		document.write("$h_wladv_Frag");
+
+		if( parent.transmit_router_flag == 1)
+			document.write("$h_wladv_tpc");	
+		if( parent.wireless_schedule_flag ==1 )
+			document.write("$h_wladv_4");
+		if( wps_protect_pin_flag == 1 )
+			document.write("$h_wladv_3rest_pin");
+		else
+			document.write("$h_wladv_3rest");
+</script>
+</html>

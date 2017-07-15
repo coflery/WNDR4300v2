@@ -1,0 +1,94 @@
+#!/bin/sh
+# udhcpc script edited by Tim Riker <Tim@Rikers.org>
+
+. /etc/failover/failover.common
+
+WAN_PROTO=$($CONFIG get failover_detect_proto)
+RESOLV_CONF=$FAILOVER_RESOLVE
+
+[ -z "$1" ] && $ECHO "Error: should be called from udhcpc" && exit 1
+[ -n "$broadcast" ] && BROADCAST="broadcast $broadcast"
+[ -n "$subnet" ] && NETMASK="netmask $subnet"
+
+case "$1" in
+	deconfig)
+
+		$IFCONFIG $interface 0.0.0.0 && [ "$interface" = "$WAN_IF" ] && $CONFIG set wan_dhcp_ipaddr=0.0.0.0
+		;;
+	renew|bound)
+		old_ip=$($CONFIG get wan_dhcp_ipaddr)
+		$IFCONFIG $interface $ip $BROADCAST $NETMASK && [ "$interface" = "$WAN_IF" ] && $CONFIG set wan_dhcp_ipaddr=$ip && $CONFIG set wan_dhcp_oldip=$ip && $CONFIG set wan_dhcp_netmask=$subnet
+
+		if [ "$($CONFIG get GUI_Region)" = "Russian" -o "$(cat /tmp/firmware_region)" = "RU" ]; then
+			if [ -n "$router" ] && [ "$WAN_PROTO" != "pptp" ] && [ "$WAN_PROTO" != "pppoe" ]; then
+				[ "$interface" = "$WAN_IF" ] && $CONFIG set wan_dhcp_gateway=$router
+			fi
+		else
+			if [ -n "$router" ] && [ "$WAN_PROTO" != "pptp" ] ; then
+				[ "$interface" = "$WAN_IF" ] && $CONFIG set wan_dhcp_gateway=$router
+			fi
+		fi
+		[ "$interface" != "$WAN_IF" ] && $CONFIG set lte_dhcp_gateway=$router
+
+		if [ "$WAN_PROTO" = "pppoe" ]; then
+			exit
+		fi
+		
+		$ECHO -n > $RESOLV_CONF
+		dns_num=0
+		for i in $dns ; do
+			$ECHO adding dns $i
+			$ECHO nameserver $i >> $RESOLV_CONF
+
+			dns_num=`expr $dns_num + 1`
+			if [ $dns_num -eq 1 ]; then
+				wan_dns1=$i
+			fi
+			if [ $dns_num -eq 2 ]; then
+				wan_dns2=$i
+			fi
+			if [ $dns_num -eq 3 ]; then
+				wan_dns3=$i
+			fi
+		done
+		sed -i -e '/search/d' $RESOLV_CONF
+		if [ "$WAN_PROTO" = "pptp" ] && [ "$1" != "renew" -o "$($CONFIG get wan_dhcp_ipaddr)" != "$($CONFIG get wan_dhcp_oldip)" ]; then
+
+			pptpconf=$FAILOVER_PPP_DIAL
+			if [ "$($CONFIG get wan_pptp_dns_assign)" != "1" ]; then
+				[ "x$(grep ^pptp_dns1 $pptpconf)" = "x" -a "x$wan_dns1" != "x" ] && echo "pptp_dns1 $wan_dns1" >> $pptpconf
+				[ "x$(grep ^pptp_dns2 $pptpconf)" = "x" -a "x$wan_dns2" != "x" ] && echo "pptp_dns2 $wan_dns2" >> $pptpconf
+				[ "x$(grep ^pptp_dns3 $pptpconf)" = "x" -a "x$wan_dns3" != "x" ] && echo "pptp_dns3 $wan_dns3" >> $pptpconf
+			fi
+
+			pptpgw=""
+			if [ -n "$router" ]; then
+				for i in $router ; do
+					[ "x$pptpgw" = "x" ] && pptpgw=$i
+				done
+			fi
+			[ "x$(grep ^pptp_gateway $pptpconf)" = "x" -a "x$pptpgw" != "x" ] && echo "pptp_gateway $pptpgw" >> $pptpconf
+
+			pppd call dial-provider updetach unit 1
+		elif [ "$WAN_PROTO" = "l2tp" ]; then
+
+			l2tpconf=$FAILOVER_PPP_DIAL
+			if [ "$($CONFIG get wan_l2tp_dns_assign)" != "1" ]; then
+				[ "x$(grep ^l2tp_dns1 $l2tpconf)" = "x" -a "x$wan_dns1" != "x" ] && echo "l2tp_dns1 $wan_dns1" >> $l2tpconf
+				[ "x$(grep ^l2tp_dns2 $l2tpconf)" = "x" -a "x$wan_dns2" != "x" ] && echo "l2tp_dns2 $wan_dns2" >> $l2tpconf
+				[ "x$(grep ^l2tp_dns3 $l2tpconf)" = "x" -a "x$wan_dns3" != "x" ] && echo "l2tp_dns3 $wan_dns3" >> $l2tpconf
+			fi
+
+			l2tpgw=""
+			if [ -n "$router" ]; then
+				for i in $router ; do
+					[ "x$l2tpgw" = "x" ] && l2tpgw=$i
+				done
+			fi
+			[ "x$(grep ^l2tp_gateway $l2tpconf)" = "x" -a "x$l2tpgw" != "x" ] && echo "l2tp_gateway $l2tpgw" >> $l2tpconf
+
+			pppd call dial-provider updetach unit 1
+		fi
+esac
+
+exit 0

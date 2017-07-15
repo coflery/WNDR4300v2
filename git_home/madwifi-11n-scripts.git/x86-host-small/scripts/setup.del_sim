@@ -1,0 +1,5 @@
+sudo ifconfig wlan-sim0 down
+sudo ifconfig wlan-sim1 down > /dev/null 2>&1
+sudo wlanconfig wlan-sim0 destroy 
+sudo wlanconfig wlan-sim1 destroy  > /dev/null 2>&1
+

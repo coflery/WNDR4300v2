@@ -1,0 +1,30 @@
+#!/bin/sh
+##
+## Compatability scripts for older versions
+##
+
+. /etc/ath/stacfg
+
+##
+## bring down wsupp bridge
+##
+killall atd_wsupp_bridge
+sleep 3
+
+##
+## stop/shutdown VAP
+##
+ifconfig ath0 0.0.0.0
+ifconfig ath0 down
+
+##
+## unload all modules
+##
+/etc/rc.d/rc.wlan down
+rm -f /tmp/.staup
+
+##
+## restore network
+##
+ifconfig br0 $STA_IPADDR netmask $STA_NETMASK up
+

@@ -1,0 +1,17 @@
+Source-Makefile: package/gettext/Makefile
+Package: libintl
+Version: 0.17-1
+Depends: 
+Provides: 
+Build-Depends: libtool
+Section: libs
+Category: Libraries
+Title: GNU Internationalization library
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: gettext-0.17.tar.gz
+Type: ipkg
+Description: GNU Internationalization library
+http://www.gnu.org/software/gettext/
+@@
+
+

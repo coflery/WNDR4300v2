@@ -1,0 +1,21 @@
+Source-Makefile: package/telnetenable/Makefile
+Package: telnetenable
+Version: 1
+Depends: @TARGET_dniwndr3700u2631||TARGET_wndr4500v3
+Provides: 
+Section: utils
+Category: Network
+Title: unlocking the utelnetd.
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  It is used for NTGR's Router Debug mode.
+@@
+Config:
+	menu "Configuration"
+		depends on PACKAGE_telnetenable
+		source "package/telnetenable/Config.in"
+	endmenu
+@@
+
+

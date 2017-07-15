@@ -1,0 +1,37 @@
+#!/bin/sh /etc/rc.common
+
+#START=60
+
+start() {
+    DEFAULT=/etc/default/samba
+    RUN_D=/var/run/samba
+    SMB_CONF_DIR=/tmp/samba
+    SYS_CONF_DIR=/tmp/config
+    PRIVATE_DIR=/tmp/private
+    SMBD_PID_F=$RUN_D/smbd.pid
+    SMB_PASSWD_DIR=/tmp/smbpasswd
+    [ -f $DEFAULT ] && . $DEFAULT
+
+    mkdir -p /var/log/samba
+    #mount -t tmpfs tmpfs /home -o size=64K
+    mkdir -p $SMB_CONF_DIR
+    cp -f /usr/config/smb.conf $SMB_CONF_DIR
+    mkdir -p $SYS_CONF_DIR
+    cp -f /usr/config/passwd $SYS_CONF_DIR
+    cp -f /usr/config/group $SYS_CONF_DIR
+    mkdir -p $PRIVATE_DIR
+    mkdir -p $RUN_D
+
+# create users, groups
+    update_user
+   
+# update smb.conf and start samba if needed
+    update_smb 
+}
+
+stop() {
+    killall -9 smbd
+}
+
+[ "$1" = "start" ] && start
+[ "$1" = "stop" ] && stop

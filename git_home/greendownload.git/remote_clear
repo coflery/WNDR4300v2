@@ -1,0 +1,12 @@
+#! /bin/sh
+
+num=`ps | grep "transmission-remote -l" | grep -c -v grep`
+if [ $num -ge 5 ]; then
+	pid_list=$(ps | grep "transmission-remote -l" | grep -v grep | awk '{print $1}')
+
+	for i in $pid_list; do
+	        echo "Kill process $i" > /dev/console
+	        kill -9 "$i"
+	done
+
+fi

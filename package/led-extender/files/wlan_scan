@@ -1,0 +1,18 @@
+#!/bin/sh
+
+iwpriv ath1 pause_scan 0
+if [ "x`/bin/cat /tmp/link_status`" = "x0" ]; then
+	killall -SIGSTOP wpa_supplicant > /dev/null
+fi
+#echo "begin scanning...."
+iwlist ath1 scan > /dev/null
+cp /proc/sys/net/ath0/scan_result /tmp/scan_result_tmp
+/sbin/scan_result_process
+if [ "x`/bin/cat /tmp/link_status`" = "x0" ]; then
+        iwpriv ath1 pause_scan 1
+	killall -SIGCONT wpa_supplicant > /dev/null
+	if [ "$(config get ca_end)" = "1" -o "$(config get sta_wl_ssid)" != "12345678NETGEAR" ]; then
+	    killall -SIGINT led-extender
+	fi
+fi
+#echo "wireless scan done!"

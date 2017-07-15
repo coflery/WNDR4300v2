@@ -1,0 +1,10 @@
+     Commands to enable WDS and add/delete entries to AST
+
+/* Enable WDS  */
+iwpriv wlan0 wds 1
+
+/* Add an entry in the address search table */
+wlanconfig wlan0 wds add <dest-mac> <peer-mac>
+
+/* Delete an entry from the address search table */
+wlanconfig wlan0 wds del <dest-mac>

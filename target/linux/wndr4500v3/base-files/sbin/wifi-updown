@@ -1,0 +1,40 @@
+#!/bin/sh
+# This script is used to start wifi interface.
+
+wifi_updown() {
+        MODLIST=`lsmod | cut -f1,0 -d" " | grep ath_hal `
+	if [ "${MODLIST}" != "ath_hal" ]; then
+	    echo "wifi is not load"
+	    exit
+	fi
+	# Pull down the wireless
+	for i in 0 1 2 3; do
+	  vap_status=`ifconfig | grep ath${i}`
+	  if [ "x$vap_status" != "x" ]; then
+	      ifconfig ath${i} down 2> /dev/null
+	      case "$i" in
+	              0) vap_radio_0=0;;
+		      1) vap_radio_1=1;;
+		      2) vap_radio_2=2;;
+		      3) vap_radio_3=3;;
+		      *) echo "var i $i is incorrect"
+	      esac
+	   fi
+	done
+	sleep 3
+	# Pull up the wireless
+	if [ "$vap_radio_0" = "0" ]; then
+	    ifconfig ath0 up 2> /dev/null
+	fi
+	if [ "$vap_radio_1" = "1" ]; then
+	    ifconfig ath1 up 2> /dev/null
+	fi
+	if [ "$vap_radio_2" = "2" ]; then
+	    ifconfig ath2 up 2> /dev/null
+	fi
+	if [ "$vap_radio_3" = "3" ]; then
+	    ifconfig ath3 up 2> /dev/null
+	fi
+}
+
+wifi_updown

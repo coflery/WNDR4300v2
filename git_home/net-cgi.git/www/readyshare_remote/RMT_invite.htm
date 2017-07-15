@@ -1,0 +1,253 @@
+#!/bin/sh
+. /www/cgi-bin/func.sh
+
+leafp2p_remote_login=$(${nvram} get leafp2p_remote_login)
+leafp2p_remote_password=$(${nvram} get leafp2p_remote_password)
+
+case "$QUERY_STRING" in
+    register_ok)
+		exec_result="<script>document.write(result_register_ok)</script>"
+	;;
+    register_fail)
+		exec_result="<script>document.write(result_register_fail)</script>"
+	;;
+    unreg_ok)
+		exec_result="<script>document.write(result_unreg_ok)</script>"
+	;;
+    unreg_fail)
+		exec_result="<script>document.write(result_unreg_fail)</script>"
+	;;
+esac
+
+if [ "${HTTP_AUTH}x" = "1x" ] || [ "$(${nvram} get soap_auth)x" = "1x" -a "${HTTP_REFERER%%USB_basic.htm}" != "${HTTP_REFERER}" ]; then
+print_http_header
+cat <<EOF
+<html>
+<head>
+    <link rel="stylesheet" href="/style/form.css">
+    <script language=javascript type=text/javascript src="/funcs.js"></script>
+    <Meta http-equiv="Pragma" Content="no-cache">
+    <META HTTP-equiv="Cache-Control" content="no-cache">
+    <Meta http-equiv="Expires" Content="0">
+    <META http-equiv='Content-Type' content='text/html; charset=UTF-8'>
+EOF
+    print_language_js
+cat <<EOF
+    <title>ReadySHARE Remote</title>
+</head>
+<body>
+<script language=javascript type=text/javascript>
+function show_wait_msg()
+{
+	document.getElementById("mainform").style.display="none";
+	document.getElementById("pls_wait_div").style.display="block";
+}
+</script>
+<div id="pls_wait_div" style="display:none; color: #000;">
+<table width="100%">
+<tr><td align="center"><b><br /><br /><script>document.write(bh_plz_wait_moment)</script></b><br /><br /></td></tr>
+<tr><td align="center"><img src="../image/wait30.gif" /></td></tr>
+</table>
+</div>
+EOF
+
+    if [ "x${leafp2p_remote_login}" = "x" ]; then
+    cat <<EOF
+    <form id="mainform" method="POST" action="/cgi-bin/RMT_invite.cgi?/cgi-bin/RMT_invite.htm">
+    <input type="hidden" name="submit_flag" value="register_user">
+	<div class="page_title"><script>document.write(remote_share_head)</script></div>
+	<div id="main" class="main">
+    	<table width="100%" border="0" cellpadding="0" cellspacing="3">
+        <tr>
+            <td colspan="2">
+                ${exec_result}
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <img src="/liteblue.gif" width="100%" height="12">
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+	    <p><script>document.write(ready_share_info1)</script></p>
+		<p><A tabindex=-1 href="javascript:loadhelp('_remote_share','readyshare_cloud')"><b><script>document.write(how_setup_ready_share)</script></b></A><br/>
+		<script>
+		document.write(ready_share_step1+'<br/>');
+		document.write(ready_share_step2+'<br/>');
+		document.write(ready_share_step3+'<br/>');
+		document.write(ready_share_step4+'<br/>');
+		document.write(ready_share_set_note);
+
+		</script>
+		</p>	
+            </td>
+        </tr>
+	<tr>
+	   <td colspan="2">
+	   <img src="/liteblue.gif" width="100%" height="12">
+	   </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+	    <b><A tabindex=-1 href="javascript:loadhelp('_remote_share','readyshare_enable')"><script>document.write(ready_share_start)</script></A></b><br/>
+	    <script>document.write(ready_share_get_account)</script></b><br/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <b><script>document.write(username)</script>:</b>
+            </td>
+            <td>
+                <input type="text" value="" name="TXT_remote_login" maxlength="25" size="28">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <b><script>document.write(key_passphrase)</script>:</b>
+            </td>
+            <td>
+                <input type="password" value="" name="TXT_remote_password" maxlength="25" size="28">
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+            </td>
+        </tr>
+        <tr>
+            <td>
+            </td>
+            <td>
+	        <script>document.write('<input class="common_bt" type="submit" name="BTN_reg" value="'+register+'" onclick="show_wait_msg()"> ('+register_note+')');</script>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <img src="/liteblue.gif" width="100%" height="12">
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+            </td>
+        </tr>
+    </table>
+    </div>
+	
+<div id=help style="display: none">
+<iframe name="help_iframe" id="helpframe" src="/help/_remote_share_help.html" allowtransparency="true" width="100%" frameborder="0" >
+</iframe>
+</div>
+<div id="help_switch" class="close_help" >
+<img class="help_switch_img" src="/image/help-bar.gif">
+	<script>
+		var help_flag=0;
+        </script>
+		<table border="0"><tr>
+        <td id="help_space" onclick="show_hidden_help(help_flag); help_flag++;"></td>
+
+        <td id="help_center"><script>document.write(help_center)</script></td>
+        <td id="help_button" onclick="show_hidden_help(help_flag); help_flag++;"></td>
+        <td id="help_show_hidden"> <a href="javascript:void(0)" onclick="show_hidden_help(help_flag); help_flag++;"><script>document.write(help_show_hide)</script></a> </td>
+        </tr></table>
+</div>
+	
+    </form>
+EOF
+    else
+cat <<EOF
+	<form id="mainform" method="POST" action="/cgi-bin/RMT_invite.cgi?/cgi-bin/RMT_invite.htm">
+		<input type="hidden" name="submit_flag" value="unregister_user">
+        <input type="hidden" value="$leafp2p_remote_login" name="TXT_remote_login" maxlength="25" size="28">
+        <input type="hidden" value="$leafp2p_remote_password" name="TXT_remote_password" maxlength="25" size="28">
+        <div class="page_title"><script>document.write(remote_share_head)</script></div>
+        <div id="main" class="main">
+		<table width="100%" border="0" cellpadding="0" cellspacing="3">
+			<tr>
+				<td colspan="2">
+                    ${exec_result}
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<img src="/liteblue.gif" width="100%" height="12">
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<p><script>document.write(ready_share_info1)</script></p>
+					<p><A tabindex=-1 href="javascript:loadhelp('_remote_share','readyshare_cloud')"><b><script>document.write(how_setup_ready_share)</script></b></A><br/>
+					<script>
+					document.write(ready_share_step1+'<br/>');
+					document.write(ready_share_step2+'<br/>');
+					document.write(ready_share_step3+'<br/>');
+					document.write(ready_share_step4+'<br/>');
+					document.write(ready_share_set_note);
+					</script>
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+				<img src="/liteblue.gif" width="100%" height="12">
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+				<p><b><script>document.write(resister_user)</script>: $leafp2p_remote_login</b></p>
+				<p><script>document.write(access_storage_method)</script></p>
+				<p><script>document.write(unregister_info)</script></p>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" align="center">
+					<script>document.write('<input class="common_big_bt" type="submit" name="BTN_unreg" value="'+unregister+'" onclick="show_wait_msg()">');</script>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<img src="/liteblue.gif" width="100%" height="12">
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+				</td>
+			</tr>
+		</table>
+		</div>
+	<div id=help style="display: none">
+		<iframe name="help_iframe" id="helpframe" src="/help/_remote_share_help.html" allowtransparency="true" width="100%" frameborder="0" >
+		</iframe>
+	</div>
+	<div id="help_switch" class="close_help" >
+	<img class="help_switch_img" src="/image/help-bar.gif">
+		<script>
+		var help_flag=0;
+	        </script>
+		<table border="0"><tr>
+        	<td id="help_space" onclick="show_hidden_help(help_flag); help_flag++;"></td>
+        	<td id="help_center"><script>document.write(help_center)</script></td>
+        	<td id="help_button" onclick="show_hidden_help(help_flag); help_flag++;"></td>
+        	<td id="help_show_hidden"> <a href="javascript:void(0)" onclick="show_hidden_help(help_flag); help_flag++;"><script>document.write(help_show_hide)</script></a> </td>
+        	</tr></table>
+	</div>
+	</form>
+EOF
+    fi
+cat <<EOF
+</body>
+</html>
+EOF
+elif [ "${HTTP_AUTH}x" = "2x" ]; then
+print_multi_login
+else
+print_401
+
+fi

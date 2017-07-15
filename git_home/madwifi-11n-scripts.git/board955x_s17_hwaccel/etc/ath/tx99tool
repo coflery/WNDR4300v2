@@ -1,0 +1,56 @@
+#!/bin/sh
+#Wrap for athtestcmd & tx99tool: the two tx99 tools of 11ac & 11abgn radios.
+
+RADIO=$1
+CMD=$2
+CMD_OPTION=$3
+CMD_PARAM=$4
+
+if [ $# = "0" ] 
+then
+  echo "Need parameters! Usage e.g.: tx99tool wifi0 set txmode 0 "
+  exit 1
+fi
+
+RADIO_TYPE=`iwpriv $RADIO get_radio_type |cut -d : -f 2`
+#remove spaces
+RADIO_TYPE=`echo $RADIO_TYPE`
+if [ "$RADIO_TYPE" = "1" ]
+then
+    echo "$RADIO is 11ac radio"
+    case $CMD in
+        start) echo "start tx99";exit 0;;
+        stop) echo "stop tx99"; athtestcmd -i $RADIO --tx off; exit 0;;
+    esac
+    case $CMD_OPTION in
+        freq) echo "set freq:$CMD_PARAM";athtestcmd  -i $RADIO -t tx99 --txfreq $CMD_PARAM;;
+        rate) echo "set rate:$CMD_PARAM";athtestcmd  -i $RADIO -t tx99 --txrate $CMD_PARAM;;
+        pwr)  echo "set pwr:$CMD_PARAM"; athtestcmd  -i $RADIO -t tx99 --txpwr $CMD_PARAM;;
+        txmode) 
+            case $CMD_PARAM in
+                0) TX_MODE="legacy";;
+                1) TX_MODE="legacy";;
+                2) TX_MODE="legacy";;
+                5) TX_MODE="ht20";;
+                6) TX_MODE="ht20";;
+                7) TX_MODE="ht40plus";;
+                8) TX_MODE="ht40minus";;
+                9) TX_MODE="ht40plus";;
+                10)TX_MODE="ht40minus";; 
+                *) echo "not supported";exit 1;; 
+            esac;
+            echo "set txmode: $TX_MODE"
+            athtestcmd  -i $RADIO -t tx99 --mode $TX_MODE;;
+        txchain) echo "set txchain"; athtestcmd  -i $RADIO -t tx99 --txchain $CMD_PARAM;;
+        testmode) echo "not supported for 11ac";exit 0;;
+        *) echo "not supported! wrong cmd?";exit 1;;
+    esac
+else
+    echo "$RADIO is 11abgn radio"
+    if [ "$CMD_OPTION" = "freq" ]
+    then
+        tx99tool_bin $RADIO $CMD $CMD_OPTION $CMD_PARAM $5 $6 $7 $8
+    else
+        tx99tool_bin $RADIO $CMD $CMD_OPTION $CMD_PARAM 
+    fi
+fi

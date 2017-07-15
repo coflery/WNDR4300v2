@@ -1,0 +1,41 @@
+#!/bin/sh /etc/rc.common
+START=80
+boot() {
+       wlan detect > /etc/config/wireless 2>/dev/null
+
+       # Don't enable wlan when do caldata in factory
+       [ "$($CONFIG get wlan_boot_disable)" = "1" ] && return
+
+       wlan up
+       if [ -f /tmp/ntp_updated -a -f /tmp/etc/crontabs/root ]; then
+           local wlg_rule=0
+           local wla_rule=0
+           if [ "x`cat /tmp/etc/crontabs/root | grep 11g`" != "x" ]; then
+               wlg_rule=1
+           fi
+           if [ "x`cat /tmp/etc/crontabs/root | grep 11a`" != "x" ]; then
+               wla_rule=1
+           fi
+           /sbin/cmdsched
+           if [ "$wlg_rule" = "1" ]; then
+               if [ "$($CONFIG get wladv_schedule_enable)" = "1" ]; then
+                   /sbin/cmdsched_wlan_status 11g
+                   if [ "$($CONFIG get wlg_onoff_sched)" = "1" ]; then
+                       wlan schedule 11g off
+                   elif [ "$($CONFIG get wlg_onoff_sched)" = "0" ]; then
+                       wlan schedule 11g on
+                   fi
+               fi
+           fi
+           if [ "$wla_rule" = "1" ]; then
+               if [ "$($CONFIG get wladv_schedule_enable_a)" = "1" ]; then
+                   /sbin/cmdsched_wlan_status 11a
+                   if [ "$($CONFIG get wla_onoff_sched)" = "1" ]; then
+                       wlan schedule 11a off
+                   elif [ "$($CONFIG get wla_onoff_sched)" = "0" ]; then
+                       wlan schedule 11a on
+                   fi
+               fi
+           fi
+       fi
+}

@@ -1,0 +1,64 @@
+<% http_header("style/form.css", "/funcs.js", "style/advanced_home.css") %>
+
+<BODY onLoad="loadvalue();" bgcolor=#ffffff>
+<div id="content_icons">
+<% adv_icons() %>
+
+<script>
+var internet_type="<% cfg_get("internet_type") %>";
+var internet_ppp_type="<% cfg_get("internet_ppp_type") %>";
+var wan_status="<% detwan_valid() %>";
+var gui_region='<% cfg_get("GUI_Region") %>';
+function loadvalue()
+{
+	IE_RST_status();
+}
+
+function setTitleClass(argv)
+{
+	var title_height, title_div;
+	for(num=0; num<arguments.length; num++)
+	{
+		title_div = document.getElementById(arguments[num]);
+		if( title_div == null ) continue;
+		title_height = title_div.getElementsByTagName("b")[0].clientHeight;
+		if( title_height > 16 )
+			title_div.className = "title_doubleline";
+		else
+			title_div.className = "title";
+	}
+}
+
+function click_direct(str1,str2)
+{
+   var sub_name= str1+"_sub";
+    if(top.document.getElementById(sub_name).style.display == "none")
+	parent.open_or_close_sub(str1);
+	
+	parent.click_adv_action(str2);
+}
+
+function click_status()
+{
+	if (internet_type == "0" && internet_ppp_type == "3")
+		window.open('RST_multipppoe_conn_status.htm','multi_connect_status','width=625,height=600,top=50,left=200,status=yes');
+	else
+		window.open('RST_conn_status.htm','connect_status','width=625,height=400,top=50,left=200,status=yes');
+}
+
+if(isIE()){
+	var frame_div = top.document.getElementById("formframe_div");
+	frame_div.onresize =  function(){
+		IE_RST_status();
+	}
+}
+if(get_browser() == "Opera"){
+	window.onresize =  function(){
+		IE_RST_status();
+	}
+}
+setTitleClass("icon1_title", "icon2_title", "icon2_title_ap", "wds2_4_title", "wds5_title", "words_title", "words_title_5G", "guest_bgn", "guest_an", "wds2_4_base_title", "wds5_base_title");
+</script>
+</div><!-- end of content_icons -->
+</BODY>
+</HTML>

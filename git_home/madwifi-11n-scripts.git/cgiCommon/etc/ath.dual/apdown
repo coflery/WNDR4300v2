@@ -1,0 +1,45 @@
+#!/bin/sh
+##
+## Compatability scripts for older versions
+##
+. /etc/ath/apcfg
+
+## Kill 'icm' if it is alive
+ICM_TMP_FILE=/tmp/icm.tmp
+
+ps -ef > ${ICM_TMP_FILE}
+if grep -q icm ${ICM_TMP_FILE}; then
+    killall icm
+fi
+rm ${ICM_TMP_FILE}
+
+WPS_LED_OFF=1
+echo $WPS_LED_OFF  > /proc/simple_config/simple_config_led  
+
+KER_VER_31=`set | uname -a | grep -c "2.6.31"`
+if [ "${KER_VER_31}" = 1 ]; then
+    pktlogconf -d wifi0
+    pktlogconf -d wifi1
+fi
+
+
+killVAP all
+#Finally, unload all modules
+sleep 3
+if [ "${AP_CONF_ACFG}"  -eq "1" ]; then
+	prepareACFG unload
+fi
+sleep 3
+/etc/rc.d/rc.wlan down
+## In peregrine environment, we are seeing random panics
+## when apup and apdown are done  quick
+## add 3 seconds delay after wlan down
+export WAN_IF=eth0
+export LAN_IF=eth1
+
+ifconfig $WAN_IF up
+ifconfig $LAN_IF up
+/etc/rc.d/rc.network
+/etc/rc.d/rc.bridge
+
+rm -f /tmp/.apup

@@ -1,0 +1,71 @@
+#!/bin/sh
+
+config=/bin/config
+upnp_enable=$($config get upnp_enable)
+
+MINIUPNPD_CONF=/tmp/etc/miniupnpd.conf
+
+print_upnp_conf() {
+cat <<EOF
+ext_ifname=$1
+listening_ip=$2
+port=5555
+bitrate_up=1000000
+bitrate_down=1000000
+notify_interval=$3
+time_to_live=$4
+friendly_name=$5
+listening_net=$6
+pnpx_hwid=$7
+modelurl=$8
+modelnumber=$9
+modelname=$10
+modeldescription=$11
+devupc=$12
+allow 1024-65535 192.168.0.0/24 1024-65535
+allow 1024-65535 192.168.1.0/24 1024-65535
+allow 0-65535 0.0.0.0/0 0-65535
+EOF
+}
+
+upnp_start() {
+	local proto=$($config get wan_proto)
+
+	if [ "$proto" = "pppoe" -o "$proto" = "pptp" -o "$proto" = "mulpppoe1" ]; then
+		wan_ifname="ppp0"
+	else
+		wan_ifname="eth1"
+	fi
+
+	local name=$($config get netbiosname)
+	[ "x$name" = "x" ] && [ -e /hardware_version ] && name="$(cat /hardware_version)"
+	name="$name (Gateway)"
+
+	[ -f $MINIUPNPD_CONF ] && rm -f $MINIUPNPD_CONF
+	[ ! -d /tmp/etc ] && mkdir /tmp/etc
+	print_upnp_conf "$wan_ifname" "$($config get lan_ipaddr)" "$($config get upnp_AdverTime)" "$($config get upnp_TimeToLive)" "$name" "$($config get lan_netmask)" "$($config get miniupnp_pnpx_hwid)" "$($config get miniupnp_modelurl)" "$($config get miniupnp_modelnumber)" "$($config get miniupnp_modelname)" "$($config get miniupnp_modeldescription)" "$($config get miniupnp_devupc)"> $MINIUPNPD_CONF
+
+	# wait a moment ...
+	sleep 2
+
+	/usr/sbin/miniupnpd &
+}
+
+case "$1" in
+	stop)
+		[ "$upnp_enable" = "1" ] && cp /tmp/upnp_pmlist /tmp/upnp_pmlist.bak 2>/dev/null
+		killall miniupnpd
+	;;
+	start)
+		[ "$upnp_enable" = "1" ] && cp /tmp/upnp_pmlist /tmp/upnp_pmlist.bak 2>/dev/null
+		killall miniupnpd
+		[ "$upnp_enable" = "1" ] && upnp_start
+	;;
+	restart)
+		# To fix bug 22659, do nothing for "cmdupnp restart" command if /tmp/upnpIgnoreRestart exits
+		[ -f /tmp/upnpIgnoreRestart ] && exit
+		[ "$upnp_enable" = "1" ] && cp /tmp/upnp_pmlist /tmp/upnp_pmlist.bak 2>/dev/null
+		killall miniupnpd
+		[ "$upnp_enable" = "1" ] && upnp_start
+	;;
+esac

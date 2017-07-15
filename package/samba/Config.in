@@ -1,0 +1,20 @@
+config SAMBA_GIT_TREEISH
+	string
+	prompt "treeish of samba git repository"
+	default "samba-v3.0.24-dni5"
+	help
+           Input the treeish of samba git repository which you want to build
+
+config SAMBA_GIT_REPOSITORY
+	string
+	prompt "name of samba git repository"
+	default "samba.git"
+	help
+	   Input the name of samba git repository which you want to build
+
+config SAMBA_GIT_URL
+	string
+	prompt "url of samba git repository"
+	default "ssh://dniserver/scm/dnigit/common/apps/samba.git"
+	help
+	   Input the url of samba git repository which you want to build

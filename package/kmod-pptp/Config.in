@@ -1,0 +1,21 @@
+# kmod-pptp configuration
+config PPTP_GIT_TREEISH
+	string
+	prompt "treeish of pptp git repository"
+	default "pptp-drv-v2.6.31-dni3"
+	help
+           Input the treeish of kmod-pptp git repository which you want to build
+
+config PPTP_GIT_REPOSITORY
+	string
+	prompt "name of pptp git repository"
+	default "kmod-drv-pptp.git"
+	help
+	   Input the name of kmod-pptp git repository which you want to build
+
+config PPTP_GIT_URL
+	string
+	prompt "url of pptp git repository"
+	default "ssh://dniserver/scm/dnigit/common/kmods/kmod-drv-pptp.git"
+	help
+	   Input the url of kmod-pptp git repository which you want to build

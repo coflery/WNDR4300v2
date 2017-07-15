@@ -1,0 +1,38 @@
+# Atheros hostap configuration
+
+config ATHEROS_AQUILA_WPA_GIT_TREEISH
+	string
+	prompt "treeish of atheros aquila wpa git repository"
+	default "hostapd-aquila-dni15"
+	help
+	  Input the treeish of atheros aquila wpa git repository which you want to build
+
+config ATHEROS_AQUILA_WPA_GIT_REPOSITORY
+	string
+	prompt "name of atheros aquila wpa git repository"
+	default "hostap.git"
+	help
+	  Input the name of atheros aquila wpa git repository which you want to build
+
+config ATHEROS_AQUILA_WPA_GIT_URL
+	string
+	prompt "url of atheros aquila wpa git repository"
+	default "ssh://dniserver/scm/dnigit/common/apps/hostap.git"
+	help
+	  Input the url of atheros aquila wpa git repository which you want to build
+
+config ATHEROS_AQUILA_WPA_ATHR_HOSTAP
+	bool "Use Atheros latest hostap package"
+	help
+	  This is to use Atheros latest hostap package, which is derived
+	  from the original hostap in w1.fi.
+
+config ATHEROS_AQUILA_WPA_HOSTAPD
+	depends on ATHEROS_AQUILA_WPA_ATHR_HOSTAP
+	default y
+	bool "Install hostapd"
+
+config ATHEROS_AQUILA_WPA_WPASUPPLICANT
+	depends on ATHEROS_AQUILA_WPA_ATHR_HOSTAP
+	default n
+	bool "Install wpa_supplicant"

@@ -1,0 +1,11 @@
+<% http_header("style/form.css") %>
+<script>
+var port_forward_trigger="<% cfg_get("port_forward_trigger") %>";
+if (port_forward_trigger == "1")
+	location.href="triggering.htm";
+else
+{
+	location.href="forwarding.htm";
+}
+</script>
+</HTML>

@@ -1,0 +1,93 @@
+#!/bin/sh
+ARTMTD=$(grep \"caldata\" /proc/mtd | awk -F ':' '{print $1}')
+BAKMTD=$(grep \"caldata_backup\" /proc/mtd | awk -F ':' '{print $1}')
+
+# if is Multicast MAC Address, Just Change Multi-Bit as zero bit to Unicast MAC.
+correct_mac_value()
+{
+	local mac_value="$1"
+	local mac1 mac2 mac3 mac4 mac5 mac6 multi_bit mac_tmp
+
+	mac1="$(echo -n "$mac_value" | awk -F':' '{print $1}')"
+	mac2="$(echo -n "$mac_value" | awk -F':' '{print $2}')"
+	mac3="$(echo -n "$mac_value" | awk -F':' '{print $3}')"
+	mac4="$(echo -n "$mac_value" | awk -F':' '{print $4}')"
+	mac5="$(echo -n "$mac_value" | awk -F':' '{print $5}')"
+	mac6="$(echo -n "$mac_value" | awk -F':' '{print $6}')"
+
+	mac_tmp=0x$mac1
+	multi_bit=$((mac_tmp & 0x01))
+	if [ $multi_bit -eq 1 ]; then
+		mac_tmp=$((mac_tmp & 0xfe))
+		mac1="$(printf "%x" $mac_tmp)"
+	fi
+
+	echo -n "$mac1:$mac2:$mac3:$mac4:$mac5:$mac6"
+
+}
+
+is_valid_board_parameter()
+{
+	local board_hw_id board_model_id
+	
+	board_hw_id="$(dd if=$1 bs=1 count=42 skip=41 2>/dev/null | cat | cut -f 2 -d ":" | cut -f 7 -d "+")"
+	board_model_id="$(dd if=$1 bs=1 count=18 skip=83 2>/dev/null | cat)"
+
+	[ "$board_hw_id" != "5508012173" -a "$board_hw_id" != "5508012175" -a "$board_hw_id" != "5508012183" ] && return 255
+	[ "$board_model_id" != "WNDR4500series" ] && return 255	
+
+	# add other check here if necessary
+	return 0
+	# Note: return 0 means true, return other value means false
+}
+
+if [ "x$BAKMTD" = "x" ]; then
+	echo "Not find ART.bak mtd partition"
+	exit
+fi
+
+dd if=/dev/$ARTMTD of=/tmp/$ARTMTD bs=65536 count=1 2>/dev/null
+dd if=/dev/$BAKMTD of=/tmp/$BAKMTD bs=65536 count=1 2>/dev/null
+
+if is_valid_board_parameter /tmp/$ARTMTD
+then
+	if [ "$(hexdump /tmp/$ARTMTD)" = "$(hexdump /tmp/$BAKMTD)" ];
+	then
+		echo "board parameter in $ARTMTD and $BAKMTD partition are same and valid"
+	else
+		echo "backup board parameter from $ARTMTD to $BAKMTD partition"
+		mtd erase /dev/$BAKMTD
+		mtd write -f /tmp/$ARTMTD /dev/$BAKMTD
+	fi
+else
+	if is_valid_board_parameter /tmp/$BAKMTD
+	then
+		echo "restore board parameter from $BAKMTD to $ARTMTD partition"
+		mtd erase /dev/$ARTMTD
+		mtd write -f /tmp/$BAKMTD /dev/$ARTMTD
+	else
+		echo "!!! board parameter in $ARTMTD and $BAKMTD partition both are invalid"
+	fi
+fi
+rm -f /tmp/$ARTMTD /tmp/$BAKMTD
+
+# Check the wan/lan mac setting
+board_lan_mac="$(/sbin/artmtd -r mac | grep "LAN" | awk '{print $3}' | sed 's/ //g')"
+board_wan_mac="$(/sbin/artmtd -r mac | grep "WAN" | awk '{print $3}' | sed 's/ //g')"
+board_wla_mac="$(/sbin/artmtd -r mac | grep "WLA" | awk '{print $3}' | sed 's/ //g')"
+
+new_lan_mac="$(correct_mac_value $board_lan_mac 2>/dev/null)"
+new_wan_mac="$(correct_mac_value $board_wan_mac 2>/dev/null)"
+new_wla_mac="$(correct_mac_value $board_wla_mac 2>/dev/null)"
+
+if [ "$new_lan_mac" != "$board_lan_mac" -a "x$new_lan_mac" != "x" ]; then
+	/sbin/artmtd -w macset lan "$new_lan_mac"
+fi
+
+if [ "$new_wan_mac" != "$board_wan_mac" -a "x$new_wan_mac" != "x" ]; then
+	/sbin/artmtd -w macset wan "$new_wan_mac"
+fi
+
+if [ "$new_wla_mac" != "$board_wla_mac" -a "x$new_wla_mac" != "x" ]; then
+	/sbin/artmtd -w macset wla "$new_wla_mac"
+fi

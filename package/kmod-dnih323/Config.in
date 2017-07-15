@@ -1,0 +1,21 @@
+# kmod-dnih323 configuration
+config DNIH323_GIT_TREEISH
+	string
+	prompt "treeish of DNIH323 git repository"
+	default "alg-h323-v2.6.31-dni2"
+	help
+           Input the treeish of kmod-dnih323 git repository which you want to build
+
+config DNIH323_GIT_REPOSITORY
+	string
+	prompt "name of DNIH323 git repository"
+	default "kmod-dnih323.git"
+	help
+	   Input the name of kmod-dnih323 git repository which you want to build
+
+config DNIH323_GIT_URL
+	string
+	prompt "url of DNIH323 git repository"
+	default "ssh://dniserver/scm/dnigit/common/kmods/kmod-dnih323.git"
+	help
+	   Input the url of kmod-dnih323 git repository which you want to build

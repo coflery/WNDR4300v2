@@ -1,0 +1,3753 @@
+\documentclass[12pt]{report}
+\textwidth 6.5in
+\oddsidemargin 0pt
+\textheight 9in
+\topmargin 0pt
+\headsep 0pt
+\headheight 0pt
+%\linespread{1.6}
+\usepackage{amssymb,amsmath,epsfig,subfigure,psfrag}
+\newtheorem{prop}{Proposition}
+\newtheorem{Def}{Definition}
+\newtheorem{Cor}{Corollary}
+\newtheorem{Lem}{Lemma}
+\newtheorem{Thm}{Theorem}
+\newtheorem{Rem}{Remarks}
+\newcommand{\fclass}[1]{{\mathcal{#1}}} % function classes
+\newcommand{\msae}[1]{\bar{#1}}% Maximal Sub-Additive Embedded
+\newcommand{\mlabel}[1]{
+  \marginpar{#1} %to be deleted for hardcopy
+  }
+\newcommand{\tlabel}[1]{
+  \label{#1}%
+%  \marginpar{#1} %to be deleted for hardcopy
+  }
+\newcommand{\ispnpedf}{\mbox{ISP-NPEDF}}
+
+\newcommand{\myvector}[1]{
+  \boldsymbol{#1}%
+}
+\newcommand{\mathset}[1]{
+  \mathbb{#1}%
+}
+
+\newcommand{\esssup}[1]{
+  \mbox{\upshape ess}_{#1}\!\sup%
+}
+
+\newcommand{\abs}[1]{
+  | #1 |%
+}
+
+\newcommand{\norm}[1]{
+  \| #1 \|
+}
+
+\newcommand{\mybegineq}[1]{
+  \marginpar{#1} %to be deleted for hardcopy
+  \begin{equation}\label{#1}
+}
+
+\newcommand{\myendeq}{
+  \end{equation}%
+}
+
+
+
+
+
+\newcommand{\myscriptsize}{\small}
+\newcommand{\proof}{\noindent\hspace{2em}{\it Proof: }}
+\newcommand{\proofof}[1]{\noindent\hspace{2em}{\it Proof of #1: }}
+\newcommand{\myendproof}{\hspace*{\fill}$\blacksquare$}
+
+\begin{document}
+\title{WNR1000v2 Release notes}
+% \author{\normalsize{Chia-Sheng Chang}\thanks{
+%     Corresponding author: Chia-Sheng Chang, e-mail:
+%     \texttt{changcs@santos.ee.ntu.edu.tw,}
+%     postal address: Room 533, Electrical Engineering Building, No.\ 1, Sec.\
+%     4, Roosevelt Rd., Taipei 10617, Taiwan, R.O.C.}
+%   \normalsize{ and Kwang-Cheng Chen} \\
+%   \texttt{\small changcs@santos.ee.ntu.edu.tw, chenkc@cc.ee.ntu.edu.tw}\\
+%   {\small Institute of Communications Engineering and Department of
+%     Electrical Engineering}\\ {\small National Taiwan University}
+%   }
+
+\author{\normalsize{Ronger Pan}}
+
+\maketitle
+\thispagestyle{empty}
+%% \begin{abstract}
+%%   \noindent Large delay schedulable regions, work-conserving property,
+%%   inter-session protection property, and acceptable realization
+%%   complexity are widely accepted performance metrics for
+%%   comparing packet
+%%   scheduling disciplines in packet-switching networks. % Under
+%% %  continuous-time assumptions, it is a difficult task to design a
+%% %  scheduling discipline with all these advantages.
+%%   In this paper, we propose a \emph{work-conserving} scheduling
+%%   discipline, called \ispnpedf, with \emph{optimal} delay schedulable
+%%   regions, and inter-session protection property. In addition,
+%%   the realization complexity of \ispnpedf\ is lower than that of
+%%   plain EDF (Earliest-Deadline First) with traffic regulators.
+
+
+
+%% %  \bfseries keywords: keywords
+
+%% \end{abstract}
+
+\psfull
+\tableofcontents
+\thispagestyle{empty}
+\newpage
+\setcounter{page}{1}
+
+\chapter{Revision History}
+\tlabel{sec:revision-history}
+
+   \begin{tabular}{|c||c|c|} \hline
+      Date & firmware version  & Revised by \\ \hline
+      2008/08/25 & Release V1.0.0.0 & Ronger Pan \\ \hline
+      2008/08/28 & Release V1.0.0.2 & Ronger Pan \\ \hline
+      2008/09/03 & Release V1.0.0.3 & Ronger Pan \\ \hline
+      2008/09/03 & Release V1.0.0.4 & Ronger Pan \\ \hline
+      2008/09/09 & Release V1.0.0.5 & Ronger Pan \\ \hline
+      2008/09/10 & Release V1.0.0.6 & Ronger Pan \\ \hline
+      2008/09/12 & Release V1.0.0.7 & Ronger Pan \\ \hline
+      2008/09/22 & Release V1.0.0.8 & Ronger Pan \\ \hline
+	  2008/10/08 & Release V1.0.0.9 & Ronger Pan \\ \hline
+	  2008/10/15 & Release V1.0.1.0 & Ronger Pan \\ \hline
+	  2008/10/17 & Release V1.0.1.1 & Ronger Pan \\ \hline
+	  2008/10/22 & Release V1.0.1.2 & Ronger Pan \\ \hline
+	  2008/10/24 & Release V1.0.1.3 & Ronger Pan \\ \hline
+	  2008/10/29 & Release V1.0.1.4 & Ronger Pan \\ \hline
+	  2008/11/05 & Release V1.0.1.5 & Ronger Pan \\ \hline
+	  2008/11/07 & Release V1.0.1.6 & Ronger Pan \\ \hline
+	  2008/11/14 & Release V1.0.1.7 & Ronger Pan \\ \hline
+	  2008/11/19 & Release V1.0.1.8 & Ronger Pan \\ \hline
+	  2008/11/26 & Release V1.0.1.9 & Ronger Pan \\ \hline
+	  2008/12/02 & Release V1.0.2.0 & Ronger Pan \\ \hline
+	  2008/12/09 & Release V1.0.2.1 & Ronger Pan \\ \hline
+	  2008/12/12 & Release V1.0.2.2 & Ronger Pan \\ \hline
+	  2008/12/17 & Release V1.0.2.3 & Ronger Pan \\ \hline
+	  2008/12/19 & Release V1.0.2.4 & Ronger Pan \\ \hline
+	  2008/12/24 & Release V1.0.2.5 & Ronger Pan \\ \hline
+	  2008/12/26 & Release V1.0.2.6 & Ronger Pan \\ \hline
+	  2009/01/06 & Release V1.0.2.7 & Ronger Pan \\ \hline
+	  2009/01/14 & Release V1.0.2.8 & Ronger Pan \\ \hline
+	  2009/01/21 & Release V1.0.2.9 & Ronger Pan \\ \hline
+	  2009/02/05 & Release V1.0.3.0 & Ronger Pan \\ \hline
+	  2009/02/09 & Release V1.0.3.1 & Ronger Pan \\ \hline
+	  2009/02/13 & Release V1.0.3.2 & Ronger Pan \\ \hline
+	  2009/02/18 & Release V1.0.3.3 & Ronger Pan \\ \hline
+	  2009/02/23 & Release V1.0.3.4 & Ronger Pan \\ \hline
+	  2009/02/27 & Release V1.0.3.5 & Ronger Pan \\ \hline
+	  2009/03/03 & Release V1.0.3.6 & Ronger Pan \\ \hline
+	  2009/03/06 & Release V1.0.3.7 & Ronger Pan \\ \hline
+	  2009/03/06 & Release V1.0.3.8 & Ronger Pan \\ \hline
+	  2009/03/11 & Release V1.0.3.9 & Ronger Pan \\ \hline
+	  2009/03/13 & Release V1.0.3.10 & Ronger Pan \\ \hline
+   \end{tabular}
+
+\section{Firmware V1.0.0.0}
+\tlabel{sec:1-0-0}
+
+\subsection{What's new}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item This firmware is based on Atheros LSDK 7.2.0.138.
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-0-0} fixed the following bugs:
+\end{itemize}
+\begin{enumerate}
+\item Function
+        \begin{itemize}
+                \item \texttt{Ported Realtek 8366SR driver to linux and boot loader.}
+        \end{itemize}
+        \begin{itemize}
+                \item \texttt{added netfilter dos and block sites patches to linux kernel}
+        \end{itemize}
+         \begin{itemize}
+                \item \texttt{added GUI web pages for 802.11a/n}
+        \end{itemize}
+          \begin{itemize}
+                \item \texttt{added multi language for WNR1000v2}
+        \end{itemize}
+           \begin{itemize}
+                \item \texttt{ported new http server uhttp and its 
+			      configuration management tool datalib to wnr1000v2}
+        \end{itemize}
+            \begin{itemize}
+                \item \texttt{Ported firewall net-wall and the related 
+				netfilter patches based on wnr2000}
+        \end{itemize}
+            \begin{itemize}
+                \item \texttt{Ported firewall net-wall and the related 
+				netfilter patches based on wnr2000}
+        \end{itemize}
+            \begin{itemize}
+                \item \texttt{Ported pppoe and pptp of wnr2000 to wnr1000v2}
+        \end{itemize}
+            \begin{itemize}
+                \item \texttt{Added dns hijack to dnsmasq}
+        \end{itemize}
+            \begin{itemize}
+                \item \texttt{Fixed WAN/LAN conflict}
+        \end{itemize}
+\end{enumerate}
+
+\subsection{Known issues}
+        \begin{enumerate}
+          \item \texttt{ART calibration failed on this version}
+        \end{enumerate}
+
+
+\section{Firmware V1.0.0.2}
+
+\tlabel{sec:1-0-1}
+\subsection{What's new}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-0-2} fixed the following bugs:
+\end{itemize}
+
+\begin{enumerate}
+\item GUI Display
+        \begin{itemize}
+                \item \texttt{User login and password maintain support}
+        \end{itemize}
+        \begin{itemize}
+                \item \texttt{Modified Remote Management page according to netgear GUI spec 2.1}
+        \end{itemize}
+        \begin{itemize}
+                \item \texttt{Modified Attached Device page according to netgear GUI spec 2.1}
+        \end{itemize}
+        \begin{itemize}
+                \item \texttt{Modified Back up Settgings page according to netgear GUI spec 2.1}
+        \end{itemize}
+        \begin{itemize}
+                \item \texttt{Modified Set Password page according to netgear GUI spec 2.1}
+        \end{itemize}
+\item Wireless
+        \begin{itemize}
+                \item \texttt{WDS support added.}
+        \end{itemize}
+	\begin{itemize}
+                \item \texttt{Updated to ART tool v0\_7\_b13.1ar928xALL}
+        \end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.2.0.143.}
+        \end{enumerate}
+
+\section{Firmware V1.0.0.3}
+
+\tlabel{sec:1-0-1}
+\subsection{What's new}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-0-3} fixed the following bugs:
+\end{itemize}
+
+\begin{enumerate}
+\item GUI Display
+        \begin{itemize}
+                \item \texttt{Added WPA enterprise and multiple BSSID web pages.}
+        \end{itemize}
+\item Wireless
+        \begin{itemize}
+                \item \texttt{WDS support added.}
+        \end{itemize}
+\item Linux
+	\begin{itemize}
+	\item \texttt{Added ntfs support and removed nfs in kernel configuration.}
+	\item \texttt{hardcoding board-specific bootargs into WNR1000v2's Linux config.}
+	\item \texttt{Set argc = 0 in prom\_init() to ignore bootargs passed from u-boot.}
+	\item \texttt{Enable HOTPLUG support in linux kernel.}
+	 \end{itemize}
+\item Application
+        \begin{itemize}
+                \item \texttt{Changed the default hostname to WNR1000v2 in ppp, datalib, miniupnpd,net-dump,smtpclient.}
+		\item \texttt{Fix DHCP can not obtain IP address.}
+		\item \texttt{Changed the MAC LOCATION according to our own flash partition table.}
+		\item \texttt{Restart crond if configuring email and block sites/service.}
+		\item \texttt{ntpclinet initial script.}
+		\item \texttt{Smart Wizard 3.0(SOAP) supported.}
+		 \item \texttt{Enable attached device function}
+        \end{itemize}
+        \begin{itemize}
+                \item \texttt{Updated to ART tool v0\_7\_b13.1ar928xALL}
+        \end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.2.0.143.}
+        \end{enumerate}
+
+\section{Firmware V1.0.0.4}
+
+\tlabel{sec:1-0-1}
+\subsection{What's new}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-0-4} fixed the following bugs:
+\end{itemize}
+
+\begin{enumerate}
+\item Driver
+        \begin{itemize}
+                \item \texttt{Added code segments to reset rtl8366sr switch.}
+		\item \texttt{Forbid asserting AR7161's ETH0\_RESET\_L and ETH1\_RESET\_L pins when initializing ag7100}
+        \end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+        \begin{enumerate}
+		\item \texttt{Please burn u-boot-2000V0.3.bin}
+		\item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+		\item \texttt{ag7100> set serverip 192.168.1.12}
+		\item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.3.bin;erase 0xbf000000 +0x50000;cp.b 0x80010000 0xbf000000 0x50000}
+		\item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+		\item \texttt{ag7100> saveenv}
+		\item \texttt{ag7100> reset}
+		\item \texttt{Entering into boot loader again}
+		\item \texttt{ag7100>bootm}
+		\item \texttt{Then the device should be in tftp recovery mode. Please run the coammdn "tftp -i 192.168.1.1 put WNR1000v2-V1.0.0.4.img" on MS-DOS of your PC.} 
+        \end{enumerate}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.2.0.143.}
+        \end{enumerate}
+
+\section{Firmware V1.0.0.5}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-0-5}
+\end{itemize}
+\end{itemize}
+
+\subsection{New Features}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item FIREWALL
+        \begin{itemize}
+                \item \texttt{11397 ALG suport}
+                \item \texttt{11398 Port forwarding and port triggering}
+                \item \texttt{11399 Adding DMZ to the firewall}
+                \item \texttt{11400 NAPT Conflicts Resolution}
+                \item \texttt{11402 SPI firewall/DoS Protection}
+                \item \texttt{11403 Block Sites supporting}
+                \item \texttt{11404 Block Service/IP Filtering}
+                \item \texttt{11405 Dulplicate Blocking}
+                \item \texttt{11406 Filtering schedule}
+                \item \texttt{11425 Remote Web Access}
+        \end{itemize}
+	\item APPLICATION
+	\begin{itemize}
+		\item \texttt{11408 Basic routing support}
+                \item \texttt{11409 Static routing support}
+                \item \texttt{11410 Adding DNS client, DNS server configurations DNS relay\/Proxy.}
+                \item \texttt{11412 DHCP server supporting, LAN IP assign, MAC spoofing, WAN\/LAN ip confilct}
+                \item \texttt{11419 email report}
+                \item \texttt{11427 NTP client porting}
+                \item \texttt{11436 QoS should be implemented.}
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item GUI
+        \begin{itemize}
+                \item \texttt{11274 Adding web pages for USB Samba according to netgear's USB storage spec}
+		\item \texttt{11658 [DHCP-client]Default value of Account Name still shows WNR2000}
+		\item \texttt{11683 [DNI-connection-info]there is no DHCP Server}
+		\item \texttt{11746 [Block services]When you edit block services, IP address can not be edited unless you click the radio button again}
+		\item \texttt{11747 [Block services]If there are spaces in Service Type/User Defined, it only saves characters forward spaces}
+		\item \texttt{11752 [DHCP-client/PPPoE/PPTP/BPA]After click "Test" button,a blank testpage pop up}
+		\item \texttt{11796 [BPA]Connect" and "Disconnect" button can not work in connection status page}
+		\item \texttt{11798 [PPTP]"Connect" and "Disconnect" button can not work in connection status page}
+		\item \texttt{11803 [PPTP]Gateway IP Address can not be saved config}
+		\item \texttt{11804 [PPTP]If user leave blank for the field of My IP Address, this Gateway IP Address field SHOULD be grayed out.}
+		\item \texttt{11824 [Setup wizard-Static]After detect WAN as Static IP (Fixed) Addresses,please check IP Address,Subnet mask,Gateway IP address,DNS address.}
+		\item \texttt{11825 [Setup wizard-PPPoE]You select "Get Dynamically From ISP" in WIZ\_pppoe.htm,but it shows "Use Static IP Address" in Basic setting page}
+		\item \texttt{11827 [GUI]QOS\_main.html "wmm" and "turn on qos" value can not be set}
+		\item \texttt{11837 [Setup wizard-PPTP]Idle Timeout (In minutes),Connection ID/Name and My IP Address can not be saved from WIZ\_pptp.htm}
+		\item \texttt{11838 [GUI]QOS\_main.html "wmm" and "turn on qos" value can not be set}
+		\item \texttt{11839 [Setup wizard-BPA]We can not dial on BPA form setup wizard because idle time and Authentication Server can not be saved config in WIZ\_bpa.htm}
+		\item \texttt{11841 [Setup wizard-DHCP]Account name and domain name can not be saved config in WIZ\_dhcp.htm page}
+		\item \texttt{11843 [Setup wizard-Static]After detect WAN as Static IP (Fixed) Addresses,static IP address can not be saved cofing.}
+		\item \texttt{11845 [Seup wizard-PPPoE]You select "Get Dynamically From ISP" in WIZ\_pppoe.htm,but static IP address can not be saved config}
+		\item \texttt{11929 Two "RADIUS server Port" in WPA-enterprise}
+		\item \texttt{11848 [Static route]When you add static routes,they do not show in routing table}
+		\item \texttt{11390 wireless settings with WPA enterprise and Multiple BSSID supported}
+		\item \texttt{11317 Modify web pages for netgear's auto test according to netgear GUI spec 2.1}
+		\item \texttt{11467 Wireless Advanced Setting Enable SSID Broadcast can't work}
+		\item \texttt{11542 Modified "Router Status" page according to netgear GUI spec 2.1}
+		\item \texttt{11771 [DHCP-client]When I paste strange stirng as Account name and Domain name,the webpage shows error.}
+		\item \texttt{11772 [DHCP-client]Account name and domain name should not accept 2 bytes characters.}
+		\item \texttt{11774 [DHCP-client]Default MAC should not be change.}
+		\item \texttt{11776 [DHCP-client]Please remove the redundant right brackets in the webpage.}
+		\item \texttt{11789 [BPA]Default MAC should not be change.}
+		\item \texttt{11799 [PPTP]Default MAC should not be change.}
+		\item \texttt{11801 [PPTP]Click the link of "Gateway IP Address" in the webpage will call the help frame become blank.}
+		\item \texttt{11809 [Setup wizard]When Detecting Internet connection,there is a warning message pop up every time.}
+	\end{itemize}
+	\item APPLICATION
+	\begin{itemize}
+		\item \texttt{11284 Porting ART tools to the buildroot.}
+		\item \texttt{11769 [DHCP-client]Whenever IP assignment, router should automatically flush the static route (should only flush the WAN routing)}
+        \end{itemize}
+        \item LINUX KERNEL
+        \begin{itemize}
+		\item \texttt{11886 [SIP]Contact URIs show in SIP server are error}
+                \item \texttt{11887 [SIP]LAN PCs can not talk to each other for a long time.}
+		\item \texttt{11392 Behavioral Requirements for Unicast UDP according to the chapter 1.1 in netgear spec 1.6}
+                \item \texttt{11394 Behavorial Requirements for TCP and ICMP}
+        \end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.3.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.3.bin;erase 0xbf000000 +0x50000;cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the coammdn "tftp -i 192.168.1.1 put WNR1000v2-V1.0.0.4.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.2.0.143.}
+        \end{enumerate}
+
+\section{Firmware V1.0.0.6}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-0-6}
+\end{itemize}
+\end{itemize}
+
+\subsection{New Features}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		
+                \item \texttt{11430  POT support}
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item GUI
+        \begin{itemize}
+		\item \texttt{11428  Router status staistics  }
+		\item \texttt{11753  [DHCP-client]"Release" and "Renew" button can not work in connection status page  }
+		\item \texttt{11971  channel has some problems in b/g mode and a mode}  
+		\item \texttt{11972  wireless network mode is not match the spec 1.6  }
+		\item \texttt{11862  [RIP]RIP does not work  }
+		\item \texttt{11968  [SOAP]Run CD every time,the DUT reboot and soap test can not go through.  }
+		\item \texttt{11773  [DHCP-client]Please check MAC address when you select "Use This MAC Address"}  
+		\item \texttt{11775  [DHCP-client]Please check IP address,Subnet mask,Gateway IP address,DNS IP address when you select Use Static IP Address and Use these DNS servers  }
+
+		\item \texttt{11805  [PPTP]According Spec1.6,Additional Help description.  }
+		\item \texttt{11835  [Setup wizard-PPTP]Please remove the Superfluous ">" in WIZ\_pptp.htm page  }
+		\item \texttt{11836  [Setup wizard-PPTP]Please check My IP address,idle time in WIZ\_pptp.htm page}  
+		\item \texttt{11840  [Setup wizard-bpa]Please check idle time in WIZ\_bpa.htm  }
+		\item \texttt{11842  [Setup wizard-DHCP]Please check Account name and domain name in WIZ\_dhcp.htm page  }
+		\item \texttt{11872  [Port forwarding]Port forwarding page shows error when you input some special characters as server name  }
+	\end{itemize}
+	\item APPLICATION
+	\begin{itemize}
+		\item \texttt{11871  [LAN Setup]LAN IP can not be changed unless you reboot the DUT  }
+        \end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.3.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.3.bin;erase 0xbf000000 +0x50000;cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the coammdn "tftp -i 192.168.1.1 put WNR1000v2-V1.0.0.4.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.2.0.143.}
+				\item \texttt{This release has not been tested by ST.}
+        \end{enumerate}
+
+		
+\section{Firmware V1.0.0.7}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-0-7}
+\end{itemize}
+\end{itemize}
+
+\subsection{New Features}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+	\item \texttt{11862 [RIP]RIP does not work}
+	\item \texttt{11431 Power LED indication support}
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.4.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.3.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the coammand "tftp -i 192.168.1.1 put WNR1000v2-V1.0.0.7.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.2.0.143.}
+        \end{enumerate}
+
+
+\section{Firmware V1.0.0.8}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-0-8}
+\end{itemize}
+\end{itemize}
+
+\subsection{New Features}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+                \item \texttt{11441 Intel ViiV should be supported}
+				\item \texttt{11433 	 	Internet connection LED indication}
+				\item \texttt{11434 	 	LED of Reset to facotry default}
+				\item \texttt{11435 	 	Firmware upgrading LED}
+				\item \texttt{11934 	 	[DHCP-Server]Address Reservation can not work}
+				\item \texttt{12012 	 	[Log]The button "send log" can not work}
+				\item \texttt{12047 	 	Reset button cannot work}
+				\item \texttt{12049 	 	SOAP should be supported for 5G wireless}
+				\item \texttt{11889 	 	Ethernet port should be supported in QoS}
+				\item \texttt{12045 	 	Should add green packet feature in switch driver}
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+				\item \texttt{12007 	 	Should add a web page for a/n in advanced wireless settings}
+				\item \texttt{12171 	 	According to netgear spec2.1, add hotkeys in Wireless Settings GUI page}
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item GUI
+        \begin{itemize}
+		\item \texttt{11753 	 	[DHCP-client]"Release" and "Renew" button can not work in connection status page}
+		\item \texttt{11826 	 	[PPPoE]Connection Mode of PPPoE can not be changed to Always on or Manually connect.}
+		\item \texttt{11393 	 	NAT filtering GUI according to the chapter 1.2.1 in netgear spec 1.6}
+		\item \texttt{12117 	 	[Router status]Remove the Superfluous ) on router status page}
+		\item \texttt{11574 	 	GUI should support WPA enterprise and multiple BSSID}
+		\item \texttt{11747 	 	[Block services]If there are spaces in Service Type/User Defined, it only saves characters forward spaces}
+		\item \texttt{11752 	 	[DHCP-client/PPPoE/PPTP/BPA]After click "Test" button,a blank testpage pop up}
+		\item \texttt{11754 	 	[DHCP-client]"Lease Obtained" and "Lease Expires" do not show in conncection status page}
+		\item \texttt{11755 	 	[DHCP-client]DHCP Server does not shows in connection status page}
+		\item \texttt{11758 	 	[DHCP-client]For the cases of Ethernet cable plug-off,IP Address,Subnet mask,Gateway IP address,DNS IP address and Domain Name Server in Basic settin Router status page should become 0.0.0.0g page and}
+		\item \texttt{11811 	 	[PPPoE]"Connect" and "Disconnect" button can not work in connection status page}
+		\item \texttt{11827 	 	[GUI]QOS\_main.html "wmm" and "turn on qos" value can not be set}
+		\item \texttt{11837 	 	[Setup wizard-PPTP]Idle Timeout (In minutes),Connection ID/Name and My IP Address can not be saved from WIZ\_pptp.htm}
+		\item \texttt{11838 	 	[GUI]QOS\_main.html "wmm" and "turn on qos" value can not be set}
+		\item \texttt{11839 	 	[Setup wizard-BPA]We can not dial on BPA form setup wizard because idle time and Authentication Server can not be saved config in WIZ\_bpa.htm}
+		\item \texttt{11841 	 	[Setup wizard-DHCP]Account name and domain name can not be saved config in WIZ\_dhcp.htm page}
+		\item \texttt{11843 	 	[Setup wizard-Static]After detect WAN as Static IP (Fixed) Addresses,static IP address can not be saved cofing.}
+		\item \texttt{11845 	 	[Seup wizard-PPPoE]You select "Get Dynamically From ISP" in WIZ\_pppoe.htm,but static IP address can not be saved config}
+		\item \texttt{11929 	 	Two "RADIUS server Port" in WPA-enterprise}
+		\item \texttt{11935 	 	[DHCP-Server]DHCP Server can not be disabled}
+		\item \texttt{11937 	 	[WAN Setup]If you change WAN MTU and click apply,the webpage go back to Basic settings page}
+		\item \texttt{11942 	 	[Backup Settings]After restore config file,the webpage can not go back because the time in webpage is not enough.}
+		\item \texttt{11945 	 	[Router Status]Hardware version does not show on router status page}
+		\item \texttt{11946 	 	[Statistic]"Show statistic" page does not work}
+		\item \texttt{11947 	 	[Intel VIIV]"http://www.routerlogin.com/router-info.htm" page is blank}
+		\item \texttt{11971 	 	channel has some problems in b/g mode and a mode}
+		\item \texttt{11996 	 	[Email]Your Outgoing Mail Server should not allow 2 bytes character}
+		\item \texttt{11998 	 	[Schedule]Please check Start Blocking and End Blocking}
+		\item \texttt{12008 	 	[DNI-wireless]wireless a/n and wireless b/g/n should support "WPA/WPA2 Enterprise"}
+		\item \texttt{12011 	 	[Schedule]We should not select "All Day" when "Days to Block" is not select}
+		\item \texttt{12033 	 	The wireless GUI setting operation time doesn't syn. up}
+		\item \texttt{12067 		[Basic Wireless settings][a/n][b/g/n]According to Netgear spec1.6,the DUT should allowed any to be a SSID if it support WPS}
+		\item \texttt{12073 	 	[Basic Wireless settings][a/n][b/g/n]When SSID is </script> , Basic wireless settings page and router status page shows error}
+		\item \texttt{12095 	 	[Advanced Wireless settings][a/n]WPS Settings in Advanced Wireless Settings a/n page is not grayed out when Security is Auto/Shared WEP.}
+		\item \texttt{12102 	 	[Basic Wireless settings][a/n][b/g/n][Guest Network][WPA/WPA2 Enterprise]RADIUS server Port should only allow number.}
+		\item \texttt{12103 	 	[Basic Wireless settings][a/n][b/g/n][Guest Network][WPA/WPA2 Enterprise]Warning message for RADIUS server Port is error}
+		\item \texttt{12104 	 	[Basic Wireless settings][a/n][b/g/n][Guest Network][WPA/WPA2 Enterprise]RADIUS server Shared Secret should not allow 2 bytes characters}
+		\item \texttt{12110 	 	[Basic Wireless settings][a/n][b/g/n]Webpage return before wireless function is OK.}
+		\item \texttt{12142 	 	[Guest Network][b/g/n]If you input many spaces in Guest Wireless Network Name(SSID),it shows only one space in Network Profiles}
+		\item \texttt{12143 	 	[Guest Network][b/g/n]The webpage shows error when you input some special characters as SSID}
+		\item \texttt{12034 	 	Wrong command in the apup}
+		\item \texttt{11444 	 	Modified "WAN Setup" page according to netgear GUI spec 2.1}
+		\item \texttt{11445 	 	Modified "UPnP" page according to netgear GUI spec 2.1}
+		\item \texttt{11446 	 	Modified "LAN Setup" page according to netgear GUI spec 2.1}
+		\item \texttt{11447 	 	Modified "Port Forwarding / Port Triggering" page according to netgear GUI spec 2.1}
+		\item \texttt{11452 	 	Modified "Dynamic DNS" page according to netgear GUI spec 2.1}
+		\item \texttt{11453 	 	Modified "Static Routes" page according to netgear GUI spec 2.1}
+		\item \texttt{11455 	 	Modified "Wireless Repeating Function" page according to netgear GUI spec 2.1}
+		\item \texttt{11467 	 	Wireless Advanced Setting Enable SSID Broadcast can't work}
+		\item \texttt{11541 	 	Modified "Router Upgrade" page according to netgear GUI spec 2.1}
+		\item \texttt{11542 	 	Modified "Router Status" page according to netgear GUI spec 2.1}
+		\item \texttt{11546 	 	Modified "Attached Devices" page according to netgear GUI spec 2.1}
+		\item \texttt{11547 	 	Modified "Backup Settings" page according to netgear GUI spec 2.1}
+		\item \texttt{11548 	 	Modified "Set Password" page according to netgear GUI spec 2.1}
+		\item \texttt{11790 	 	[BPA]Please check MAC address when you select "Use This MAC Address"}
+		\item \texttt{11793 	 	[BPA]Please check DNS IP address when you select Use these DNS servers}
+		\item \texttt{11801 	 	[PPTP]Click the link of "Gateway IP Address" in the webpage will call the help frame become blank}
+		\item \texttt{11836 	 	[Setup wizard-PPTP]Please check My IP address,idle time in WIZ\_pptp.htm page}
+		\item \texttt{11840 	 	[Setup wizard-bpa]Please check idle time in WIZ\_bpa.htm}
+		\item \texttt{11842 	 	[Setup wizard-DHCP]Please check Account name and domain name in WIZ\_dhcp.htm page}
+		\item \texttt{11872 	 	[Port forwarding]Port forwarding page shows error when you input some special characters as server name}
+		\item \texttt{11921 	 	[Wiress settings a/n]Channels shows error in Wiress settings a/n page}
+		\item \texttt{12197 	 	[SQA Taipei-17][LAN Setup]The default device name on LAN setup page is NULL.}
+	\end{itemize}
+	\item APPLICATION
+	\begin{itemize}
+		\item \texttt{11750 	 	[DHCP-client]There DUT should use ARP to detect conflict with the assigned IP address after DHCPACK is received.}
+		\item \texttt{11761 	 	[DHCP-client]On T1=50\% and T2=87.5\% leased time, should send DHCP\_REQUEST to reusing the current IP address.}
+		\item \texttt{11763 	 	[DHCP-client]If the whole DHCP request procedure is failed, router should restart the procedure every 5 minutes.}
+		\item \texttt{11795 	 	[BPA]Password can not be changed in /tmp/bpalogin.conf}
+		\item \texttt{11810 	 	[Block sites/Block services]When I select "Per Schedule",Block sites and Block services can not work}
+		\item \texttt{11823 	 	[Setup wizard]According to WPN824v3,WNR2000,after DHCP, you need detect PPTP again}
+		\item \texttt{11949 	 	[NAT][WAN/LAN Conflict]Static WAN Subnet is a subnet of LAN subnet,WAN/LAN conflict fail.}
+		\item \texttt{11950 	 	[NAT][WAN/LAN Conflict]LAN subnet is a subnet of Static WAN Subnet,WAN/LAN conflict fail.}
+		\item \texttt{11951 	 	[NAT][WAN/LAN Conflict]LAN subnet is as same as Static WAN Subnet,WAN/LAN conflict fail.}
+		\item \texttt{11955 	 	[NAT][WAN/LAN Conflict]When WAN/LAN conflict,LAN PC should auto get new IP address.}
+		\item \texttt{11956 	 	[NAT][WAN/LAN Conflict]There is no conflict detection on static PPPoE mode}
+		\item \texttt{11957 	 	[NAT][WAN/LAN conflict]There is no conflict detection on static PPTP mode}
+		\item \texttt{11958 	 	[NAT][WAN/LAN conflict]There is no conflict detection on static BPA mode}
+		\item \texttt{11886 	 	[SIP]Contact URIs show in SIP server are error}
+		\item \texttt{12188 	 	[qos] when reboot the board, qos does not takce effect}
+		\item \texttt{11644 	 	DHCP can't obtain IP address when booting the DUT first time}
+		\item \texttt{11461 	 	Ethernet PHY port should support pull-low and pull-high action}
+		\item \texttt{11941 	 	[Logs]If the DUT can not get Current NTP time,there is no log in logs page}
+		\item \texttt{12187 	 	Power LED changes to amber when erasing MTD}
+		\item \texttt{11417 	 	User login and password maintain support}
+		\item \texttt{11764 	 	MAC address of wifi0 and wifi1 always are 00:00:00:00:00:00}
+		\item \texttt{11973 	 	country setting ioctl can't work }
+        \end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.4.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.4.bin}
+		\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+		\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the coammdn "tftp -i 192.168.1.1 put WNR1000v2-V1.0.0.8.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.2.0.143.}
+        \end{enumerate}	
+		
+\section{Firmware V1.0.0.9}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-0-9}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+\item Bug list:
+\begin{itemize}
+	\item \texttt{11441 Intel ViiV should be supported}
+	\item \texttt{11747 [Block services]If there are spaces in Service Type/User Defined, it only saves characters forward spaces}
+	\item \texttt{11753 [DHCP-client]"Release" and "Renew" button can not work in connection status page}
+	\item \texttt{11758 [DHCP-client]For the cases of Ethernet cable plug-off,IP Address,Subnet mask,Gateway IP address,DNS IP address and Domain Name Server in Basic setting page and Router status page should become 0.0.0.0}
+	\item \texttt{11811 [PPPoE]"Connect" and "Disconnect" button can not work in connection status page}
+	\item \texttt{11826 [PPPoE]Connection Mode of PPPoE can not be changed to Always on or Manually connect.}
+	\item \texttt{11873 [Top]Please change the model name to WNR1000v2 in top frame's picture}
+	\item \texttt{11935 [DHCP-Server]DHCP Server can not be disabled}
+	\item \texttt{11937 [WAN Setup]If you change WAN MTU and click apply,the webpage go back to Basic settings page}
+	\item \texttt{11942 [Backup Settings]After restore config file,the webpage can not go back because the time in webpage is not enough.}
+	\item \texttt{11947 [Intel VIIV]"http://www.routerlogin.com/router-info.htm" page is blank}
+	\item \texttt{11972 wireless network mode is not match the spec 1.6}
+	\item \texttt{11998 [Schedule]Please check Start Blocking and End Blocking}
+	\item \texttt{12086 [Basic wireless settings][a/n]When "Up to 300Mbps" is selected, router status does not show double channels}
+	\item \texttt{12098 [Basic Wireless settings][a/n][b/g/n][Guest Network][WPA-PSK][WPA2-PSK][WPA/WPA2-PSK]If there is a space in WPA-PSK PassPhrase, the webpage shows error.}
+	\item \texttt{12101 [Basic Wireless settings][a/n][b/g/n][Guest Network][WPA-PSK]If I set WPA-PSK PassPhrase as </script>,the webpage shows error}
+	\item \texttt{12136 [Guest Network]Please add a Guest Network webpage for a/n}
+	\item \texttt{12179 Merge 2 band into one page for basic wireless setting and advanced wireless setting}
+	\item \texttt{12195 [SQA Taipei-15][Multi-language]Login to DUT always must select language.}
+	\item \texttt{12209 [SQA Taipei-30]The default region is " Select Region" on both wireless setting a/n and wireless setting b/g/n pages, but the status page shows "Europe".}
+	\item \texttt{12261 [Storage Administration]When you edit "guest",Group Member shows error in UI.}
+	\item \texttt{12282 wireless setting a/n page should show correct channel list}
+	\item \texttt{12299 [Disk Management--Shared Folder]There is a javascript error when you click ">>" or "<<" button and no one in "Available Groups" is selected}
+	\item \texttt{12300 [Disk Management--Shared Folder]Location shows error in edit mode}
+	\item \texttt{12308 [Disk Management--Shared Folder]Shared Folder shows error if there is a warning messages before it saves config.}
+	\item \texttt{12311 [Disk Management--Shared Folder]Shared Folder should not begin with //}
+	\item \texttt{12317 [Disk Management--Shared Folder]After you edit the Shared Folder list, shared folder become blank in the table}
+	\item \texttt{12321 [Disk Management]Disk Management page shows error if you input some special characters as Display name}
+	\item \texttt{12322 [Disk Management--Shared Folder]Assigned to Folder field should not be blank if you want to add a folder to shared folder list.}
+	\item \texttt{12324 [Disk Management]There should be only one : after "Shared Storage IP Address"}
+	\item \texttt{12326 [Disk Management]There should be a : after "Disk"}
+	\item \texttt{12338 [Storage Administration]When I click "delete" button in User Accounts list,there is a warning pop up}
+	\item \texttt{12340 [Storage Administration-User Accounts]User name must be unique}
+	\item \texttt{12344 [Storage Administration-Group Account]If there is a space in description,the webpage shows error.}
+	\item \texttt{12345 [Storage Administration-Group Account]Group account and Description should allow special characters}
+	\item \texttt{12347 [Storage Administration-User Account]If there is a space in full name or Description,the webpage shows error.}
+	\item \texttt{12348 [Storage Administration-Group Account]User name,full name and Description should allow special characters}
+	\item \texttt{12349 [Storage Administration-Group Account]Group account and Description should not allow 2bytes characters}
+	\item \texttt{12368 There is no "select region" in the region list, the default value of region is NOT "select region". Please refer to router spec.}
+	\item \texttt{12422 After doing reset to default, it can't open "routerlogin" page automatically.}
+	\item \texttt{12475 Display correct sharing folder in the windows and save sharing folder records.}
+	\item \texttt{12434 USB bug--After you add second or more shared folders, then the shared folder page in the "Disk management" page should be refreshed automatically.}
+	\item \texttt{12476 The Location of shared folder dialog in USB disk management should display currnent folder location not nothing.}
+	\item \texttt{11435 Firmware upgrading LED}
+	\item \texttt{11737 [Block sites]NNTP can not be blocked when they contain the keyword.}
+	\item \texttt{11750 [DHCP-client]There DUT should use ARP to detect conflict with the assigned IP address after DHCPACK is received.}
+	\item \texttt{11767 [DHCP-client]For the cases of Ethernet cable plug-off and plug-in, client should send DHCP\_REQUEST and include current IP address as preferred client IP address.}
+	\item \texttt{11769 [DHCP-client]Whenever IP assignment, router should automatically flush the static route (should only flush the WAN routing)}
+	\item \texttt{11795 [BPA]Password can not be changed in /tmp/bpalogin.conf}
+	\item \texttt{11823 [Setup wizard]According to WPN824v3,WNR2000,after DHCP, you need detect PPTP again}
+	\item \texttt{11880 [NAT]NAT Mapping Timer test fail}
+	\item \texttt{11881 [NAT]"Outbound UDP Packets with Destination Port ¨R 1024" test fail}
+	\item \texttt{11934 [DHCP-Server]Address Reservation can not work}
+	\item \texttt{11941 [Logs]If the DUT can not get Current NTP time,there is no log in logs page}
+	\item \texttt{11940 [NTP]NTP time can not get the Current time unless you reboot the DUT if you do not connect the DUT to internet first.}
+	\item \texttt{11949 [NAT][WAN/LAN Conflict]Static WAN Subnet is a subnet of LAN subnet,WAN/LAN conflict fail.}
+	\item \texttt{11950 [NAT][WAN/LAN Conflict]LAN subnet is a subnet of Static WAN Subnet,WAN/LAN conflict fail.}
+	\item \texttt{11951 [NAT][WAN/LAN Conflict]LAN subnet is as same as Static WAN Subnet,WAN/LAN conflict fail.}
+	\item \texttt{11953 [NAT][WAN/LAN conflict]When the LAN-WAN IP address conflict, the web page of DUT should give a tip of IP address conflict}
+	\item \texttt{11955 [NAT][WAN/LAN Conflict]When WAN/LAN conflict,LAN PC should auto get new IP address.}
+	\item \texttt{11956 [NAT][WAN/LAN Conflict]There is no conflict detection on static PPPoE mode}
+	\item \texttt{11957 [NAT][WAN/LAN conflict]There is no conflict detection on static PPTP mode}
+	\item \texttt{11958 [NAT][WAN/LAN conflict]There is no conflict detection on static BPA mode}
+	\item \texttt{11968 [SOAP]Run CD every time,the DUT reboot and soap test can not go through.}
+	\item \texttt{12012 [Log]The button "send log" can not work}
+	\item \texttt{12015 [NAT]4.5. Concurrent TCP Outbound Packets (Skype 3.2.9) fail}
+	\item \texttt{12019 [DHCP-client]According to Netgear Spec 1.6: It is recommended to send a DHCP RELEASE message to the server under the case software shutdown or reboot.}
+	\item \texttt{12122 Before sending discover packet, should check whether WAN cable is plugged.}
+	\item \texttt{12152 [Port Triggering]The port trigger could not use the same outgoing port to trigger different port rules.}
+	\item \texttt{12158 [SQA Taipei-7][Setup wizard]Wizard cannot detect bigpond mode.}
+	\item \texttt{12191 [SQA Taipei-10][LED]When WAN connection is DHCP mode, the LED is amber.}
+	\item \texttt{12182 [SQA Taipei-2][LED]Power LED is amber, it should be green.}
+	\item \texttt{12183 [SQA Taipei-3][LED]LAN link to 100Mbps, the amber and green LEDs turns on at the same time.}
+	\item \texttt{12184 [SQA Taipei-4][Setup wizard]The account name is NULL when using wizard to configure DHCP mode.}
+	\item \texttt{12185 [SQA Taipei-5][PPTP]PPTP idle time function is fail.}
+	\item \texttt{12186 [SQA Taipei-6][Setup wizard]If WAN port cable not plugged in and we use wizard to detect WAN port type,the detected is "Static IP". It should display failure page.}
+	\item \texttt{12187 Power LED changes to amber when erasing MTD}
+	\item \texttt{12192 [SQA Taipei-12][LED]Bigpond mode not connected to internet, the WAN LED is green.}
+	\item \texttt{12194 [SQA Taipei-14][LED]When WAN port is static IP the WAN LED is amber.}
+	\item \texttt{12196 [SQA Taipei-16][LED]When WAN port IP is released, the WAN LED is still green. It should be amber}
+	\item \texttt{12204 [SQA Taipei-24]There is no reset button on the PCB. (Hardware version 2976326600(B).)}
+	\item \texttt{12206 [SQA Taipei-26][CDRouter]CDRouter port trigger function test fail.}
+	\item \texttt{12207 [SQA Taipei-27][CDRouter]CDRouter PPTP pass-through test fail.}
+	\item \texttt{12214 According to WNR1000, Newly added port triggering rule should be enabled by default}
+	\item \texttt{12252 [Setup wizard]Sometimes setup wizard can not go through,it always refresh the page "Detecting Connection Type on Internet Port"}
+	\item \texttt{12366 Before sending NTP packet, the WAN connection must be connected.}
+	\item \texttt{12405 [SQA Taipei-35]Unable to open the "Wireless a/n" / "Wireless b/g/n" / "Guest Network" /"schedule" / "port forwarding" pages when we login DUT remotely.}
+	\item \texttt{12068 [Basic Wireless settings][a/n][b/g/n]If there is a space in SSID,the SSID shows OK in UI but error in iwconfig}
+	\item \texttt{12097 [Basic Wireless settings][a/n][b/g/n][Guest Network][WPA-PSK][WPA2-PSK][WPA/WPA2-PSK]Wireless client WNDA3100 can not connect to the DUT when security is WPA-PSK,WPA2-PSK,WPA/WPA2-PSK}
+	\item \texttt{12099 [Basic Wireless settings][a/n][b/g/n][Guest Network][WPA-PSK][WPA2-PSK][WPA/WPA2-PSK]If I set WPA-PSK PassPhrase as 64 hexdigits, it save as no security in function}
+	\item \texttt{12109 [Basic Wireless settings][a/n][b/g/n][Guest Network][WPA/WPA2 Enterprise]WPA/WPA2 Enterprise can not be tested because wireless client can not connect to the DUT when security is WPA-PSK,WPA2-PSK,WPA/WPA2-PSK.}
+	\item \texttt{12112 [Advanced Wireless settings][a/n][b/g/n]"Enable Wireless Router Radio" in Advanced wireless settings page should not turn on and off both a/n and b/g/n.}
+	\item \texttt{12114 [Advanced Wireless settings][a/n][b/g/n]"Disable SSID Broadcast" does not work}
+	\item \texttt{12137 [Guest Network][b/g/n]"Disable SSID Broadcast" does not work on Guest Network page}
+	\item \texttt{12157 [Advanced Wireless settings][a/n][b/g/n]Fragmentation does not work.}
+	\item \texttt{12236 Should adjust the channel list under 300M mode of a band}
+	\item \texttt{12265 WPS LED should be controlled by software}
+	\item \texttt{12385 [WPS]WPS icon under Vista still shows WNR2000}
+	\item \texttt{11317 Modify web pages for netgear's auto test according to netgear GUI spec 2.1}
+	\item \texttt{11444 Modified "WAN Setup" page according to netgear GUI spec 2.1}
+	\item \texttt{11446 Modified "LAN Setup" page according to netgear GUI spec 2.1}
+	\item \texttt{11447 Modified "Port Forwarding / Port Triggering" page according to netgear GUI spec 2.1}
+	\item \texttt{11451 Modified "QoS Setup" page according to netgear GUI spec 2.1}
+	\item \texttt{11452 Modified "Dynamic DNS" page according to netgear GUI spec 2.1}
+	\item \texttt{11454 Modified "Remote Management" page according to netgear GUI spec 2.1}
+	\item \texttt{11456 Modified "Wireless Settings" page according to netgear GUI spec 2.1}
+	\item \texttt{11541 Modified "Router Upgrade" page according to netgear GUI spec 2.1}
+	\item \texttt{11542 Modified "Router Status" page according to netgear GUI spec 2.1}
+	\item \texttt{11547 Modified "Backup Settings" page according to netgear GUI spec 2.1}
+	\item \texttt{11790 [BPA]Please check MAC address when you select "Use This MAC Address"}
+	\item \texttt{11793 [BPA]Please check DNS IP address when you select Use these DNS servers}
+	\item \texttt{11801 [PPTP]Click the link of "Gateway IP Address" in the webpage will call the help frame become blank}
+	\item \texttt{11840 [Setup wizard-bpa]Please check idle time in WIZ\_bpa.htm}
+	\item \texttt{11872 [Port forwarding]Port forwarding page shows error when you input some special characters as server name}
+	\item \texttt{11918 [Port triggering]Port Triggering Timeout(in minutes) should only accept numbers}
+	\item \texttt{11919 [Port triggering]Port triggering page shows error when you input some special characters as server name}
+	\item \texttt{11920 [Port tringgering]Although the warning messages says the port must be in the range [1-65535] excluding 80,I can input 80 port}
+	\item \texttt{11927 [DMZ]If LAN IP address changes,DMZ IP address shows error}
+	\item \texttt{11932 [NAPT]The rule should be added when there exists a temporal rule using the same public port and mapping to the same LAN IP and private/internal port}
+	\item \texttt{11936 [DHCP Server]LAN Setup page shows error when you input some special characters as device name}
+	\item \texttt{12056 Add auto radio test button for wireless settings}
+	\item \texttt{12061 [QoS]QoS Setup should gray-out when set WDS Repeater mode.}
+	\item \texttt{12065 [QoS]When set MAC Address priority ,something is wrong.}
+	\item \texttt{12124 [Wireless Card Access List][a/n][b/g/n]Wireless Card Access List page shows error when you input some special characters as device name}
+	\item \texttt{12171 According to netgear spec2.1, add hotkeys in Wireless Settings GUI page}
+	\item \texttt{12180 Merge 2 band into one page for advanced wireless setting}
+	\item \texttt{12198 [SQA Taipei-18][RIP]The default value of RIP direction is 'Both' . Default must is 'None'.}
+	\item \texttt{12251 [PPPoE]Static IP address in PPPoE page saves config error in both setup wizard and basic settings page.}
+	\item \texttt{12351 Please add GMT+5:30 Chennai, Kolkata, Mumbai, New Delhi in the Time Zone.}
+	\item \texttt{12374 [WPS]WPS is configured but "Keep Existing Wireless Settings" on Advanced wireless settings a/n page does not check}
+	\item \texttt{12456 The Show Status never show Dynamic DNS service is not enabled. , even if I disable the DDNS function.}
+	\item \texttt{11432 Wireless LED indication}
+	\item \texttt{11887 [SIP]LAN PCs can not talk to each other for a long time.}
+	\item \texttt{11921 [Wiress settings a/n]Channels shows error in Wiress settings a/n page}
+	\item \texttt{12057 ethernet LAN/WAN throughput has only 170M}
+	\item \texttt{12058 Wireless LED can not be on/off}
+	\item \texttt{12100 Sometimes strange infomation in console}
+	\item \texttt{12156 Wireless on/off push button should can be controlled}
+	\item \texttt{12163 The command to call wsccmd should be changed.}
+	\item \texttt{12165 The LOGO of wnr1000v2 should be fetched from NETGEAR.}
+	\item \texttt{12166 Replace all the strings "WNR1000v2" to "WNR1000v2"}
+	\item \texttt{12181 [SQA Taipei-1]The product name should be "WNR1000v2", but GUI displays "WNR2000".}
+	\item \texttt{12203 [SQA Taipei-23]LAN and WAN port MAC is FF:FF:FF:FF:FF:FF.}
+	\item \texttt{12230 Switch HW or Switch driver issue}
+	\item \texttt{12270 [DNI-Storage] user's group name should be corresponding to group name}
+	\item \texttt{12294 several giga bit Ethernet PCs cant be detected as 1Gbps}
+	\item \texttt{11431 Power LED indication support}
+	\item \texttt{11686 [DNI-statistics] there is no info for wan and lan status}
+	\item \texttt{11889 Ethernet port should be supported in QoS}
+	\item \texttt{12044 Should add power save feature in switch driver}
+	\item \texttt{12045 Should add green packet feature in switch driver}
+	\item \texttt{12062 [QoS]The traffic ratio is wrong.}
+	\item \texttt{12155 Wireless LED should be controlled by software}
+	\item \texttt{12193 [SQA Taipei-13][Qos]The QoS function does not be enabled immediately until we restart DUT.}
+	\item \texttt{12211 [u-boot] add wpspinset command to write wps pin to flash}
+	\item \texttt{12287 HW design spec have ask SW to set LED mode}
+	\item \texttt{12367 The LAN LED is not lightened up if we connect to 10Mbps Ethernet adapter.}
+\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.5.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.5.bin}
+		\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+		\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the coammdn "tftp -i 192.168.1.1 put WNR1000v2-V1.0.0.9.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.2.0.143.}
+        \end{enumerate}		
+		
+\section{Firmware V1.0.1.0}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-1-0}
+\end{itemize}
+\end{itemize}
+
+\subsection{New Features}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{11437 Router debugging mode should be supported}
+		\item 	\texttt{11416 Wi-Fi Protected Setup(WPS) support}
+	\end{itemize}
+\end{enumerate}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{12475 Display correct sharing folder in the windows and save sharing folder records.}
+		\item 	\texttt{12176 Disk management should be supported}
+		\item 	\texttt{12327 [Disk Management]The DUT should support more than one partitions}
+		\item 	\texttt{12336 [Disk Management]When I visit "192.168.1.1",it shows all the \/tmp in the DUT}
+		\item 	\texttt{12431 USB bug--location should display currnent folder location}
+		\item 	\texttt{12432 USB bug--Should return to the upper of the root folder, so you can share the whole HDD.}
+		\item 	\texttt{12434 USB bug--After you add second or more shared folders, then the shared folder page in the "Disk management" page should be refreshed automatically.}
+		\item 	\texttt{12522 [USB storage]The shared folder can not be visited.}
+		\item 	\texttt{12523 [USB storage]After reboot,usb storage can not work until you apply again}
+		\item 	\texttt{12551 [SAMBA]wrong share info file name}
+		\item 	\texttt{11737 [Block sites]NNTP can not be blocked when they contain the keyword.}
+		\item 	\texttt{11767 [DHCP-client]For the cases of Ethernet cable plug-off and plug-in, \\
+			client should send DHCP_REQUEST and include current IP address as preferred \\
+			$Client IP.}
+		\item 	\texttt{11769 [DHCP-client]Whenever IP assignment, router should automatically flush the static route (should only flush the WAN routing)}
+		\item 	\texttt{11786 [BPA]Connection should disconnect if no traffic through after idle timeout}
+		\item 	\texttt{11788 [BPA]The session needs to be restarted if detected by not seeing incoming heartbeats for a timeout period of 15 minutes then client should restart the authentication process.}
+		\item 	\texttt{11880 [NAT]NAT Mapping Timer test fail}
+		\item 	\texttt{11881 [NAT]"Outbound UDP Packets with Destination Port . 1024" test fail}
+		\item 	\texttt{11940 [NTP]NTP time can not get the Current time unless you reboot the DUT if you do not connect the DUT to internet first.}
+		\item 	\texttt{12122 Before sending discover packet, should check whether WAN cable is plugged.}
+		\item 	\texttt{12152 [Port Triggering]The port trigger could not use the same outgoing port to trigger different port rules.}
+		\item 	\texttt{12185 [SQA Taipei-5][PPTP]PPTP idle time function is fail.}
+		\item 	\texttt{12186 [SQA Taipei-6][Setup wizard]If WAN port cable not plugged in and we use wizard to detect WAN port type,the detected is "Static IP". It should display failure page.}
+		\item 	\texttt{12206 [SQA Taipei-26][CDRouter]CDRouter port trigger function test fail.}
+		\item 	\texttt{12252 [Setup wizard]Sometimes setup wizard can not go through,it always refresh the page "Detecting Connection Type on Internet Port"}
+		\item 	\texttt{12330 [Disk Management]After working in Disk Management page for a few time,there a too many "uhttpd"}
+		\item 	\texttt{12366 Before sending NTP packet, the WAN connection must be connected.}
+		\item 	\texttt{12405 [SQA Taipei-35]Unable to open the "Wireless a\/n" \/ "Wireless b\/g\/n" \/ "Guest Network" \/"schedule" \/ "port forwarding" pages when we login DUT remotely.}
+		\item 	\texttt{12571 Remove the line "WAN cable is not plugged, NOT send discover!!!" in dhcpc}
+		\item 	\texttt{12178 WPS Push button behavior definition}
+		\item 	\texttt{12232 [Basic wireless settings][b/g/n]No matter what I set, PassPhrase always shows NETGEAR in WPA-PSK,WPA2-PSK,WPA/WPA2-PSK in UI and shows no security in iwconfig}
+		\item 	\texttt{12385 [WPS]WPS icon under Vista still shows WNR2000}
+		\item 	\texttt{11927 [DMZ]If LAN IP address changes,DMZ IP address shows error}
+		\item 	\texttt{12124 [Wireless Card Access List][a/n][b/g/n]Wireless Card Access List page shows error when you input some special characters as device name}
+		\item 	\texttt{12433 USB bug--After you assigned one available group to "assigned to folder", then that group should be removed from "available group".}
+		\item 	\texttt{12163 The command to call wsccmd should be changed.}
+		\item 	\texttt{12363 [WPS]Configure APUT using PIN method through Vista, if I set security mode as WEP,the DUT should select Open WEP}
+		\item 	\texttt{12373 [WPS]Configure APUT using PIN method through Vista, if I set security mode as WPA2-PSK,it shows WPA-PSK in both console and UI.}
+		\item 	\texttt{12380 [WPS]The DUT can not add WPS client through Software Push button}
+		\item 	\texttt{11686 [DNI-statistics] there is no info for wan and lan status}
+		\item 	\texttt{12062 [QoS]The traffic ratio is wrong.}
+		\item 	\texttt{12147 [SIP]Imcoming call pop up constantly when call from one PC to another in LAN}
+		\item 	\texttt{12188 [qos] when reboot the board, qos does not takce effect}
+		\item 	\texttt{11732 There is Call Trace info in console when running the DUT for two days without doing anything}
+		\item 	\texttt{12260 [Disk Management]"Safely Remove Disk" button can not work.}
+		\item 	\texttt{12497 Sometimes Hotplug created an useless folder}
+	\end{itemize}
+	
+\end{enumerate}
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item 	\texttt{11873 [Top]Please change the model name to WNR1000v2 in top frame's picture}
+		\item 	\texttt{11972 wireless network mode is not match the spec 1.6}
+		\item 	\texttt{11998 [Schedule]Please check Start Blocking and End Blocking}
+		\item 	\texttt{12086 [Basic wireless settings][a/n]When "Up to 300Mbps" is selected, router status does not show double channels}
+		\item 	\texttt{12098 [Basic Wireless settings][a/n][b/g/n][Guest Network][WPA-PSK][WPA2-PSK][WPA/WPA2-PSK]If there is a space in WPA-PSK PassPhrase, the webpage shows error.}
+		\item 	\texttt{12101 [Basic Wireless settings][a/n][b/g/n][Guest Network][WPA-PSK]If I set WPA-PSK PassPhrase as </script>,the webpage shows error}
+		\item 	\texttt{12136 [Guest Network]Please add a Guest Network webpage for a/n}
+		\item 	\texttt{12179 Merge 2 band into one page for basic wireless setting and advanced wireless setting}
+		\item 	\texttt{12209 [SQA Taipei-30]The default region is " Select Region" on both wireless setting a/n and wireless setting b/g/n pages, but the status page shows "Europe".}
+		\item 	\texttt{12261 [Storage Administration]When you edit "guest",Group Member shows error in UI.}
+		\item 	\texttt{12282 wireless setting a/n page should show correct channel list}
+		\item 	\texttt{12299 [Disk Management--Shared Folder]There is a javascript error when you click ">>" or "<<" button and no one in "Available Groups" is selected}
+		\item 	\texttt{12300 [Disk Management--Shared Folder]Location shows error in edit mode}
+		\item 	\texttt{12301 [Disk Management--Shared Folder]There is a javascript error if no folder is selected in folder list and click "Save" button}
+		\item 	\texttt{12308 [Disk Management--Shared Folder]Shared Folder shows error if there is a warning messages before it saves config.}
+		\item 	\texttt{12311 [Disk Management--Shared Folder]Shared Folder should not begin with \/\/}
+		\item 	\texttt{12316 [Disk Management--Shared Folder]After add a Shared Folder, Disk Management page can not return to itself.}
+		\item 	\texttt{12317 [Disk Management--Shared Folder]After you edit the Shared Folder list, shared folder become blank in the table}
+		\item 	\texttt{12321 [Disk Management]Disk Management page shows error if you input some special characters as Display name}
+		\item 	\texttt{12324 [Disk Management]There should be only one : after "Shared Storage IP Address"}
+		\item 	\texttt{12326 [Disk Management]There should be a : after "Disk"}
+		\item 	\texttt{12332 [Disk Management]"Groups with Access" shows error with Sub-folder.}
+		\item 	\texttt{12338 [Storage Administration]When I click "delete" button in User Accounts list,there is a warning pop up}
+		\item 	\texttt{12339 [Storage Administration]The webpage can not return after you delete a group in Group Management list and User Account list}
+		\item 	\texttt{12340 [Storage Administration-User Accounts]User name must be unique}
+		\item 	\texttt{12344 [Storage Administration-Group Account]If there is a space in description,the webpage shows error.}
+		\item 	\texttt{12345 [Storage Administration-Group Account]Group account and Description should allow special characters}
+		\item 	\texttt{12347 [Storage Administration-User Account]If there is a space in full name or Description,the webpage shows error.}
+		\item 	\texttt{12349 [Storage Administration-Group Account]Group account and Description should not allow 2bytes characters}
+		\item 	\texttt{12368 There is no "select region" in the region list, the default value of region is NOT "select region". Please refer to router spec.}
+		\item 	\texttt{12422 After doing reset to default, it can't open "routerlogin" page automatically.}
+		\item 	\texttt{12498 [DISK-Share Flolder] if group is special char, Available Groups will show wrong}
+		\item 	\texttt{12500 [Guest network]Menu should allow guest network for a/n}
+		\item 	\texttt{12304 [Disk Management--Shared Folder]Folder list shows error if there is a folder which folder name contents 128 characters}
+		\item 	\texttt{12305 [Disk Management--Shared Folder]Folder name should allow 128 characters}
+		\item 	\texttt{12322 [Disk Management--Shared Folder]Assigned to Folder field should not be blank if you want to add a folder to shared folder list.}
+		\item 	\texttt{12334 [Disk Management]The same shared folder could show in the Shared Folder list with different display name.}
+		\item 	\texttt{12348 [Storage Administration-Group Account]User name,full name and Description should allow special characters}
+		\item 	\texttt{12476 The Location of shared folder dialog in USB disk management display error.}
+		\item 	\texttt{11953 [NAT][WAN/LAN conflict]When the LAN-WAN IP address conflict, the web page of DUT should give a tip of IP address conflict}
+		\item 	\texttt{12184 [SQA Taipei-4][Setup wizard]The account name is NULL when using wizard to configure DHCP mode.}
+		\item 	\texttt{12214 According to WNR1000, Newly added port triggering rule should be enabled by default}
+		\item 	\texttt{12399 [SQA Taipei-32]Click the "Clear Log" button on log page, GUI sometime cannot open log page correctly}
+		\item 	\texttt{12407 [SQA Taipei-36]GUI displays the remote login port is being used when we modify "allow remote access by" method from one to another.}
+		\item 	\texttt{12034 Wrong command in the apup}
+		\item 	\texttt{11317 Modify web pages for netgear's auto test according to netgear GUI spec 2.1}
+		\item 	\texttt{11451 Modified "QoS Setup" page according to netgear GUI spec 2.1}
+		\item 	\texttt{11454 Modified "Remote Management" page according to netgear GUI spec 2.1}
+		\item 	\texttt{11456 Modified "Wireless Settings" page according to netgear GUI spec 2.1}
+		\item 	\texttt{11541 Modified "Router Upgrade" page according to netgear GUI spec 2.1}
+		\item 	\texttt{11919 [Port triggering]Port triggering page shows error when you input some special characters as server name}
+		\item 	\texttt{11920 [Port tringgering]Although the warning messages says the port must be in the range [1-65535] excluding 80,I can input 80 port}
+		\item 	\texttt{11932 [NAPT]The rule should be added when there exists a temporal rule using the same public port and mapping to the same LAN IP and private/internal port}
+		\item 	\texttt{11936 [DHCP Server]LAN Setup page shows error when you input some special characters as device name}
+		\item 	\texttt{12056 Add auto radio test button for wireless settings}
+		\item 	\texttt{12061 [QoS]QoS Setup should gray-out when set WDS Repeater mode.}
+		\item 	\texttt{12065 [QoS]When set MAC Address priority ,something is wrong.}
+		\item 	\texttt{12153 [QoS]The Uplink bandwidth should more than 100Mbps.}
+		\item 	\texttt{12171 According to netgear spec2.1, add hotkeys in Wireless Settings GUI page}
+		\item 	\texttt{12180 Merge 2 band into one page for advanced wireless setting}
+		\item 	\texttt{12198 [SQA Taipei-18][RIP]The default value of RIP direction is 'Both' . Default must is 'None'.}
+		\item 	\texttt{12250 [Connection status][BPA]Disconnect and connect to BPA,the webpage shows Logged out}
+		\item 	\texttt{12251 [PPPoE]Static IP address in PPPoE page saves config error in both setup wizard and basic settings page.}
+		\item 	\texttt{12259 [Storage Administration]After add a account,webpage shows strange.}
+		\item 	\texttt{12319 [Disk Management--Shared Folder]If I input a error Display name,the warning message is error}
+		\item 	\texttt{12341 [Storage Administration-Group Account]Warning message is error}
+		\item 	\texttt{12351 Please add GMT+5:30 Chennai, Kolkata, Mumbai, New Delhi in the Time Zone.}
+		\item 	\texttt{12374 [WPS]WPS is configured but "Keep Existing Wireless Settings" on Advanced wireless settings a/n page does not check}
+		\item 	\texttt{12382 [WPS]When you add WPS client successful with PIN mode,the webpages shows timeout}
+		\item 	\texttt{12456 The Show Status never show Dynamic DNS service is not enabled. , even if I disable the DDNS function.}
+		\item 	\texttt{12513 [Storage Administration-User Accounts]If you add more than one user in User Accont page ,there is a javascript error}
+		\item 	\texttt{12165 The LOGO of wnr1000v2 should be fetched from NETGEAR.}
+		\item 	\texttt{12548 The LAN and WAN status of statistics page always displays "Link Down"}
+		\item 	\texttt{11400 NAPT Conflicts Resolution}
+		\item 	\texttt{11448 Samba and hotplug porting}
+		\item 	\texttt{11764 MAC address of wifi0 and wifi1 always are 00:00:00:00:00:00}
+		\item 	\texttt{11973 country setting ioctl can't work}
+		\item 	\texttt{12003 hostapd should be included in configuration file}
+		\item 	\texttt{12068 [Basic Wireless settings][a/n][b/g/n]If there is a space in SSID,the SSID shows OK in UI but error in iwconfig}
+		\item 	\texttt{12099 [Basic Wireless settings][a/n][b/g/n][Guest Network][WPA-PSK][WPA2-PSK][WPA/WPA2-PSK]If I set WPA-PSK PassPhrase as 64 hexdigits, it save as no security in function}
+		\item 	\texttt{12112 [Advanced Wireless settings][a/n][b/g/n]"Enable Wireless Router Radio" in Advanced wireless settings page should not turn on and off both a/n and b/g/n.}
+		\item 	\texttt{12114 [Advanced Wireless settings][a/n][b/g/n]"Disable SSID Broadcast" does not work}
+		\item 	\texttt{12131 [Wireless Card Access List][a/n]Access Control does not work.}
+		\item 	\texttt{12137 [Guest Network][b/g/n]"Disable SSID Broadcast" does not work on Guest Network page}
+		\item 	\texttt{12236 Should adjust the channel list under 300M mode of a band}
+		\item 	\texttt{12383 [Basic Wireless settings][b/g/n]When I set open wep,it works error in both UI and console.}
+		\item 	\texttt{12507 [Guest Network]If there is a space in SSID,the SSID shows OK in UI but error in iwconfig}
+		\item 	\texttt{12509 [Basic wireless settings]Wireless settings shows different between UI and console}
+		\item 	\texttt{12526 [Advance wireless setting]If "Enable Wireless Router Radio" is uncheck and reboot the DUT,wireless will not work.}
+		\item 	\texttt{12083 [Basic Wireless settings][a/n]Wireless client WNDA3100 can scan and connnect to the DUT only when the DUT works in channel 36~48,149~165}
+		\item 	\texttt{12135 [Wireless Card Access List][b/g/n]Access Control on Wireless Card Access List page control both a/n and b/g/n mode}
+		\item 	\texttt{12210 [SQA Taipei-31]Wireless clients(Intel? PRO/Wireless 4965AGN, Intel? PRO/Wireless 3965AG, Atheros AR5008, Netgear WNDA3100) cannot associate with DUT.}
+
+	\end{itemize}
+	\begin{enumerate}
+	\item WIRELESS
+	\begin{itemize}
+		\item 	\texttt{12113 Control wireless on/off behavior according to wireless push button}
+		\item 	\texttt{12115 still saw "Not associated" on 5GHz interface}
+		\item 	\texttt{12229 RF and Wireless SW issue}	
+	\end{itemize}
+	\end{enumerate}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.5.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.5.bin}
+		\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+		\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the coammdn "tftp -i 192.168.1.1 put WNR1000v2-V1.0.1.0.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.2.0.143.}
+        \end{enumerate}		
+
+\section{Firmware V1.0.1.1}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-1-1}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{12596 The read&write changes to read only in samba read&write group.}
+		\item 	\texttt{12355 [Storage Administration]User Account "Admin" and "Guest" have the same access}
+		\item 	\texttt{12595 Samba should be called or killed in hotplug routine.}
+		\item 	\texttt{12613 hotplug2 warning message is dumped after system boot}
+		\item 	\texttt{12631 More than one init process after system boot up}
+		\item 	\texttt{12566 [QoS]When delete some default QoS Policy ,the new QoS Policy can not be saved.}
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item 	\texttt{12177 [Port Triggering]Port Triggering Timeout(in minutes) is wrong.}
+		\item 	\texttt{12306 [Disk Management--Shared Folder]Folder name should allow special characters}
+		\item 	\texttt{12302 [Disk Management--Shared Folder]When you creat new folder, space should be allowed}
+		\item 	\texttt{12153 [QoS]The Uplink bandwidth should more than 100Mbps.}
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item WIRELESS
+	\begin{itemize}
+		\item 	\texttt{12526 [Advance wireless setting]If "Enable Wireless Router Radio" \\
+						is uncheck and reboot the DUT,wireless will not work.}
+		\item 	\texttt{12609 [Wireless][b/g/n]When security mode is WPA-PSK [TKIP] + \\
+						WPA2-PSK [AES],it shows no security in iwconfig}
+		\item 	\texttt{12084 [Basic wireless settings][a/n]According to Netgear spec1.6,\\
+						the default mode for 11N 5GHz is 40 MHz.}
+		\item 	\texttt{12362 [WPS]Configure APUT using PIN method through Vista or Intel PROSet, \\
+						it shows OK in console,but error in UI}
+		\item 	\texttt{12365 [WPS]Configure APUT using PIN method through Vista or Intel PROSet,\\
+						if there is a space in SSID, it shows OK in console,but error in UI}
+		\item 	\texttt{12384 [WPS]"Disable Router's PIN" can not work.}
+		\item 	\texttt{12020 sometimes the device will crash if set 300M+wep or 300M+wpa}
+		\item 	\texttt{12568 system crash when g/n interface is configured as wpa-psk(tkip) and radio disabled}
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item ETHERNET
+	\begin{itemize}
+		\item 	\texttt{11807 [PPTP]The DUT has been crash when I set PPTP}
+		\item 	\texttt{12222 [Ethernet]LAN/WAN transmit timed out when connected with ADSL modem}
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item KERNEL
+	\begin{itemize}
+		\item 	\texttt{11939 [Logs]Some logs shows not Complete}
+		\item 	\texttt{12147 [SIP]Imcoming call pop up constantly when call from one PC to another in LAN}
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.5.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.5.bin}
+		\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+		\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the coammdn "tftp -i 192.168.1.1 put WNR1000v2-V1.0.1.1.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.2.0.143.}
+        \end{enumerate}	
+
+\section{Firmware V1.0.1.2}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-1-2}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{12668 Opened files not closed after use }
+		\item 	\texttt{12602 [Disk Management --Shared folder]When you add a shared folder,\\
+						Partition shows in Shared Folder list is error }
+		\item 	\texttt{12537 WPS run twice under unconfigured mode, and run one time under configured mode. }
+		\item \texttt{12363 [WPS]Configure APUT using PIN method through Vista, if I set security \\
+						mode as WEP,the DUT should select Open WEP.}
+		\item \texttt{12662 [QoS]QoS can not work in V1.0.1.0}
+		\item \texttt{12634 [USB storage]User Accounts "Admin" and "Guest" , \\
+						Groups "Admin" and "Guest" can not visit the shared folder}
+		\item \texttt{12334 [Disk Management]The same shared folder could show in \\
+						the Shared Folder list with different display name.}
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item 	\texttt{12370 After doing reset to default, it can't open "routerlogin" page automatically. }
+		\item 	\texttt{12130 [Wireless Card Access List][a/n]The Available Wireless Cards \\
+						list should display any available wireless PCs and their MAC addresses.}
+		\item \texttt{12598 [Disk Management--Shared folder]Please define the maxlength of folder name in UI }
+		\item \texttt{12350 [Storage Administration-Group Account]User name,full name and \\
+						Description should not allow 2 bytes characters }
+		\item \texttt{12603 [Storage Administration -- User Account]There is a javascript \\
+						error when you edit "User Account" page.}
+		\item \texttt{12604 [Disk Management--Shared folder]After you click "Cancel" \\
+						button,Edit "Shared Folder" page acts as add a shared folder }
+		\item \texttt{12657 [Disk Management--Shared folder]"Cancel" button in edit \\
+						"Shared folder" make partition and location NULL on the webpage} 
+		\item \texttt{12665 [Router status]WLAN status always shows 54M on Statistics page}
+		\item \texttt{12306 [Disk Management--Shared Folder]Folder name should allow special characters}
+		\item \texttt{12382 [WPS]When you add WPS client successful with PIN mode,the webpages shows timeout}
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item WIRELESS
+	\begin{itemize}
+		\item 	\texttt{12528 [Wireless]Sometimes restore to factory default, ath0 does not shows in ifconfig }
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item ETHERNET
+	\begin{itemize}
+		\item 	\texttt{12144 [Guest Network][b\/g\/n]After apply this page,webpage can not return.}
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item KERNEL
+	\begin{itemize}
+		\item 	\texttt{12231 ntfs should support write}
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.5.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.5.bin}
+		\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+		\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the coammdn "tftp -i 192.168.1.1 put WNR1000v2-V1.0.1.2.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.2.0.143.}
+        \end{enumerate}	
+
+\section{Firmware V1.0.1.3}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-1-3}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{12637[Disk Management --Shared folder]When you edit the shared folder, the group shows error}
+		\item 	\texttt{12666 the Location of Partition in sharedfolder list in disk management web show error .}
+		\item 	\texttt{12602[Disk Management --Shared folder]When you add a shared folder,Partition \\
+						shows in Shared Folder list is error }
+		\item \texttt{12760 [disk management]when push "Return to Upper Folder" button ,can not return top folder .}
+		\item \texttt{12690 [Disk Management --Shared folder]When you remove the disk,the infomation in the shared folder list should be remove }
+		\item \texttt{12700 [USB storage]After restore to factory default,the shared folder \\
+						list is still exist but the group info and account info have gone}
+		\item \texttt{12774 [wnr1000v2][disk management && user management]so many print infomation \\
+						on the termination ,badly slow down the speed of update of webpage. }
+		\item \texttt{12746    	Need to reload samba service if LAN IP changed }
+		\item \texttt{12706    	[WPS]According to Netgear's spec, Auto WEP should support WPS }
+		\item \texttt{12683    	[WPS][Advance wireless settings]Uncheck "Keep Existing \\
+						wireless settings" and apply will reset all wireless settings to default value }
+		\item \texttt{12692    	Many potential issues inside, some settings in \\
+						AP94 but you didn¡¯t put it in 1000 script.}
+		\item \texttt{11965    	[Multiple BSSID]Modify bridge to fit netgear's spec}
+		\item \texttt{12736    	Maybe we should replace nmbd with our netbios name service }
+		\item \texttt{12611    	nmbd sends 'br0' DNS query }
+		\item \texttt{12759    	Router can't response NBNS query with resource type 20 }
+		\item \texttt{12798    	update_smb is too slow}
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item 	\texttt{12660    	[Router status]When you select the regions that do not support \\
+						a band, you should not shows the mode in router status page. }
+		\item 	\texttt{12697    	[Router status]Double channels shows error in router status page }
+		\item \texttt{12708    	[Basic wireless settings][a/n][b/g/n]When "Up to 300M" mode, it should show double channels}
+		\item \texttt{12765    	[WDS]The router should not input itself MAC Address.}
+		\item \texttt{12766    	webpage should let WPS run in WEP OPEN/AUTO mode }
+		\item \texttt{12330    	[Disk Management]After working in Disk Management page for a few time,there a too many "uhttpd"}
+		\item \texttt{12738    	[WPS]When use WLAN external Registrar to config the key \\
+						with spaces,the spaces can not display in UI.} 
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.5.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.5.bin}
+		\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+		\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the coammdn "tftp -i 192.168.1.1 put WNR1000v2-V1.0.1.3.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.2.0.143.}
+        \end{enumerate}	
+
+		
+\section{Firmware V1.0.1.4}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-1-4}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{12806 [Disk Management]When return to the top folder,\\
+						the same shared folder could show in the Shared Folder \\
+						list with different display name }
+		\item 	\texttt{12858 [Disk Management --Shared folder]When you edit the \\
+						top folder, it does not show the correct selection. }
+		\item 	\texttt{12191 [SQA Taipei-10][LED]When WAN connection is DHCP mode, the LED is amber.}
+		\item \texttt{12192[SQA Taipei-12][LED]Bigpond mode not connected to internet, the WAN LED is green. }
+		\item \texttt{12194 [SQA Taipei-14][LED]When WAN port is static IP the WAN LED is amber.}
+		\item \texttt{12196 [SQA Taipei-16][LED]When WAN port IP is released, the WAN LED is still green. \\
+						It should be amber }
+		\item \texttt{12810 [Vista Premium]Enable 6to4 tunelling support in kernel configuration file }
+		\item \texttt{12782 [LED]Click "cancel" when add WPS client through PIN or Push button,\\
+						the WPS LED will always light on until reboot the DUT }
+		\item \texttt{12738 [WPS]When use WLAN external Registrar to config the key with spaces,\\
+						the spaces can not display in UI. }
+		\item \texttt{12807 [USB storage]There are too many update_smb }
+		\item \texttt{12846 [Storage Administration]If Description of Group Account is NULL,\\
+						we can not visit the shared folder. }
+		\item \texttt{12862 [Disk Management --Shared folder]When you remove the disk unsafely, \\
+						sometimes the record still in Disk Detail list }
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item \texttt{12765 [WDS]The router should not input itself MAC Address. }
+		\item \texttt{12728 [Router status]WLAN status should show both a\/n and b\/g\/n on Statistics page }
+		\item \texttt{12730 [Top]Top frame shows error when the screen is not 1024*768 }
+		\item \texttt{12270 [DNI-Storage] user's group name should be corresponding to group name }
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.6.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.6.bin}
+		\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+		\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the coammdn "tftp -i 192.168.1.1 put WNR1000v2-V1.0.1.4.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.2.0.143.}
+        \end{enumerate}	
+
+\section{Firmware V1.0.1.5}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-1-5}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{12850 [Storage Administration]If Full Name or Description of User Account \\
+						is NULL,we can not visit the shared folder. }
+		\item 	\texttt{12861 [Logs]Each time WAN disconnects, the log entry should \\
+						be[Internet disconnected],but it display [Internet idle-timeout]. }
+		\item 	\texttt{12808 [Wireless][b/g/n]When I set security as open \\
+						WEP,it always shows Auto WEP in UI and console }
+		\item \texttt{12853 [WATCHDOG] HW watchdog should be supported. }
+		\item \texttt{12770 [WDS]When set Wireless Repeater,the Access Point display :Not-Associated.}
+		\item \texttt{12661 [QoS]When QoS is turnned on,WAN-LAN throughput is low with giga bit Ethernet PCs}
+		\item \texttt{12773 [LED]One of the "Enable Wireless Router Radio" is unchecked, \\
+						another is checked,both Wireless LEDs light on.}
+		\item \texttt{12856 The power LED stays AMBER during booting up and turns on GREEN after boot up finished}
+		\item \texttt{12866  [USB storage]Vista can not visit the USB storage.}
+		\item \texttt{12948 Can¡¯t find 1000 in the workgroup through windows explore. }
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item \texttt{12819 The web page of advanced wireless settings should follow netgear's \\
+						requirement. }
+		\item \texttt{12302 [Disk Management--Shared Folder]When you creat new folder, space \\
+						should be allowed }
+		\item \texttt{12857 please keep it the same (I mean SSID, channel, and mode layout \\
+						of 5GHz must be the same as 2.4GHz). }
+		\item \texttt{12837 [QoS]After warning message,the wrong setting can be saved config \\
+						and added to QoS list}
+		\item \texttt{12818 [QoS]When "Turn Internet Access QoS On" is checked and \\
+						"Turn Bandwidth Control On" is unchecked,maximum of Uplink \\
+						 bandwidth become 0}
+		\item \texttt{12840 [QoS]QoS list page shows error when you input some special \\
+						characters as the name of QoS Policy}
+		\item \texttt{12841 [QoS]On QoS setup page,after warning message for error Uplink \\
+						bandwidth value,the webpage should not submit}
+		\item \texttt{12852 [Advanced wireless settings]Please remove "Enable WMM" item on \\
+						advanced wireless settings page because it is on Qos page already.}
+		\item \texttt{12625 [QoS]When edit the QoS -Priority rules ,can not change the mac address.} 
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.7.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.7.bin}
+		\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+		\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the coammdn "tftp -i 192.168.1.1 put WNR1000v2-V1.0.1.5.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.2.0.143.}
+        \end{enumerate}	
+
+\section{Firmware V1.0.1.6}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-1-6}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{12894 samba should support to share the whole partition}
+		\item 	\texttt{12912 [USB Storage]Folder name displays uncorrectly }
+		\item 	\texttt{12959 [Basic settings]When Connection Mode is "Manually", \\
+						after reboot the DUT, we should not auto dial up to the server }
+		\item \texttt{12712 [Vista Premium] PnP-X metadata population }
+		\item \texttt{12881 WMM on QoS page does not work. }
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item \texttt{12950 channel a\/n can not be AUTO if WDS is enable }
+		\item \texttt{12957 channel a\/n is always AUTO }
+		\item \texttt{12979 some settings and GUI are incorrect and you didn¡¯t follow what netgear provided }
+		\item \texttt{12815 [QoS]when add/edit MAC Address ,if the Device Name include space,\\
+						the "Device Name"/"MAC Address"display wrong.}
+		\item \texttt{12834 [QoS]According to Netgear UI spec 2.1,please add \\
+						"Netgear EVA(Highest)" to Application list. }
+		\item \texttt{12830 [QoS]I can add two Priorities to the same Lan port }
+		\item \texttt{12351 Please add ¡°GMT+5:30 Chennai, Kolkata, Mumbai, New Delhi¡± in the Time Zone. }
+		\item \texttt{12771 [WDS]When set Wireless Repeater,the "Wireless MAC of this router"display wrong.}
+		\item \texttt{12813 [WPS]When you add a client with WPS,router's PIN in advanced \\
+						wireless settings page shows error } 
+		\item \texttt{12995 [Wireless Settings]The a/n Channel display blank.}
+		\item \texttt{12829 [Router status]Please get correct LAN port value on "show statistic" page}
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.7.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.7.bin}
+		\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+		\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the coammdn "tftp -i 192.168.1.1 put WNR1000v2-V1.0.1.6.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.2.0.143.}
+        \end{enumerate}	
+
+\section{Firmware V1.0.1.7}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-1-7}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{12973 [USB storage] I can\¡¯t share any other folder with \\
+						¡°space or other symbol in the foldername¡±.}
+		\item 	\texttt{12700 [USB storage]After restore to factory default,the \\
+						shared folder list is still exist but the group info and \\
+						account info have gone }
+		\item 	\texttt{13020 [Disk Management]Current folder shows error with many spaces }
+		\item \texttt{12401 [SQA Taipei-33]Use "Ping of Death" to attack DUT, the log \\
+						records "user.info kernel: oversized IP packet from \\
+						xxx.xxx.xxx.xxx(IP) }
+		\item \texttt{13069 [NETGEAR-CEC -- 731]DUT can\'t block TCP SYN scan packets correctly }
+		\item \texttt{12866 [USB storage]Vista can not visit the USB storage. }
+		\item \texttt{12910 there is error message when starting samba }
+		\item \texttt{13077 [samba]file or filename with chinese characters can't \\
+						show correctly in samba }
+		\item \texttt{13126 Samba can\'t show large files }
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item \texttt{12765 [WDS]The router should not input itself MAC Address.}
+		\item \texttt{12913 [QoS]MAC Device List should not allow 2 bytes characters \\
+						for QoS Policy and device name}
+		\item \texttt{12979 some settings and GUI are incorrect and you didn¡¯t follow \\
+						what netgear provided}
+		\item \texttt{12938 [Guest Network]Guest Network SSID should not be the same with \\
+						SSID on Basic wireless settings page}
+		\item \texttt{12946 [Password] If set password to some special characters, \\
+						user can\'t log in to the DUT .}
+		\item \texttt{13073 When you enable Wireless Repeating function, basic wireless \\
+						setting page will show error.}
+		\item \texttt{13074 When you input wrong mac address, the page will show a javascript.}
+		\item \texttt{12991 [wds]Should add the ":"when read the MAC Address.}
+		\item \texttt{12819 The web page of advanced wireless settings should follow netgear\'s requirement.}
+		\item \texttt{12955 web page doesn't reboot wireless when disable WDS}
+		\item \texttt{13054 [QoS]According to Netgear UI spec 2.1,please remove \\
+						"Diablo II","Half Life" and "Wolfenstein" in "on line gaming" list}
+		\item \texttt{13061 [Wireless Settings]In WPA/WPA2 Enterprise Security mode, \\
+						please change WPA Mode:"WPA[AES]"to "WPA2[AES]" }
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.7.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.7.bin}
+		\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+		\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the coammdn "tftp -i 192.168.1.1 put WNR1000v2-V1.0.1.7.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.195.}
+        \end{enumerate}
+
+\section{Firmware V1.0.1.8}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-1-8}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item   \texttt{12744 [Disk Management--Shared Folder]We can not create folder with special folder name \\
+						in USB storage}
+		\item   \texttt{13022 [Disk Management]I can create new folder in \\
+						\/tmp\/mnt\/ of the DUT}
+		\item   \texttt{12598 [Disk Management--Shared folder]Please define the maxlength \\
+						of folder name in UI}
+		\item   \texttt{13190 Should replace the command find with other command when scan \\
+						disk information file.}
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item   \texttt{12937 Web pages of ftp server should be added}
+		\item   \texttt{12936 web pages of UPnp media server should be added}
+		\item   \texttt{13052 [WDS]Please remove the more \) on router status \\
+						page when Wireless Repeater mode}
+		\item   \texttt{13110 [WDS]When WDS is enabled,"Delete" button on LAN \\
+						Setup page does not gray out}
+		\item   \texttt{12789 [QoS]Please show MAC Device List according to Netgear's spec.}
+		\item   \texttt{12938 [Guest Network]Guest Network SSID should not be the same \\
+						with SSID on Basic wireless settings page}
+		\item   \texttt{13023 [Advanced wireless settings]Please remove "Enable WMM" item on \\
+						the help page of advanced wireless settings}
+		\item   \texttt{13046 [WDS][802.11a\/n]I can apply WDS when security is WPA-PSK or \\
+						WPA2-PSK in a\/n mode}
+		\item   \texttt{13049 [WDS]When WDS is enabled,menu shows error}
+		\item   \texttt{13050 [WDS]When WDS is enabled,Basic settings still work}
+		\item   \texttt{13047 [WDS]I can apply WDS when security is WPA\/WPA2 Enterprise}
+		\item   \texttt{12819 The web page of advanced wireless settings should follow netgear\'s requirement.}
+		\item   \texttt{12382 [WPS]When you add WPS client successful with PIN mode,the webpages shows timeout}
+		\item   \texttt{12381 [WPS]When you add WPS client,the webpages should according to Netgear's router spec1.6}
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.7.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.7.bin}
+		\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+		\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the coammdn "tftp -i 192.168.1.1 put WNR1000v2-V1.0.1.8.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.235.}
+        \end{enumerate}
+
+\section{Firmware V1.0.1.9}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-1-9}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{12864 ftp should be supported}
+		\item 	\texttt{13105 [SOAP]The PPTP mode should check the ip conflict.}
+		\item 	\texttt{13129 [SOAP]If wireless is disable, after running SOAP, it should enable wireless}
+		\item 	\texttt{13157 [USB storage]If you want to save the file you edit in shared folder, \\
+						a warning message "Not enough storage" pop up and the file can not be saved.}
+		\item 	\texttt{13327 [DHCP server]If subnet is changed and the subnet range is from big to small, \\
+						router SHOULD flush DMZ and Block sites Trusted IP Address}
+		\item 	\texttt{12851 [USB storage]Remove the disk without using "safely remove disk" and then insert it, \\
+				sometimes it can not mount all the disks}
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item WIRELESS
+	\begin{itemize}
+		\item 	\texttt{13012 [Wireless Settings]In Wireless Network a\/n mode ,can not set the wep Security Option .}
+		\item 	\texttt{13203 [Wireless settings][a\/n][b\/g\/n]If there are spaces in WPA2-PSK PassPhrase, \\
+						it shows OK in UI, but "invalid WPA passphrase length" in console}
+		\item 	\texttt{13202 [Wireless settings][a\/n][b\/g\/n]If there are spaces in WPA-PSK PassPhrase, \\
+						it shows OK in UI, but "invalid WPA passphrase length" in console}
+		\item 	\texttt{13204 [Wireless settings][a\/n][b\/g\/n]If there are spaces in WPA/WPA2-PSK PassPhrase, \\
+						it shows OK in UI, but "invalid WPA passphrase length" in console}
+		\item 	\texttt{13170 [Wireless settings][a\/n][b\/g\/n]If there are spaces in SSID, the characters \\
+						after spaces disappear in iwconfig}
+		\item 	\texttt{13152 [Advance wireless settings]Uncheck "Enable SSID Broadcast" in a\/n mode does not work.}
+		\item 	\texttt{12083 [Basic Wireless settings][a\/n]Wireless client WNDA3100 can scan and connnect \\
+						to the DUT only when the DUT works in channel 36~48,149~165}
+		\item 	\texttt{13230 [Guest Network][a\/n][b\/g\/n]If there are spaces in SSID, the characters after \\
+						spaces disappear in iwconfig}
+		\item 	\texttt{13164 [Guest Network & Wireless ACL]Wireless ACL can not work with gust network}
+		\item 	\texttt{12092 [Basic Wireless settings][a\/n][b\/g\/n]40MHz can only works in no security mode.}
+		\item 	\texttt{13014 [Wireless Settings]In Wireless Network a\/n mode ,the "Mode" display wrong in \\
+						the wireless card sometimes.}
+		\item 	\texttt{12706 [WPS]According to Netgear's spec, Auto WEP should support WPS}
+		\item 	\texttt{12373 [WPS]Configure APUT using PIN method through Vista, if I set security mode as WPA2-PSK, \\
+						it shows WPA-PSK in both console and UI.}
+		\item 	\texttt{13331 [wps]The Name (SSID) /Security Options display wrong in UI.}
+		\item 	\texttt{13224 [LED][Wireless]Wireless LED is always light off.}
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item   \texttt{12937 Web pages of ftp server should be added}
+		\item   \texttt{12936 web pages of UPnp media server should be added}
+		\item   \texttt{13052 [WDS]Please remove the more \) on router status \\
+						page when Wireless Repeater mode}
+		\item   \texttt{13110 [WDS]When WDS is enabled,"Delete" button on LAN \\
+						Setup page does not gray out}
+		\item   \texttt{12789 [QoS]Please show MAC Device List according to Netgear's spec.}
+		\item   \texttt{12938 [Guest Network]Guest Network SSID should not be the same \\
+						with SSID on Basic wireless settings page}
+		\item   \texttt{13023 [Advanced wireless settings]Please remove "Enable WMM" item on \\
+						the help page of advanced wireless settings}
+		\item   \texttt{13046 [WDS][802.11a\/n]I can apply WDS when security is WPA-PSK or \\
+						WPA2-PSK in a\/n mode}
+		\item   \texttt{13049 [WDS]When WDS is enabled,menu shows error}
+		\item   \texttt{13050 [WDS]When WDS is enabled,Basic settings still work}
+		\item   \texttt{13047 [WDS]I can apply WDS when security is WPA\/WPA2 Enterprise}
+		\item   \texttt{12819 The web page of advanced wireless settings should follow netgear\'s requirement.}
+		\item   \texttt{12382 [WPS]When you add WPS client successful with PIN mode,the webpages shows timeout}
+		\item   \texttt{12381 [WPS]When you add WPS client,the webpages should according to Netgear's router spec1.6}
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.7.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.7.bin}
+		\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+		\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.1.9.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.235.}
+        \end{enumerate}
+
+\section{Firmware V1.0.2.0}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-2-0}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item BOOTLOADER
+	\begin{itemize}
+		\item   \texttt{13407 Added new option in the command macset and macshow to configure 5GHz MAC address} 
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item   \texttt{13218 The disk re-mouted info is not correct in "df" table \\
+						if remove HDD not correctly.}
+		\item   \texttt{13366 could not display all the partitions in the df table , \\
+						but actually there are some other partitions should be displayed.}
+		\item   \texttt{13141 2.4GHz wireless broadcast could not be verified with \\
+						consistent results for the current device firmware.}
+		\item   \texttt{13176 Sometimes wireless arguments cannot be set through smart wizard}
+		\item   \texttt{13413 List folders through http server.}
+		\item   \texttt{13336 [WAN Setup]the WAN MTU can't work correctly!}
+		\item   \texttt{13309 [Advance wireless settings][a\/n]Short Preamble does \\
+						not work with an mode}
+		\item   \texttt{12883 [Guest Network][b\/g\/n]When Enable Guest Network \\
+						b\/g\/n and auto channel, 40MHz does not work .}
+		\item \texttt{13064 [QoS]QoS can not work under PPPoE}
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item WIRELESS
+	\begin{itemize}
+		\item   \texttt{13339 [wps]PIN Number function fail.}
+		\item   \texttt{13328 [wps]Fail to Configure APUT using PIN method through a \\
+						WLAN external Registrar}
+		\item   \texttt{13332 [wps]Both the a/n and b/g/n should be configed accross \\
+						the wired external registrar}
+		\item   \texttt{13245 [LED]When use WPS ,the LED in the rear panel can't flash !}
+		\item   \texttt{13231 [Guest Network][a\/n][b\/g\/n]If I set SSID as some special \\
+						characters. It shows no wireless in iwconfig}
+		\item   \texttt{13348 [wireless repeating function]when you set the DUT as \\
+						"repeater" mode,it will crash!}
+		\item   \texttt{13405 Use fixed MAC of LAN and 11g as br0 MAC}
+		\item   \texttt{13235 [Guest Network][b\/g\/n][a\/n]When you set Open WEP or \\
+						Auto WEP, it works as no security}
+		\item   \texttt{13103 br0's MAC changed after wireless restart sometimes}
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item   \texttt{13421 Disable UPNP media server and FTP server on GUI}
+		\item   \texttt{13261 [Static Route]When the DUT use "Use Static IP Address" as \\
+						WAN IP address and there is not cable connect to the DUT's WAN. \\
+						We can not add static route in WAN subnet.}
+		\item   \texttt{13359 [wireless settings]After apply, "RADIUS server Shared Secret" \\
+						on the webpage always shows NULL}
+		\item   \texttt{13360 IP address should not be the Broadcast address or the subnet.}
+		\item   \texttt{13403 WPA/WPA2 enterprise security can not be used with WPS}
+		\item   \texttt{13238 [Guest Network][b\/g\/n][a\/n]When you select "Shared key WEP" \\
+						and apply, "Add WPS Client" link in the menu can still click.}
+		\item   \texttt{13239 [Block Services ]Change the Service Type ,can put many Services \\
+						with the same Port/IP}
+		\item   \texttt{13414 Multi-language should be disabled}
+		\item   \texttt{13244 [QoS - Priority rules]Please change "Yahoo messanger" to \\
+						"Yahoo messenger"}
+		\item   \texttt{13257 After restore to default, the web page cannot be displayed}
+		\item   \texttt{13317 if the WDS is enabled, then the Guest Network must be disable}
+		\item   \texttt{13292 [QoS]When edit the qos policy the starting port and the ending \\
+						port will display blank}
+		\item   \texttt{13242 [Guest Network][b\/g\/n][a\/n]When you select "WPA-PSK [TKIP]", \\
+						"WPA2-PSK [AES]", "WPA-PSK [TKIP] + WPA2-PSK [AES]", it can not be saved config. \\
+						So it can not work.}
+		\item   \texttt{13222 [Port Forwarding ]The Protocol sequence display wrong in Ports - \\
+						Custom Services page}
+		\item   \texttt{13427 [CA]There is a javascript error in BSW\_pppoe.htm page}
+		\item   \texttt{13428 [CA]When you apply in BSW\_pppoe.htm page, the password can not be saved config.}
+		\item   \texttt{13430 [CA]The top icon of CA still shows WNR2000}
+		\item   \texttt{13431 [CA]The left menu shows wrong in firefox in CA}
+		\item   \texttt{13432 [CA]Please check all the value in BSW\_pppoe.htm page}
+		\item   \texttt{13436 [CA]When it detect as BPA, the webpage shows error}
+		\item   \texttt{13437 [CA]When you click the link "Back to internet settings page",it shows blank.}
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.8.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.8.bin}
+		\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+		\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.2.0.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.235.}
+        \end{enumerate}
+
+\section{Firmware V1.0.2.1}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-2-1}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{13465 SIP failed with nokia e70}
+		\item 	\texttt{13365 [Firmware Upgrade]Too large corrupted image can make router out of memory}
+		\item 	\texttt{13244 [QoS - Priority rules]Please change "Yahoo messanger" to "Yahoo messenger"}
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item WIRELESS
+	\begin{itemize}
+		\item 	\texttt{13426 [Wireless]54M in an mode can not work.}
+		\item 	\texttt{13474 [Advanced Wireless Settings]Should add the pin number}
+		\item 	\texttt{13206 we need to change the command that GUI uses to activate WPS.}
+		\item 	\texttt{12567 one WPS daemon which supports two configuration files for only one hostapd}
+		\item 	\texttt{13184 [Wireless settings][a/n]Because driver support an with Israel and Middle East, \\
+						please enable an mode in this two countries in UI}
+		\item 	\texttt{13232 [Guest Network][a/n][b/g/n]When I set SSID as "any", it shows NULL in iwconfig}
+		\item 	\texttt{13338 [wps]Push Button function fail.}
+		\item 	\texttt{13208 [wireless repeating function]when you set the DUT as "base station" mode,it can't work correctly!}
+		\item 	\texttt{13210 [Wireless settings][a/n][b/g/n]WPA-PSK, WPA2-PSK, WPA/WPA2-PSK PassPhrase with \\
+						64 hexdigits can not work}
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item 	\texttt{13330 [Address Reservation]If DHCP range has changed, you should flush the reservation \\
+						rules that are out of the range.}
+		\item 	\texttt{13508 Knowledg base and Domentation URL should be added}
+		\item 	\texttt{13490 [Address reservation]After you add a address reservation,there is something wrong \\
+						with the webpage}
+		\item 	\texttt{13495 Default wireless mode and channel should be changed}
+		\item 	\texttt{13483 [Remote management]IP address on Remote management page should not be in the \\
+						same subnet with LAN IP address.}
+		\item 	\texttt{13453 [Static route]The gateway in static route should be in the same subnet with \\
+						DUT's LAN or WAN, not the Destination IP Address}
+		\item 	\texttt{13320 [Backup Settings]when i use firefox to restore the DUT,it can't work!}
+		\item 	\texttt{13317 if the WDS is enabled, then the Guest Network must be disable}
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.9.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.9.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.2.1.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.235.}
+        \end{enumerate}
+
+\section{Firmware V1.0.2.2}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-2-2}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{13558 [USB storage]We can access http:\/\/192.168.1.1\/shares via http \
+						even HTTP is disabled.}
+		\item 	\texttt{13567 [USB storage]Capacity on "USB Drive Approved Devices" page is small \
+						than Total Space on "USB NETStorage (Basic Settings)" page}
+		\item 	\texttt{13559 [USB storage]The account "admin" should use the same password as the \
+						admin GUI password at all time}
+		\item 	\texttt{13561 [USB storage]When Volume Name is empty, it shows "No Volume" on the \
+						webpage.}
+		\item 	\texttt{13631 [USB storage]Get Volume name with wrong order}
+		\item 	\texttt{13636 [USB storage]Can not get the Volume Name of ntfs}
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item WIRELESS
+	\begin{itemize}
+		\item 	\texttt{13389 [WMM]WMM can not work.}	
+		\item 	\texttt{13332 [wps]Both the a\/n and b\/g\/n should be configed accross the wired \
+						external registrar}
+	\end{itemize}
+\end{enumerate}
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item 	\texttt{13566 [USB storage]Shared folder can not be deleted.}
+		\item 	\texttt{13579 [USB storage]"Create Network Folder" button should takes the \
+						user to the USB NetStorage - Advanced Settings - Create Network Folder}
+		\item 	\texttt{13418 USB Storage should be following new Spec}
+		\item 	\texttt{13596 [USB storage]The Button's value on "USB settings" page should be \
+						"Approved Devices" not "Browse"}
+		\item 	\texttt{13576 [USB storage]The link color on should be the same with spec.}
+		\item 	\texttt{13591 [USB storage]The button value on "Browse for Folder" page should \
+						be "OK" not "Apply"}
+		\item 	\texttt{13592 [USB Storage]The topic "Browse for Folder" is missing on the \
+						webpage USB\_browse.htm}
+		\item 	\texttt{13593 [USB storage]On USB\_browse.htm, the top branch should be "My Router" not Device Name}
+
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.9.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.9.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.2.2.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.235.}
+        \end{enumerate}
+
+		
+\section{Firmware V1.0.2.3}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-2-3}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{13621 [USB storage]No matter what Network\/Device Name on \
+						USB NETStorage (Advanced Settings) page is ,it always work as WNR1000v2}
+		\item 	\texttt{12929 [Router Upgrade]Check for New Version from the Internet \
+						can not work.}
+		\item 	\texttt{13708 [USB storage]Large file can not be visited from HTTP}
+		\item 	\texttt{13721 [USB storage]Total disk space is more larger than WinXP shows, \
+						and the free space is almost the same with total.}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item 	\texttt{13592 [USB Storage]The topic "Browse for Folder" is \
+						missing on the webpage USB\_browse.htm}
+		\item 	\texttt{13588 [USB storage][USB storage]Read Access "admin" \
+						and Write Access "All - no password" should not be allowed at the same time}
+		\item 	\texttt{13573 [USB storage]Even USB Device, Folder and Share Name on \
+						"Create Network Folder " or "Edit Network Folder" page are NULL, \
+						I can apply the webpage.}
+		\item 	\texttt{13624 [USB storage]Share name on USB NETStorage (Advanced Settings) \
+						page shows different from USB NETStorage (Basic Settings) page}
+		\item 	\texttt{13682 [USB storage]When you edit the share folder, the USB Device and \
+						file system should not be edited on "Edit Network Folder" page}
+		\item 	\texttt{13667 [USB storage]I can add different folders with the same share name}
+		\item 	\texttt{13655 [USB storage]If the Share Name includes special chars, \
+						USB NETStorage (Advanced Settings) page shows error}
+		\item 	\texttt{13662 [USB storage]When device in Folder changes, USB device does not change}
+		\item 	\texttt{13683 [USB storage]When click "Add" or "Delete" button on "USB Drive \
+						Approved Devices" page, please check whether there is a device to add or delete}
+		\item 	\texttt{13626 [USB storage]Please check the port value for HTTP(via internet)}
+		\item 	\texttt{13582 [USB storage]The default value of internet HTTP port is NULL}
+		\item 	\texttt{13482 If LAN Subnet is change from 192.168.1.17\/255.255.255.240 to \
+						192.168.1.1\/255.255.255.240,we should flush some IP addresses at LAN site.}
+		\item 	\texttt{13452 [Wireless ACL]When a wireless client connects to the DUT with guest \
+						Network SSID, it should shows in Available Wireless Cards table}
+		\item 	\texttt{13714 [mercury-mms] DUT will not reject some multicast MAC address in \
+						basic settings page.}
+		\item 	\texttt{13716 [mercury-mms] SSID can't contain character "&".}
+		\item 	\texttt{13717 [mercury-mms] WPA-PSK/WPA2-PSK passphrase can't contain "&".}
+		\item 	\texttt{13710 [mercury-mms]PPPoE cannot get connected if the password is null.}
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.9.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.9.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.2.3.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.235.}
+        \end{enumerate}
+
+\section{Firmware V1.0.2.4}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-2-4}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{13641 [USB storage]Write access does not work}
+		\item 	\texttt{13557 [USB storage]According to New spec,when a \
+						user accesses a Network Folder which is assigned to the \
+						All no password the user should NOT be prompted by a message \
+						asking them to enter any password}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item 	\texttt{13657 [USB storage]If there are many spaces in share name, \
+						it only shows one in Avaiable Network Folders list}
+		\item 	\texttt{13689 [USB storage]Please define appropriate max length for share name.}
+		\item 	\texttt{13658 [USB storage]Webpage shows error when share name are some special characters}
+		\item 	\texttt{13688 [USB storage]If I set share name as  it shows different in USB storage}
+		\item 	\texttt{13668 [USB storage]I can add the same folder with the same access to differnet share names}
+		\item 	\texttt{13671 [USB storage]After you edit the share folder in Avaiable Network Folders list, \
+						"Edit Network Folder" page changes to "Create Network Folder" page}
+		\item 	\texttt{13664 [USB storage]I can create a share name without a real folder}
+		\item 	\texttt{13715 [mercury-mms] If disable both 2.4G and 5G wireless radio, in router status \
+						page the channel info of the 2 bands are not consistent.}
+		\item 	\texttt{13482 If LAN Subnet is change from 192.168.1.17\/255.255.255.240 to \
+						192.168.1.1\/255.255.255.240,we should flush some IP addresses at LAN site.}
+		\item 	\texttt{13258 [Router Upgrade]i can't locate the upgrade file by manual with FireFox!}
+		\item 	\texttt{13738 [mercury-mms] DUT will access WNR2000 page when click "Test" button on "Basic Settings" page.}
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.9.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.9.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.2.4.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.235.}
+        \end{enumerate}
+
+\section{Firmware V1.0.2.5}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-2-5}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{13581 [USB storage]HTTP via internet can not work.}
+		\item 	\texttt{13806 [Netgear-Lancelot]If the share name is ?U drive?, then it will only display \
+						\\\\wnr1000v2 on the authentication pop-up dialog not \\\\wnr1000v2 drive}
+		\item 	\texttt{13614 [USB storage]Disable Network Connection does not work.}
+		\item 	\texttt{13756 [NETGEAR-CEC-1061--POT] Can't access the POT web page \
+						http:\/\/www.routerlogin.com/POT.htm}
+		\item 	\texttt{13739 [mercury-mms] There are abmormal items in system logs.}
+		\item 	\texttt{13713 [mercury-mms] The system logs will be flushed under some \
+						circumstances that are not expected to do so.}
+		\item 	\texttt{12929 [Router Upgrade]Check for New Version from the Internet can not work.}
+		\item 	\texttt{13710 [mercury-mms]PPPoE cannot get connected if the password is null.}
+		\item 	\texttt{13712 [mercury-mms] Set as PPPoE with "Dial on demand" mode DUT will always \
+						automatically connect to server after apply in basic settings even \
+						if there's no Internet traffic from LAN.}
+		\item 	\texttt{13823 [USB storage]Change Network\/Device Name on USB NETStorage page \
+						without delete the old connection, it will call some problems}
+		\item 	\texttt{13708 [USB storage]Large file can not be visited from HTTP}
+		\item 	\texttt{13711 [mercury-mms] PPPoE cannot get connected if the user name \
+						contains special character.}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item 	\texttt{13640 [USB storage]Folder name with many spaces shows only one on \
+						"Browse for Folder" page}
+		\item 	\texttt{13669 [USB storage]After you edit the share folder in Avaiable Network \
+						Folders list,"USB NETStorage (Advanced Settings)" page does not refresh itself}
+		\item 	\texttt{13673 [USB storage]In USB spec, "Apply" and "Cancel" buttons do not \
+						exist on "USB Drive Approved Devices" page}
+		\item 	\texttt{13626 [USB storage]Please check the port value for HTTP(via internet)}
+		\item 	\texttt{13578 [USB storage]"Safely Remove USB Device" button now removes all the devices.}
+		\item 	\texttt{13687 [USB storage]When you add the second device to Approved USB Devices \
+						list fail, Approved USB Devices list become NULL,but the first device is still exist.}
+		\item 	\texttt{13805 [NETGEAR-Lancelot] ?Edit? should be grayed out if there is not network folder.}
+		\item 	\texttt{13655 [USB storage]If the Share Name is special characters, USB NETStorage \
+						(Advanced Settings) page shows error}
+		\item 	\texttt{13841 In USB NETStorage (Advanced Settings), the blank Device Name will be forbidden.}
+		\item 	\texttt{13570 [USB storage]Even there is no folder is selected, I can apply on USB\_browse.htm}
+		\item 	\texttt{13763 [WPS & Guest Network]Since WPS should not work on guest network interface, \
+						please remove all the changes in UI.}
+		\item 	\texttt{13347 [wps]Push Button display wrong in Firefox\/2.0.0.2}
+		\item 	\texttt{13795 [mercury-mms] 5G MAC is the same with 2.4G MAC in WDS setting GUI.}
+		\item 	\texttt{13800 [mercury-mms] In the RIP direction list "None" option is no longer needed.}
+		\item 	\texttt{13803 [Wireless ACL]When you refresh the WLG\_acl\_add.htm page ,Available \
+						Wireless Cards list shows error and become longer.}
+		\item 	\texttt{13709 [mercury-mms] Firefox,Netscape and Safari DHCP lease time GUI has issue.}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item WIRELESS
+	\begin{itemize}
+		\item 	\texttt{13778 [mercury-mms] With some config the 5G and 2.4G \
+						radio will be incorrectly turned off.}
+		\item 	\texttt{13770 WNR1000v2 5G band WDS doesn't work}
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.9.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.9.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.2.5.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.235.}
+        \end{enumerate}
+
+\section{Firmware V1.0.2.6}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-2-6}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{13843 [USB storage]If you share a folder with chmod drwxr-xr-x \
+						and chown root, write access does not work.}
+		\item 	\texttt{13581 [USB storage]HTTP via internet can not work.}
+		\item 	\texttt{13069 [NETGEAR-CEC -- 731]DUT can't block TCP SYN scan packets correctly}
+		\item 	\texttt{13757 [mercury-mms] DUT will forward all echo\/chargen packets to LAN \
+						when config port forwarding}
+		\item 	\texttt{13708 [USB storage]Large file can not be visited from HTTP}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item 	\texttt{13570 [USB storage]Even there is no folder is selected, \
+						I can apply on USB\_browse.htm}
+		\item 	\texttt{13886 set the workgroup name, device name and share name length to 20 chars}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item WIRELESS
+	\begin{itemize}
+		\item 	\texttt{13785 [mercury-mms] When 2.4G WDS is successful, both base station \
+						and repeater GUI show that status is disconnection.}
+		\item 	\texttt{13788 [mercury-mms] WNR1000v2 2.4G WDS cannot work with itself \
+						if security is WEP}
+		\item 	\texttt{13761 [mercury-mms] 5G cannot be scanned if enable 5G guest network.}
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V0.9.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V0.9.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.2.6.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.235.}
+        \end{enumerate}
+
+\section{Firmware V1.0.2.7}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-2-7}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{13852 Once the storage is plugged, then the whole disk must \
+						be mounted automatically.}
+		\item 	\texttt{13614 [USB storage]Disable Network Connection does not work.}
+		\item 	\texttt{13889 [mercury-mms] Change Seagate EXT HDD volume label as \
+						"Seagate", it still display as U:(No Volume)}
+		\item 	\texttt{13920 The whole disk cannot be shared in V1.0.2.5}
+		\item 	\texttt{13069 [NETGEAR-CEC -- 731]DUT can't block TCP SYN scan packets correctly}
+		\item 	\texttt{13757 [mercury-mms] DUT will forward all echo/chargen packets to \
+						LAN when config port forwarding}
+		\item 	\texttt{13708 [USB storage]Large file can not be visited from HTTP}
+		\item 	\texttt{13740 [mercury-mms] Set as "RIP\_2M" DUT will not send out any RIP packet.}
+		\item 	\texttt{13895 dnsmasq has no response sometimes.}
+		\item 	\texttt{13741 [mercury-mms] Ixia simulated 253 DHCP clients cannot get IP address from DUT.}
+		\item 	\texttt{13955 [SIP]X-Lite conference fail.}
+		\item 	\texttt{13775 [mercury-mms] UPNP Xbox live full test is fail}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item 	\texttt{13873 Should follow Lancelot's format in shared folder info}
+		\item 	\texttt{13578 [USB storage]"Safely Remove USB Device" button now \
+						removes all the devices.}
+		\item 	\texttt{13707 [USB storage]If there are sevral USB devices connect to \
+						the DUT, Device Names on "USB Drive Approved Devices" page are wrong}
+		\item 	\texttt{13051 [WDS]When WDS is enabled and works in Wireless Base Station \
+						mode,please show router status page as NETGEAR spec.}
+		\item 	\texttt{13906 [NETGEAR-1139--Address Reservation] DUT is case sensitive to \
+						letter in mac address if add address reservation items. -- copy from WPN824v3}
+		\item 	\texttt{13907 [QoS]We can not add MAC rule to MAC Device List}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item WIRELESS
+	\begin{itemize}
+		\item 	\texttt{13785 [mercury-mms] When 2.4G WDS is successful, both base \
+						station and repeater GUI show that status is disconnection.}
+		\item 	\texttt{13788 [mercury-mms] WNR1000v2 2.4G WDS cannot work with itself if \
+						security is WEP}
+		\item 	\texttt{13774 [mercury-mms] When WPS process is successful, the security \
+						is not WPA and WPA2 mixed mode.}
+		\item 	\texttt{13847 [WPS]Use WNDA3100 test "WPS\_IOT",the UI display wrong.}
+		\item 	\texttt{13782 [mercury-mms] When 5G band WPS process is done,"Keep \
+						Existing Wireless Settings" checkbox won't be checked}
+		\item 	\texttt{13627 [wps]When use PIN to config the DUT ,both \
+						the a\/n and b\/g\/n should be configed.}
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V1.0.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V1.0.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.2.7.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.279.}
+        \end{enumerate}
+
+\section{Firmware V1.0.2.8}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-2-8}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{14070 [samba]error time to access samba}
+		\item 	\texttt{14049 [USB Storage]Share folders in different USB devices \
+						may have the same share name.}
+		\item 	\texttt{14119 [samba]update\_smb file should surport the lock adding}
+		\item 	\texttt{13981 [SQA Taipei-50]DUT cannot be tested by xBox testing tool.}
+		\item 	\texttt{13986 [SQA Taipei-54]DUT does not hijack DNS qurey packets \
+						when destination is other DNS server rather than DUT's LAN IP.}
+		\item 	\texttt{13988 [SQA Taipei-56][BPA]Under Bigpond mode, if we fill in \
+						"test.com" in the authentication server field,DUT will send \
+						out packets asking "test.com.vic.bigpond.net.au".}
+		\item 	\texttt{14006 [SQA Taipei-72]Can't use POT tools get or set the POT value.}
+		\item 	\texttt{14002 [SQA Taipei-69]User on the LAN side can login DUT \
+						through WAN IP address.}
+		\item 	\texttt{13997 [SQA Taipei-65]The log doesn't be deleted after the DUT \
+						sends out the log by e-mail successfully.}
+		\item 	\texttt{13995 [SQA Taipei-63]If DUT WAN port mode is a PPTP and my address \
+						is obtained through DHCP mode, DUT will not send out DHCP discover \
+						packets every 5 minutes when performing following steps.}
+		\item 	\texttt{13982 [SQA Taipei-51][Port triggering]The port trigger could not \
+						use the same outgoing port to tirigger different port rules}
+		\item 	\texttt{13990 [SQA Taipei-58]Something wrong when PPTP server field is an FQDN address}
+		\item 	\texttt{13985 [SQA Taipei-53]Change DUT LAN IP the static router table is NULL.}
+		\item 	\texttt{14123 [net-web] Sometimes http server needs the user to input the \
+						password twice times.}
+		\item 	\texttt{13972 [SQA Taipei-41]If PC within LAN sends out packets containig \
+						strict route, DUT will not let this PC send packets to WAN.}
+		\item 	\texttt{13984 [SQA Taipei-52][Static Route]If DUT WAN port obtains an IP \
+						address, the static route for LAN side is not}
+		\item 	\texttt{13910 [USB storage]When download file from USB storage, it will \
+						call a lot of memory.}
+		\item 	\texttt{14015 [USB storage]About wireless webpage timeout when writing \
+						large file from PC to USB disk via samba}
+		\item 	\texttt{14137 [qos] can not set Uplink bandwidth correctly \
+						when the value is up than 80Mbps}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item 	\texttt{13637 [USB storage]Select "No" to "Enable any USB Device connected \
+						to the USB port", reboot the DUT, the disk not in "Approved USB Devices" \
+						list will also be monuted.}
+		\item 	\texttt{13992 [SQA Taipei-60]If PPTP My IP Address is NULL, the gateway IP can't input.}
+		\item 	\texttt{14034 [SQA Taipei-91]11a/n should not show message about \
+						"channel settings cannot be used auto" when configure 11b\/g\/n \
+						wireless repeating function.}
+		\item 	\texttt{14025 [SQA Taipei-82]Region of USA and Japan should not display \
+						100,104,108,112,116,120,124,128,132,136,140 channels.}
+		\item 	\texttt{14080 [mercury-mms] Defect ID : 108 [GUI] Can the Help \
+						Frame be made narrower}
+		\item 	\texttt{14078 [mercury-mms] Defect ID : 116 [USB] HTTP (via internet) \
+						link should reflect current ddns domain.}
+		\item 	\texttt{13930 [WDS]When 5G WDS is enabled, Repeater IP Address does not work.}
+		\item 	\texttt{14046 [SQA Taipei-103]802.11b/g/n WMM function is always in enabled state.}
+		\item 	\texttt{14047 [SQA Taipei-104]802.11a/n WMM function is always in disabled state.}
+		\item 	\texttt{14055 GUI should follow Lancelot's wps requirement}
+		\item 	\texttt{13714 [mercury-mms] DUT will not reject some multicast MAC \
+						address in basic settings page.}
+		\item 	\texttt{13715 [mercury-mms] If disable both 2.4G and 5G wireless radio, \
+						in router status page the channel info of the 2 bands are not \
+						consistent.}
+		\item 	\texttt{14069 [USB NETStorage]after change shared folder info format, \
+						http link can't open}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item WIRELESS
+	\begin{itemize}
+		\item 	\texttt{14039 [SQA Taipei-96]The DUT doesn't support WPS external registrar. 
+						Wired external registrar cannot configure DUT through WPS-PIN method.}
+		\item 	\texttt{14040 [SQA Taipei-97]This is the WPS-PIN function issue.}
+		\item 	\texttt{14035 [SQA Taipei-92]Wireless repeater function is fail.}
+		\item 	\texttt{14036 [SQA Taipei-93]Wireless base sation function is fail.}
+		\item 	\texttt{13770 WNR1000v2 5G band WDS doesn't work}
+		\item 	\texttt{14031 [SQA Taipei-88]WPA/WPA2 enterprise of WPA-PSK[TKIP] mode cannot \
+						correctly work.}
+		\item 	\texttt{13767 [mercury-mms] [WPS IOT]WNHDE111 WPS with PBC method failed to work \
+						with DUT in unconfigured state.}
+		\item 	\texttt{13419 [Static Route] add a static route for the LAN port, and it doesn't work. \
+						PS: wpn824v3 doesn't work either}
+		\item 	\texttt{14088 [WPS]WPS icon in Vista shows "AtherosAP"}
+		\item 	\texttt{13670 Network key attribute is missing in WPS M7 and M8}
+		\item 	\texttt{13672 WPS proxy function does not work}
+		\item 	\texttt{13780 [mercury-mms] [WPS IOT] DUT's 2.4G band WPS is fail both AP-PIN and \
+						PBC mode when use Vista64 SP1 Feature Pack with WG111v3 and Centrino4965.}
+		\item 	\texttt{13773 [mercury-mms] [WPS IOT]In XP OS WNDA3100v2 AP PIN failed to work with \
+						WNR1000v2 in configured state.}		
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V1.1.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V1.1.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.2.8.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.279.}
+        \end{enumerate}
+
+\section{Firmware V1.0.2.9}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-2-9}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{14052 [USB Storage]There is no share folder in HTTP and HTTP(via internet)}
+		\item 	\texttt{14272 [NETGEAR]Defect ID : 165 [USB] Enable http access by default as per \
+						USB Spec 1.4}
+		\item 	\texttt{14163 [mercury-mms] Defect ID : 144 WNR1000v2\_Scan test: Port 53 issue Test \
+						fail. It cannot add port 53 in port triggering page.}
+		\item 	\texttt{14168 [mercury-mms] Defect ID : 142 WNR1000v2\_Scan test: : Attached device \
+						list tested fail, the page always shown 22 items.}
+		\item 	\texttt{14154 [mercury-mms] Defect ID : 146 WNR1000v2: First time router connected \
+						to PPPoE, the DNS cannot work.}
+		\item 	\texttt{14169 [mercury-mms] Defect ID : 138 WNR1000v2\_Scan test: PPPoE stress \
+						test fail}
+		\item 	\texttt{14059 [mercury-mms] Defect ID : 114 [USB] Access Controls dont seem to apply \
+						when accessing via http}
+		\item 	\texttt{14158 [mercury-mms] Defect ID : 143 WNR1000v2\_Scan test: Big Files (About 3G \
+						files) cannot download complete from FTP server.}
+		\item 	\texttt{13987 [SQA Taipei-55]When DUT WAN port mode is a DHCP or PPTP mode, the DHCP discover}
+		\item 	\texttt{14191 add WPS\_onoff to control WPS run}
+		\item 	\texttt{14259 [NETGEAR-Lancelot]PPTP can't work}
+		\item 	\texttt{14073 [mercury-mms] Defect ID : 112 [USB] Approved Devices list doesnt \
+						show all approved devices}
+		\item 	\texttt{14137 [qos] can not set Uplink bandwidth correctly when the value is \
+						up than 80Mbps}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item 	\texttt{14078 [mercury-mms] Defect ID : 116 [USB] HTTP (via internet) \
+						link should reflect current ddns domain.}
+		\item 	\texttt{14079 [mercury-mms] Defect ID : 105 [USB] On the Create Network Folder \
+						screen, why is the Folder Text field not available to manually enter the path}
+		\item 	\texttt{14083 [mercury-mms] Defect ID : 118 [USB] Folder browser should only \
+						show selected drive}
+		\item 	\texttt{14085 [mercury-mms] Defect ID : 122 [USB] In folder browser the 1st level \
+						folders should be displayed by default}
+		\item 	\texttt{14082 [mercury-mms] Defect ID : 117 [USB] Duplicate Share Names between \
+						different USB drives}
+		\item 	\texttt{13989 [SQA Taipei-57]DUT will stop responding to LAN side client if in \
+						PPTP connection the internal IP of DUT and external IP of DUT is in the same subnet.}
+		\item 	\texttt{14086 [mercury-mms] Defect ID : 123 [USB] Folder Brower, when the USB \
+						device is collapsed, it should show a + to indicate it can be expanded}
+		\item 	\texttt{14028 [SQA Taipei-85]11a/n lack "Wireless AP" and "Broadcast Name" \
+						in the router status page.}
+		\item 	\texttt{14053 [QoS]QoS MAC Device List sometimes shows error.}
+		\item 	\texttt{13690 [USB storage]There is no help page for USB storage}
+		\item 	\texttt{14271 [NETGEAR]Defect ID : 163 [USB] On approved devices page, the \
+						Device Name from row 1 is also used on all the other rows}
+		\item 	\texttt{14266 [NETGEAR]Defect ID : 162 [USB] Typo's in USB Basic Settings}
+		\item 	\texttt{13906 [NETGEAR-1139--Address Reservation] DUT is case sensitive to \
+						letter in mac address if add address reservation items. -- copy from WPN824v3}
+		\item 	\texttt{13259 [Static Route]When the DUT use "Use Static IP Address" as WAN IP \
+						address, the WAN IP changes,the static route is not flushed}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item WIRELESS
+	\begin{itemize}
+\item 	\texttt{13167 [Wireless settings][a/n][b/g/n]When I set SSID as "any", it \
+				shows NULL in iwconfig}
+	\end{itemize}
+\end{enumerate}
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V1.1.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V1.1.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.2.9.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.290.}
+        \end{enumerate}
+		
+\section{Firmware V1.0.3.0}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-3-0}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{14372 [NETGEAR-Lancelot]The friendly name of IGD is not right}
+		\item 	\texttt{14332 [NETGEAR-Tai]H323 ALG crash on DHCP stress test --- cp from WNR1000}
+		\item 	\texttt{14263 [NETGEAR]Defect ID : 161 Cannot copy large file to USB}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item 	\texttt{14338 [NETGEAR] modify the timer of restore to default}
+		\item 	\texttt{14336 Add a new check box in Approved Device Page}
+		\item 	\texttt{14337 Add apply button in approved device page}
+		\item 	\texttt{14335 HTTP and FTP port range should be from 1024 to 65534.}
+		\item 	\texttt{14308 [NETGEAR]Defect ID : 170 [USB] Router should always give a \
+						default Network Share name when no Share name is defined for the Volume}
+		\item 	\texttt{14083 [mercury-mms] Defect ID : 118 [USB] Folder browser should only show selected drive}
+		\item 	\texttt{14310 [NETGEAR]Defect ID : 169 [USB] Inconsistently the Browse \
+						button on Create\/Edit Network Folder, requires multiple attempts to show tree}
+		\item 	\texttt{14373 [NETGEAR] disable DFS channel for 1000}
+	\end{itemize}
+\end{enumerate}
+
+
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V1.1.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V1.1.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.3.0.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.290.}
+        \end{enumerate}
+
+\section{Firmware V1.0.3.1}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-3-1}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{[BUG 14374] [NETGEAR-Lancelot] It will spend very long time to open samba}
+		\item 	\texttt{bug 11286 smart antenna setting both 2.4G and 5G to antenna group 1 in art test mode}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item 	\texttt{bug 14384 [NETGEAR]firefox & Safari cannot browse samba}
+		\item 	\texttt{bug[14191]:add WPS\_onoff to control WPS run}
+	\end{itemize}
+\end{enumerate}
+
+
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V1.1.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V1.1.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.3.1.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.290.}
+        \end{enumerate}
+
+\section{Firmware V1.0.3.2}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-3-2}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{13557 [USB storage]According to New spec,when a user accesses a \
+						Network Folder which is assigned to the All--no password the user \
+						should NOT be prompted by a message asking them to enter any password}
+		\item 	\texttt{14457 Change the behavior of USB Storage after deleting all the entries \
+						of shared folders}
+		\item 	\texttt{14421 smb:\/\/ServerName\/ShareName is failed under MAC OS X}
+		\item 	\texttt{13757 [mercury-mms] DUT will forward all echo/chargen packets to LAN \
+						when config port forwarding}
+		\item 	\texttt{14165 [mercury-mms] Defect ID : 137 WNR1000v2_Scan test: Router reboot \
+						on DHCP stress test after 4 days.}
+		\item 	\texttt{14439 [NETGEAR]Defect ID : 171 PPPoE Dial on Demand mode can't connect \
+						to Internet when we click 'Connect' button on connection status page.}
+		\item 	\texttt{14462 [USB Storage] The DUT will be locked for about 30 seconds when first booting}
+		\item 	\texttt{13845 [USB storage]Click the link of firefox and safari can not visit USB storega}
+		\item 	\texttt{13978 [SQA Taipei-47]When download a second file from FTP server, user must re-login \
+						otherwise the FTP command will be fail and it will response "cannot open data connection".}
+		\item 	\texttt{14448 [NETGEAR - Lancelot][USB storage]Only after unplug and plug in, then all \
+						partitions will be shared automatically if all shared folders are deleted.}
+		\item 	\texttt{14363 [USB storage]After upload a large file to USB storage, fireware upgrade fail.}
+		\item 	\texttt{14455 set eth0 MAC address as LAN MAC even MAC of WLAN 5g is less than eth0.}
+		\item 	\texttt{14290 all uint64 datas in lltd packets are error in endian.}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item 	\texttt{14082 [mercury-mms] Defect ID : 117 [USB] Duplicate Share Names between different \
+						USB drives}
+		\item 	\texttt{14430 Web page cannot be displayed is we restore a configuration file}
+		\item 	\texttt{14066 [Router status]When the DUT work in WDS Repeater mode, an mode infomation \
+						disappears in Wireless Port}
+		\item 	\texttt{14308 [NETGEAR]Defect ID : 170 [USB] Router should always give a default Network \
+						Share name when no Share name is defined for the Volume}
+		\item 	\texttt{14371 [GUI] add a hidden page for setting smart antenna.}
+		\item 	\texttt{14459 After enable WDS, if we try to change wireless settings, but we will get \
+						an error message.}
+		\item 	\texttt{14373 [NETGEAR] disable DFS channel for 1000}
+		\item 	\texttt{14117 [Remote Management]The 0.0.0.0 should be displayed on the remote \
+						management address if no WAN connection or no IP is obtained}
+		\item 	\texttt{14442 [Wireless]Middle East + 300M + channel 44 in an mode will call the DUT crash}
+		\item 	\texttt{14463 Add auto channel to GUI}
+		\item 	\texttt{14432 If SSID or PSK has many special characters, the wireless cannot configure them normally.}
+		\item 	\texttt{13991 [SQA Taipei-59]Change WAN port mode from static IP to PPTP mode, \
+						the My IP Address of PPTP automatically saves static IP address.}
+		\item 	\texttt{14372 [NETGEAR-Lancelot]The friendly name of IGD is not right}
+		\item 	\texttt{13201 [Wireless settings][a/n][b/g/n]If I set WPA/WPA2-PSK PassPhrase as many special characters \
+						it shows no wireless in iwconfig}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item WIRELESS
+	\begin{itemize}
+		\item 	\texttt{14443 [Wireless]If only an band is enabled, no matter what channel you set, \
+						it always works in channel 40}
+		\item 	\texttt{14213 [WPS]If the router is WPS Unconfigured in both an and bgn mode, after WPS process, \
+				the wireless settings be generated automatically shows error.}
+	\end{itemize}
+\end{enumerate}
+
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V1.1.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V1.1.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.3.2.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.290.}
+        \end{enumerate}
+
+\section{Firmware V1.0.3.3}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-3-3}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{13825 [USB storage]If there are many spaces in share name, \
+						it only shows one when you visit the USB storage}
+		\item 	\texttt{13838 [USB storage]File System ext3 shows error on "Edit Network Folder" page.}
+		\item 	\texttt{14436 [USB storage]If there are 2 device connect to the DUT, it will not give \
+						a default Network Share name to the second device}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item 	\texttt{14430 Web page cannot be displayed is we restore a configuration file}
+		\item 	\texttt{14463 Add auto channel to GUI}
+		\item 	\texttt{14490 [NETGEAR]change "USB NETStorage" to "USB Storage"}
+		\item 	\texttt{14505 [DNI]update language table }
+		\item 	\texttt{14491 [NETGEAR]Additional ¡°Not Shared¡± functionality}
+		\item 	\texttt{14057 [router status]The repeater function of b\/g\/n is up \
+						and a\/n is down when I closed the b\/g\/n and opened the a\/n \
+						in "wireless repeating function" page!}
+		\item 	\texttt{13906 [NETGEAR-1139--Address Reservation] DUT is case sensitive \
+						to letter in mac address if add address reservation items. -- copy from WPN824v3 }
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item WIRELESS
+	\begin{itemize}
+		\item 	\texttt{13785 [mercury-mms] When 2.4G WDS is successful, both base station and \
+						repeater GUI show that status is disconnection.}
+		\item 	\texttt{14443 [Wireless]If only an band is enabled, no matter what channel you \
+						set, it always works in channel 40 }
+		\item 	\texttt{14432 If SSID or PSK special characters, the wireless cannot configure them normally. }
+	\end{itemize}
+\end{enumerate}
+
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V1.1.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V1.1.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.3.3.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.290.}
+        \end{enumerate}
+
+\section{Firmware V1.0.3.4}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-3-4}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{14369 wnr1000v2 \/proc\/uptime is not normal}
+		\item 	\texttt{13259 [Static Route]When the DUT use "Use Static IP Address" \
+						as WAN IP address, the WAN IP changes,the static route is not flushed}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item 	\texttt{14430 Web page cannot be displayed is we restore a configuration file}
+		\item 	\texttt{14384 [NETGEAR]firefox & Safari cannot browse samba}
+		\item 	\texttt{13688 [USB storage]If I set share name as \
+						it shows different in USB storage}
+		\item 	\texttt{13824 [USB storage]If there are many spaces in share name, \
+						we can not visit the share folder by click the link }
+		\item 	\texttt{14173 [NETGEAR Lancelot] In the router status page, you only \
+						show channel not including auto }
+		\item 	\texttt{14546 [USB storage]"Edit" share folder with different access \
+						will pop up share name has already existed message. }
+		\item 	\texttt{[NETGEAR-Lancelot] ¡°Edit¡± should be grayed out if there is not network folder. }
+		\item   \texttt{14372 [NETGEAR-Lancelot]The friendly name of IGD is not right}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item WIRELESS
+	\begin{itemize}
+		\item 	\texttt{14511 WDS client mode can not associate with WDS base station}
+	\end{itemize}
+\end{enumerate}
+
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V1.3.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V1.3.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.3.4.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.312.}
+        \end{enumerate}
+
+\section{Firmware V1.0.3.5}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-3-5}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{14577 Change each digit in firmware version to support up to 999.}
+		\item 	\texttt{14591 Ignore ¡°New region¡± in Smart Wizard.}
+		\item 	\texttt{14612 Authentication dialog must be pop-up after time out on clicking apply button .}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item 	\texttt{14525 [wds]when I use WDS in a/n mode,the security of wpa.wpa2 and so \
+						on will not gray out }
+		\item 	\texttt{14541 [USB storage]USB device in folder item on "Create Network Folder" and \
+						"Edit Network Folder" page should allow lower case character }
+		\item 	\texttt{14542 [USB storage]Please check the share name including any upper\/lower case combination \
+						(for example, ¡°TEST" or ¡°test¡±) as a same share name}
+		\item 	\texttt{14524 [WDS] UI bug in "router status" page }
+		\item 	\texttt{14507 [WPS]If bgn mode is Configured and an mode is unconfigured, add a WPS client \
+						with an mode, the warning message "Note: The wireless settings have been changed." \
+						is missing on Success page .}
+		\item 	\texttt{14567 There is one string in WLG\_wireless.htm not merged into lang.c.}
+		\item 	\texttt{14568 WPS should not run when WDS is enable}
+		\item   \texttt{14576 [Basic settings]Reboot the DUT after click the "Test" button on "Basic Settings" \
+						page, it will pop up Test page again.}
+		\item   \texttt{12073 [Basic Wireless settings][a\/n][b\/g\/n]When SSID is <\/script> , Basic wireless \
+						settings page and router status page shows error}
+		\item   \texttt{14580 [NETGEAR]Defect ID :177 - When 5G band with "Auto" channel select 36(p) + \
+						40(s) as displayed in router status page, indeed it operates at 40(p) + 36(s). }
+		\item   \texttt{12101 [Basic Wireless settings][a\/n][b\/g\/n][Guest Network][WPA-PSK]If I set WPA-PSK \
+						PassPhrase as <\/script>,the webpage shows error }
+		\item   \texttt{12143 [Guest Network][b\/g\/n]The webpage shows error when you input some special characters as SSID }
+		\item   \texttt{12105 [Basic Wireless settings][a\/n][b\/g\/n][Guest Network][WPA\/WPA2 Enterprise]When I set \
+						RADIUS server Shared Secret as special chars security shows nothing}
+		\item   \texttt{14564 [Connection status]DHCP lease Expires shows error in Firefox and safari. }
+		\item   \texttt{14597 Remove WDS from GUI }
+	\end{itemize}
+\end{enumerate}
+
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V1.3.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V1.3.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x50000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'}
+                \item \texttt{ag7100> saveenv}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.3.5.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.321.}
+        \end{enumerate}		
+
+\section{Firmware V1.0.3.6}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-3-6}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{14552 [DDNS]With error passowrd in DDNS page, it shows update \
+						successful in "Show status" page.}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}
+		\item 	\texttt{14541 [USB storage]USB device in folder item on "Create \
+						Network Folder" and "Edit Network Folder" page should allow lower case character}
+		\item 	\texttt{12105 [Basic Wireless settings][a\/n][b\/g\/n][Guest Network][WPA\/WPA2 Enterprise] \
+						When I set RADIUS server Shared Secret as characters security shows nothing}		
+		\item 	\texttt{14605 [WPS]Configure APUT using PIN method through Vista or Intel PROSet,if SSID is special characters, \
+						it shows OK in iwconfig,but UI is error}
+\end{enumerate}
+
+\begin{enumerate}
+       \item WIRELESS
+       \begin{itemize}
+               \item   \texttt{14528 [WDS]the function of "disable wireless client association" works incorrectly}
+               \item   \texttt{14609 change country region according Netgear requirement }
+               \item   \texttt{14598 WPS is not up if only one radio is enabled}
+               \item   \texttt{14599 wps interface is printed even that interface is disabled }
+       \end{itemize}
+\end{enumerate}
+
+
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V1.4.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V1.4.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x70000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.3.6.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.321.}
+        \end{enumerate}	
+		
+\section{Firmware V1.0.3.7}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-3-7}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+
+\begin{enumerate}
+	\item GUI
+	\begin{itemize}	
+		\item   \texttt{14507 [WPS]If bgn mode is Configured and an mode is unconfigured, \
+						add a WPS client with an mode, the warning message "Note: The \
+						wireless settings have been changed."is missing on Success page .}
+		\item   \texttt{14641 [NETGEAR-USB]change default value, when edits a 'Not Shared' \
+						Network Folder}
+		\item   \texttt{14601 [Wireless ACL] The device name shows error in Wireless Card \
+						Entry on "Wireless Card Access Setup" page }
+		\item   \texttt{14648 [NETGEAR]When the default share is deleted and ¡®Not Shared¡¯ \
+						is displayed, the table should still be sorted by the drive letter field}
+		\item   \texttt{14720 [NETGEAR]Remove ¡°Auto¡± from 5GH channel list and keep it in 2.4G. }
+		\item   \texttt{14727 [NETGEAR-179]WPS successful page has error message when DUT is \
+						in configured mode.}
+		\item   \texttt{14708 [Static Route]Destination Subnet address should be in different \
+						subnet with LAN or WAN interface.}
+\end{enumerate}
+
+\begin{enumerate}
+	\item WIRELESS
+	\begin{itemize}
+		\item 	\texttt{14031 [SQA Taipei-88]WPA\/WPA2 enterprise of WPA-PSK[TKIP] mode \
+						cannot correctly work}
+		\item 	\texttt{[NETGEAR]Change FCC and CE region back to normal one. FCC 3 and \
+							ETSI 1 because we will remove ¡°Auto¡±.}
+		\item 	\texttt{[wps]When use AP PIN config the DUT ,if the PassPhrase include \
+						some special characters,the page display wrong}
+	\end{itemize}
+\end{enumerate}
+
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V1.4.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V1.4.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x70000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.3.7.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.321.}
+        \end{enumerate}	
+
+
+\section{Firmware V1.0.3.8}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-3-8}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{[BUG 14747] [USB Storage] Samba can not be accessed if LAN IP is changed}
+	\end{itemize}
+\end{enumerate}
+
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V1.4.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V1.4.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x70000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.3.8.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.321.}
+        \end{enumerate}			
+		
+\section{Firmware V1.0.3.9}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-3-9}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{14787 [NETGEAR 180]After WAN has idled time-out, clicking \
+						"Check" in router upgrade page cannot trigger the WAN connection.}
+		\item	\texttt{14806 [NETGEAR]Defect ID : 187 - there is no log when input \
+						incorrect password from remote login.}
+		\item	\texttt{14805 [NETGEAR]Defect ID : 188 - DUT will not send Email \
+						immediately when access block site.}
+		\item	\texttt{14803 [NETGEAR]Defect ID : 186 - DUT should have warning \
+						message and don't allow user to input space key as account name.}
+		\item	\texttt{14768 [WPS]DUT can't stop 1st WPS-PIN progress and restart 2nd progress.}
+		\item	\texttt{14804 [NETGEAR]Defect ID : 185 - When set to time zone "GMT+5:30" \
+						DUT will get a time same as set to "GMT+5:00". }
+		\item	\texttt{14801 [NETGEAR]Defect ID : 182 - On NA firmware \
+						the default time zone is set to "GMT". }
+		\item	\texttt{14802 [NETGEAR]Defect ID : 184 - The "Daylight Savings" seems not take effect.}
+
+		
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+       \item GUI
+       \begin{itemize}
+			   \item   \texttt{14185 [GUI] Qos page,when apply,only restart wireless when \
+								WMM was changed. }
+               \item   \texttt{14708 [Static Route]Destination Subnet address should be in \
+								different subnet with LAN or WAN interface}
+               \item   \texttt{14056 [router status]when I use 4 wrong Mac address in base \
+								station mode,it will all display "disconnected",but when I use \
+								1 correct and 3 wrong MAC address, it will all display "connected" \
+								in "router status" page! }
+               \item   \texttt{14666 [WDS] There is a UI bug in "router status" page when enable \
+								"disable wireless client association" in base station and repeater mode.}
+               \item   \texttt{14780 [Wireless]According to Spec, "Middle East" should show \
+								after "Mexico" in the drop down list }
+				\item   \texttt{14777 [Block Services ]Should not put same Service Type}
+				\item	\texttt{14775 [Block Sites]"Trusted IP Address"should gray-out }
+				\item	\texttt{12105 [Basic Wireless settings][a/n][b/g/n][Guest Network] \
+								[WPA/WPA2 Enterprise]When I set RADIUS server Shared Secret \
+								as special chars security shows nothing}
+				\item	\texttt{14770 [LAN Subnet]If subnet is not changed but IP address \
+								is changed, router should automatically comply these corresponding \
+								rules to match the new IP}
+				\item	\texttt{14767 [LAN Subnet]Change LAN IP subnet mask from 24 to 16, \
+								the rules in block service list have been deleted }
+				\item	\texttt{14769 [LAN Subnet]If subnet is changed and the subnet \
+								range is from big to small, DMZ and Trusted IP Address on \
+								block site page SHOULD be flushed}
+				\item	\texttt{14791 [Wireless]WPAPassPhrase with some special characters, \
+								client can not connect to the DUT.}
+				\item	\texttt{14817 [NETGEAR]Defect ID : 189 - "Static Routes" edit function has issue.}
+				
+       \end{itemize}
+\end{enumerate}
+
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V1.4.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V1.4.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x70000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.3.9.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.321.}
+        \end{enumerate}	
+
+\section{Firmware V1.0.3.10}
+
+\tlabel{sec:1-0-1}
+\subsection{Repository}
+\begin{itemize}
+\item GIT Repository  itgserver/pub/scm/openwrt/ronger/openwrt.git
+\begin{itemize}
+    \item Branch: \texttt{sh\_sw\_one\_br}
+    \item Tag: \texttt{WNR1000v2-V-1-0-3-10}
+\end{itemize}
+\end{itemize}
+
+\subsection{Fixed Bugs}
+\begin{itemize}
+\item As below:
+\begin{enumerate}
+	\item APPLICATION
+	\begin{itemize}
+		\item 	\texttt{14844 [NETGEAR]a major issue which causes uhttpd crash and we cant see \
+						USB basic setting content.}
+		\item 	\texttt{14828 [NETGEAR]Defect ID : 190 - When DDNS update failed because the \
+						authentication failed the info showed in DDNS status page is incorrect.}
+		\item 	\texttt{14819 [Wireless]When radius server in WAN, the DUT can not find the radius server}
+		\item 	\texttt{14881 [Wireless][Guest bgn/an ]Fragmentation does not work with Guest Network}
+		\item 	\texttt{14822 [Wireless][Guest Network bgn]WPAPassPhrase with space , wireless \
+						client can not connect to the Guest Network.}		
+		\item 	\texttt{14860 [NETGEAR]Defect ID : 196 - Tracert cmd on LAN PC does not work normally.}
+		\item 	\texttt{14859 [NETGEAR]Defect ID : 195 - If LAN PC sends UDP packet to WAN PC first, \
+						the ICMP destination unreachable packets generated by WAN PC shoud be \
+						forwarded to this LAN PC.}
+		\item 	\texttt{14861 [NETGEAR]Defect ID : 197 - WNR1000v2 port 5060 issue}
+		\item 	\texttt{14788 [NETGEAR 181]There is strange log in system logs.}
+	\end{itemize}
+\end{enumerate}
+
+\begin{enumerate}
+       \item GUI
+       \begin{itemize}
+			\item 	\texttt{14790 [Intel Viiv]WPAPassPhrase with special characters shows error \
+							in router-info.htm}
+			\item 	\texttt{14808 [port forwarding]when I change LAN IP to another subnet, the \
+							service will be deleted automatically}
+			\item 	\texttt{14811 [port forwarding]when I change LAN IP to another subnet, \
+							the service rule's ip should change automatically}
+			\item 	\texttt{14770 [LAN Subnet]If subnet is not changed but IP address is changed, \
+							router should automatically comply these corresponding rules \
+							to match the new IP}
+			\item 	\texttt{14845 [NEETGEAR-USB]the tag in file\_info should change to "USB Storage"}
+			\item 	\texttt{14820 [Wireless][Guest Network bgn]WEP can save Passphrase as 2-byte \
+							characters, it is wrong.}
+			\item 	\texttt{14791 [Wireless]WPAPassPhrase with some special characters, client \
+							can not connect to the DUT.}
+			\item 	\texttt{14776 [WAN/LAN conflict]There is no WAN/LAN confilict check when PPPoE \
+							and no cable connects to the DUT's WAN}
+			\item 	\texttt{14773 [WAN/LAN conflict]There is no WAN/LAN confilict check when Static \
+							WAN IP address and no cable connects to the DUT's WAN}
+			\item 	\texttt{14849 [NETGEAR-194]WAN help content on right hand side should be modified}
+		\end{itemize}
+\end{enumerate}
+
+\end{itemize}
+
+\subsection{Steps to burn boot loader and firmware}
+\begin{itemize}
+\item As below:
+        \begin{enumerate}
+                \item \texttt{Please burn u-boot-1000V1.4.bin}
+                \item \texttt{Set up a tftp server on your PC, its ip address is 192.168.1.12.}
+                \item \texttt{Entering into boot loader}
+                \item \texttt{ag7100> set serverip 192.168.1.12}
+                \item \texttt{ag7100> tftp 0x80010000 u-boot-1000V1.4.bin}
+				\item \texttt{ag7100> erase 0xbf000000 +0x70000}
+				\item \texttt{ag7100> cp.b 0x80010000 0xbf000000 0x50000}
+                \item \texttt{ag7100> reset}
+                \item \texttt{Entering into boot loader again}
+                \item \texttt{ag7100>bootm}
+                \item \texttt{Then the device should be in tftp recovery mode. Please run the command "tftp -i 192.168.1.1 put WNR1000v2-V1.0.3.10.img" on MS-DOS of your PC.}
+        \end{enumerate}
+\end{itemize}
+
+\subsection{Known issues}
+        \begin{enumerate}
+                \item \texttt{This version has been updated to Atheros LSDK 7.3.0.321.}
+        \end{enumerate}	
+		
+\end{document} 

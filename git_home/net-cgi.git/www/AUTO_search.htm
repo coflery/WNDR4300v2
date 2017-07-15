@@ -1,0 +1,67 @@
+<% http_header("style/form.css", "/funcs.js") %>
+<BODY bgcolor=#ffffff onLoad="loadhelp('_auto_upgrade');loadvalue();">
+<% hijack_language() %>
+<% refresh_timestamp("download_confile") %>
+<TABLE width=99% border=0 cellpadding=0 cellspacing=3>
+<TR><TD colSpan=2><H1><script>printText(bh_wait_upg_head, "$wait_upg_head");</script></H1></TD></TR>
+<TR><TD colSpan=2></TD></TR>
+$bluebar
+<TR><TD colSpan=2></TD></TR>
+<TR id="pls_wait"><TD><BR><script>printText(bh_plz_wait_moment, "$wizard_pls_wait");</script><BR></TD></TR>
+<script>
+parent.charcount=0;
+var wan_status=<% detwan_valid() %>;
+var status=<% autoup_status() %>;
+
+function loadvalue()
+{
+	detec_status();
+}
+
+function detec_status()
+{
+	if (wan_status == 1)
+	{
+		if ( top.location.href.indexOf("BRS_index.htm") > -1 )
+			status = top.content_frame.auto_search_frame.status;
+		else
+			status = top.formframe.auto_search_frame.status;
+		if (status == 9999)
+			location.href="UPG_check_version.htm";
+		else if (status >= 10000)
+			location.href="AUTO_upgrade_noversion.htm";
+		else
+		{
+			//document.write("$wizard_pls_wait");
+			//document.getElementById("pls_wait").style.display="";
+			setTimeout("detec_status();",1000);
+		}
+	}
+	else
+	{
+		location.href="AUTO_upgrade_no_internet.htm";
+	}
+
+	if ( top.location.href.indexOf("BRS_index.htm") == -1 )
+		top.topframe.location.href="top.html";
+}
+function click_cancel()
+{
+	location.href="UPG_cancel.htm";
+}
+</script>
+
+
+$bluebar
+
+<TR>
+	<TD nowrap align=center> 
+	<script>
+		document.write("<input type='button' name='cancel' value='"+getText(bh_cancel_mark, "$cancel_mark")+"' onclick='click_cancel();'>");
+	</script>
+	</TD>
+</TR>
+</TABLE>
+<iframe name="auto_search_frame" src="autoup_get_status.htm" allowtransparency="true" scrolling="no" frameborder="0" ></iframe>
+</BODY>
+</HTML>

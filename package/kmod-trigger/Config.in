@@ -1,0 +1,21 @@
+# kmod-trigger configuration
+config TRIGGER_GIT_TREEISH
+	string
+	prompt "treeish of kmod-trigger git repository"
+	default "kmod-trigger-v2.6.31-dni4"
+	help
+           Input the treeish of kmod-trigger git repository which you want to build
+
+config TRIGGER_GIT_REPOSITORY
+	string
+	prompt "name of kmod-trigger git repository"
+	default "kmod-trigger.git"
+	help
+	   Input the name of kmod-trigger git repository which you want to build
+
+config TRIGGER_GIT_URL
+	string
+	prompt "url of kmod-trigger git repository"
+	default "ssh://dniserver/scm/dnigit/common/kmods/kmod-trigger.git"
+	help
+	   Input the url of kmod-trigger git repository which you want to build

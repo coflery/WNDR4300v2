@@ -1,0 +1,22 @@
+Source-Makefile: package/ppp-nas/Makefile
+Package: ppp-nas
+Version: 1
+Depends: @TARGET_dniwndr3700u2631||TARGET_wndr4500v3
+Provides: 
+Build-Depends: ipp
+Section: utils
+Category: Network
+Title: PPP tools for controlling Multi-PPPoE
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: PPP tools for controlling Multi-PPPoE
+@@
+Config:
+	menu "Configuration"
+		depends on PACKAGE_ppp-nas
+		source "package/ppp-nas/Config.in"
+	endmenu
+@@
+
+

@@ -1,0 +1,17 @@
+<% help_head() %>
+<script>
+var is_vc_release = parent.is_vc_release;
+var mode_is_300 = parent.mode_is_300;
+</script>
+</HEAD>
+$h_info
+<script>
+		if( is_vc_release == 1 )
+			document.write("$h_info_2_54_65_150_vc");
+		else if( mode_is_300 == 1 )
+			document.write("$h_info_2_54_130_300");
+		else
+			document.write("$h_info_2_54_65_150");
+</script>
+$h_info_3
+</HTML>

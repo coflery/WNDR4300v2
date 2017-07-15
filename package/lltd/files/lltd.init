@@ -1,0 +1,15 @@
+#!/bin/sh /etc/rc.common
+
+START=80
+
+start() {
+    killall lld2d 
+    lld2d $($CONFIG get lan_ifname)
+}
+
+stop() {
+    killall lld2d
+}
+
+[ "$1" = "start" ] && start
+[ "$1" = "stop" ] && stop

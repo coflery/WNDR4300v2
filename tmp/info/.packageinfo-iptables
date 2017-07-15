@@ -1,0 +1,310 @@
+Source-Makefile: package/iptables/Makefile
+Package: iptables
+Menu: 1
+Version: 1.4.4-2
+Depends: @TARGET_dniwndr3700u2631||TARGET_wndr4500v3 +kmod-ipt-core +libiptc +libxtables
+Provides: 
+Build-Depends: libtool
+Section: net
+Category: Base system
+Title: IPv4 firewall administration tool
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iptables-1.4.4.tar.bz2
+Type: ipkg
+Description:  IPv4 firewall administration tool.
+ Includes support for:
+ - limit
+ - LOG
+ - mac
+ - multiport
+ - REJECT
+ - TCPMSS
+http://netfilter.org/
+@@
+
+Package: iptables-utils
+Version: 1.4.4-2
+Depends: iptables  
+Provides: 
+Build-Depends: libtool
+Section: net
+Category: Base system
+Title: iptables save and restore utilities
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iptables-1.4.4.tar.bz2
+Type: ipkg
+Description: iptables save and restore utilities
+http://netfilter.org/
+@@
+
+Package: iptables-mod-conntrack
+Version: 1.4.4-2
+Depends: iptables  +kmod-ipt-conntrack
+Provides: 
+Build-Depends: libtool
+Section: net
+Category: Base system
+Title: Basic connection tracking extensions
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iptables-1.4.4.tar.bz2
+Type: ipkg
+Description:  Basic iptables extensions for connection tracking.
+ Includes:
+ - state
+http://netfilter.org/
+@@
+
+Package: iptables-mod-conntrack-extra
+Version: 1.4.4-2
+Depends: iptables  +kmod-ipt-conntrack-extra
+Provides: 
+Build-Depends: libtool
+Section: net
+Category: Base system
+Title: Extra connection tracking extensions
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iptables-1.4.4.tar.bz2
+Type: ipkg
+Description:  Extra iptables extensions for connection tracking.
+ Includes:
+ - libipt_conntrack
+ - libipt_helper
+ - libipt_connmark/CONNMARK
+http://netfilter.org/
+@@
+
+Package: iptables-mod-extra
+Version: 1.4.4-2
+Depends: iptables  +kmod-ipt-extra
+Provides: 
+Build-Depends: libtool
+Section: net
+Category: Base system
+Title: Other extra iptables extensions
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iptables-1.4.4.tar.bz2
+Type: ipkg
+Description:  other extra iptables extensions.
+ Includes:
+ - libipt_owner
+ - libipt_physdev
+ - libipt_pkttype
+ - libipt_recent
+ - iptable_raw
+ - libipt_NOTRACK
+http://netfilter.org/
+@@
+
+Package: iptables-mod-filter
+Version: 1.4.4-2
+Depends: iptables  +kmod-ipt-filter
+Provides: 
+Build-Depends: libtool
+Section: net
+Category: Base system
+Title: Content inspection extensions
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iptables-1.4.4.tar.bz2
+Type: ipkg
+Description:  iptables extensions for packet content inspection.
+ Includes:
+ - libipt_string
+ - libipt_layer7
+http://netfilter.org/
+@@
+
+Package: iptables-mod-imq
+Version: 1.4.4-2
+Depends: iptables  +kmod-ipt-imq
+Provides: 
+Build-Depends: libtool
+Section: net
+Category: Base system
+Title: IMQ support
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iptables-1.4.4.tar.bz2
+Type: ipkg
+Description:  iptables extension for IMQ support.
+ Includes:
+ - libipt_IMQ
+http://netfilter.org/
+@@
+
+Package: iptables-mod-ipopt
+Version: 1.4.4-2
+Depends: iptables  +kmod-ipt-ipopt
+Provides: 
+Build-Depends: libtool
+Section: net
+Category: Base system
+Title: IP/Packet option extensions
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iptables-1.4.4.tar.bz2
+Type: ipkg
+Description:  iptables extensions for matching/changing IP packet options.
+ Includes:
+ - libipt_CLASSIFY
+ - libipt_dscp/DSCP
+ - libipt_ecn/ECN
+ - libipt_length
+ - libipt_mac
+ - libipt_mark/MARK
+ - libipt_statistic
+ - libipt_tcpmms
+ - libipt_tos/TOS
+ - libipt_ttl/TTL
+ - libipt_unclean
+http://netfilter.org/
+@@
+
+Package: iptables-mod-ipsec
+Version: 1.4.4-2
+Depends: iptables  +kmod-ipt-ipsec
+Provides: 
+Build-Depends: libtool
+Section: net
+Category: Base system
+Title: IPsec extensions
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iptables-1.4.4.tar.bz2
+Type: ipkg
+Description:  iptables extensions for matching ipsec traffic.
+ Includes:
+ - libipt_ah
+ - libipt_esp
+ - libipt_policy
+http://netfilter.org/
+@@
+
+Package: iptables-mod-nat
+Version: 1.4.4-2
+Depends: iptables  +kmod-ipt-nat
+Provides: 
+Build-Depends: libtool
+Section: net
+Category: Base system
+Title: Basic NAT extensions
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iptables-1.4.4.tar.bz2
+Type: ipkg
+Description:  iptables extensions for basic NAT targets.
+ Includes:
+ - MASQUERADE
+ - SNAT
+ - DNAT
+http://netfilter.org/
+@@
+
+Package: iptables-mod-nat-extra
+Version: 1.4.4-2
+Depends: iptables  +kmod-ipt-nat-extra
+Provides: 
+Build-Depends: libtool
+Section: net
+Category: Base system
+Title: Extra NAT extensions
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iptables-1.4.4.tar.bz2
+Type: ipkg
+Description:  iptables extensions for extra NAT targets.
+ Includes:
+ - REDIRECT
+http://netfilter.org/
+@@
+
+Package: iptables-mod-iprange
+Version: 1.4.4-2
+Depends: iptables  +kmod-ipt-iprange
+Provides: 
+Build-Depends: libtool
+Section: net
+Category: Base system
+Title: IP range extension
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iptables-1.4.4.tar.bz2
+Type: ipkg
+Description:  iptables extensions for matching ip ranges.
+ Includes:
+ - libipt_iprange
+http://netfilter.org/
+@@
+
+Package: iptables-mod-ulog
+Version: 1.4.4-2
+Depends: iptables  +kmod-ipt-ulog
+Provides: 
+Build-Depends: libtool
+Section: net
+Category: Base system
+Title: user-space packet logging
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iptables-1.4.4.tar.bz2
+Type: ipkg
+Description:  iptables extensions for user-space packet logging.
+ Includes:
+ - libipt_ULOG
+http://netfilter.org/
+@@
+
+Package: ip6tables
+Menu: 1
+Version: 1.4.4-2
+Depends: +kmod-ip6tables
+Provides: 
+Build-Depends: libtool
+Section: net
+Category: IPv6
+Title: IPv6 firewall administration tool
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iptables-1.4.4.tar.bz2
+Type: ipkg
+Description: IPv6 firewall administration tool
+http://netfilter.org/
+@@
+
+Package: ip6tables-utils
+Version: 1.4.4-2
+Depends: ip6tables
+Provides: 
+Build-Depends: libtool
+Section: net
+Category: IPv6
+Title: ip6tables save and restore utilities
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iptables-1.4.4.tar.bz2
+Type: ipkg
+Description: ip6tables save and restore utilities
+http://netfilter.org/
+@@
+
+Package: libiptc
+Version: 1.4.4-2
+Depends: @TARGET_dniwndr3700u2631||TARGET_wndr4500v3
+Provides: 
+Build-Depends: libtool
+Section: libs
+Category: Libraries
+Title: IPv4/IPv6 firewall - shared libiptc library
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iptables-1.4.4.tar.bz2
+Type: ipkg
+Description: IPv4/IPv6 firewall - shared libiptc library
+http://netfilter.org/
+@@
+
+Package: libxtables
+Version: 1.4.4-2
+Depends: @TARGET_dniwndr3700u2631||TARGET_wndr4500v3
+Provides: 
+Build-Depends: libtool
+Section: libs
+Category: Libraries
+Title: IPv4/IPv6 firewall - shared xtables library
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iptables-1.4.4.tar.bz2
+Type: ipkg
+Description: IPv4/IPv6 firewall - shared xtables library
+http://netfilter.org/
+@@
+
+

@@ -1,0 +1,30 @@
+#!/bin/sh
+
+. /etc/failover/failover.common
+
+restart_dango 
+
+insert_modules 3g
+
+setup_generic_ppp
+
+print_mobiled_conf "$($CONFIG get wan_cdma_evdo)" "$($CONFIG get wan_cdma_username)" "$($CONFIG get wan_cdma_password)" "$($CONFIG get wan_cdma_pincode)" "$($CONFIG get wan_cdma_dialnum)" "$($CONFIG get wan_cdma_apn)" "$($CONFIG get wan_cdma_pdp_type)" "$($CONFIG get multi_wan_type)" "$($CONFIG get failover_link_detect)" > /tmp/mobiled.conf
+
+mobilectl probe_card;mobilectl probe_sim                                                             
+
+#if under failover test function, wait failover wired test done.
+failover_test=$($CONFIG get failover_test)                                      
+if [ "$failover_test" = "1" ]; then                                                                                    
+	wait_time=25                                                                    
+	while [ "$wait_time" -gt "0" ]; do                                                 
+		failover_wired_done=$($CONFIG get failover_wired_done)                                                                    
+		if [ "$failover_wired_done" = "1" ]; then                        
+	       		echo "failover wired have done, so start 3G ppp" > /dev/console
+			break
+		fi
+		sleep 2
+		wait_time=$(( $wait_time - 1 ))
+	done
+fi
+
+mobilectl probe_conn

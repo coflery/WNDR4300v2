@@ -1,0 +1,32 @@
+#!/bin/sh
+#########################################################################
+##  Network Configuration
+##
+##  This script sets up the WAN/LAN ports to the appropriate configuration
+##
+#########################################################################
+
+. /etc/ath/apcfg
+
+##
+## Enable the loopback interface
+##
+
+ifconfig lo 127.0.0.1 up
+
+##
+## only bridge mode is supported
+## TODO: check WAN_MODE and bring WAN up accordingly
+##
+ifconfig $WAN_IF up
+
+## Configure VLANs for pb9x.
+## eth0 needs to be up for this
+. /etc/vlan-pb9x-offload.sh
+
+##
+## Bring up the 4 port interface
+##
+
+#ifconfig $LAN_IF up
+

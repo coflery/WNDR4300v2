@@ -1,0 +1,41 @@
+#!/bin/sh
+
+MNTLOCK=/var/lock/mntlock
+UDEVDIR=/tmp/dev
+logger "usb device is mass storage"
+#logger "uenv is `env`"
+KERN=${DEVPATH##*/}
+logger "DEVPATH is $DEVPATH"
+logger "KERN is $KERN"
+diskchar="$(echo $DEVPATH|awk -F/ '{print $3}'|sed 's/^sd\([a-z]\)/\1/')"
+logger "diskchar is $diskchar"
+disknum=$(echo -n $diskchar |hexdump -v -x |head -1 |awk '{print $2}')
+logger "hex disknum plus 96 is $disknum"
+disknum=$(( 0x$disknum - 96 ))
+logger "dec disknum is $disknum"
+partnum=$(echo $KERN |sed 's/^sd[a-z]//')
+logger "partnum is $partnum"
+DEVNAME="/dev/disk${disknum}part${partnum}"
+logger "DEVNAME is $DEVNAME"
+DEV=${DEVNAME##*/}
+logger "DEV is $DEV"
+
+lock $MNTLOCK
+logger "UDEVDIR plus KERN is $UDEVDIR/$KERN"
+MNT=`sed -n "s|^$UDEVDIR/$KERN	\(.*\)|\1|p" /var/run/mnts`
+#sed -i -n "\|^$UDEVDIR/$KERN.*|T;p" /var/run/mnts
+if [ -n "$MNT" ]; then
+  logger "MNT is $MNT"
+  sed -i -n "\|^$UDEVDIR/$KERN.*|T;p" /var/run/mnts
+  lock -u $MNTLOCK
+  (
+  umount -l "$MNT"
+  while [ "$?" = 16 ]; do # umount returned EBUSY
+    sleep 1
+    umount -l "$MNT"
+  done
+  rmdir "$MNT"
+  )&
+else
+  lock -u $MNTLOCK
+fi

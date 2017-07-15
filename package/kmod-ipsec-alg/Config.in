@@ -1,0 +1,21 @@
+# kmod-ipsec-alg configuration
+config IPSEC_ALG_GIT_TREEISH
+	string
+	prompt "treeish of ipsec-alg git repository"
+	default "kmod-ipsec-alg-v2.6.31-dni4"
+	help
+           Input the treeish of ipsec-alg git repository which you want to build
+
+config IPSEC_ALG_GIT_REPOSITORY
+	string
+	prompt "name of ipsec-alg git repository"
+	default "kmod-ipsec-alg.git"
+	help
+	   Input the name of ipsec-alg git repository which you want to build
+
+config IPSEC_ALG_GIT_URL
+	string
+	prompt "url of ipsec-alg git repository"
+	default "ssh://dniserver/scm/dnigit/common/kmods/kmod-ipsec-alg.git"
+	help
+	   Input the url of ipsec-alg git repository which you want to build

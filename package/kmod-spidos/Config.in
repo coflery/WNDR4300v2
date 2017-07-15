@@ -1,0 +1,21 @@
+# kmod-spidos configuration
+config SPIDOS_GIT_TREEISH
+	string
+	prompt "treeish of spidos git repository"
+	default "kmod-spidos-dni5"
+	help
+           Input the treeish of kmod-spidos git repository which you want to build
+
+config SPIDOS_GIT_REPOSITORY
+	string
+	prompt "name of spidos git repository"
+	default "kmod-spidos.git"
+	help
+	   Input the name of kmod-spidos git repository which you want to build
+
+config SPIDOS_GIT_URL
+	string
+	prompt "url of spidos git repository"
+	default "ssh://dniserver/scm/dnigit/common/kmods/kmod-spidos.git"
+	help
+	   Input the url of kmod-spidos git repository which you want to build

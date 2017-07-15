@@ -1,0 +1,7 @@
+#btnsContainer_div1 { float:left; }
+#btnsContainer_div2 { float:right; margin-right: 20px; }
+#btnsContainer_div3 { float:right; }
+#btnsContainer_div4 { float:right; margin-right: 10%; }
+#finishBtn_div { margin-bottom: 0; }
+.wizard_words_div  .checked{width:28px; height: 24px; position:relative;float:none; background: url(../image/hdd_icons.jpg) no-repeat -50px -105px;}
+.wizard_words_div  .uncheck{width:28px; height: 24px; position:relative;float:none; background: url(../image/hdd_icons.jpg) no-repeat -20px -105px;}

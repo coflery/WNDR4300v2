@@ -1,0 +1,37 @@
+#!/bin/sh
+
+ALTERNATIVES_DIR=etc/alternatives
+usage()
+{
+cat << EOF
+openwrt-update-alternatives --install genname symlink altern priority
+For example:
+openwrt-update-alternatives --install /bin/mt mt /bin/mt-gnu 10
+EOF
+}
+
+#echo qwertyuiop
+#echo TOPDIR is $TOPDIR
+#echo BUILD_DIR is $BUILD_DIR
+#echo IPKG_OFFLINE_ROOT is $IPKG_OFFLINE_ROOT
+#echo number of arg is "$#"
+#env
+
+set -e
+
+test 5 -eq "$#"
+test "$1" = '--install'
+
+#echo "ln -s /$ALTERNATIVES_DIR/$3 $BUILD_DIR/root$2"
+#echo "mkdir -p $BUILD_DIR/root/$ALTERNATIVES_DIR"
+#echo "ln -s $4 $BUILD_DIR/root/$ALTERNATIVES_DIR/$3"
+
+#echo "ln -s /$ALTERNATIVES_DIR/$3 ${IPKG_OFFLINE_ROOT}$2"
+#echo "mkdir -p ${IPKG_OFFLINE_ROOT}/$ALTERNATIVES_DIR"
+#echo "ln -s $4 ${IPKG_OFFLINE_ROOT}/$ALTERNATIVES_DIR/$3"
+
+ln -s /$ALTERNATIVES_DIR/$3 ${IPKG_OFFLINE_ROOT}$2
+mkdir -p ${IPKG_OFFLINE_ROOT}/$ALTERNATIVES_DIR
+ln -s $4 ${IPKG_OFFLINE_ROOT}/$ALTERNATIVES_DIR/$3
+
+exit 0

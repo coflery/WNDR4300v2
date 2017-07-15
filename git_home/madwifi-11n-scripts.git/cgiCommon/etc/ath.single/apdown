@@ -1,0 +1,29 @@
+#!/bin/sh
+##
+## Compatability scripts for older versions
+##
+. /etc/ath/apcfg
+
+if eval "type ledcontrol" 2>/dev/null >/dev/null; then
+	/sbin/ledcontrol -n wps -c green -s off
+elif [ -e /proc/simple_config/tricolor_led ]; then
+	echo 0 > /proc/simple_config/tricolor_led
+elif [ -e /proc/simple_config/simple_config_led ]; then
+	echo 1 > /proc/simple_config/simple_config_led
+fi
+[ -f /tmp/wps_process_state ] && echo "" > /tmp/wps_process_state
+KER_VER_31=`set | uname -a | grep -c "2.6.31"`
+if [ "${KER_VER_31}" = 1 ]; then
+    pktlogconf -d wifi0
+fi
+
+
+killVAP all
+#Finally, unload all modules
+sleep 3
+if [ "${AP_CONF_ACFG}"  -eq "1" ]; then
+	prepareACFG unload
+fi
+/etc/rc.d/rc.wlan down
+
+rm -f /tmp/.apup

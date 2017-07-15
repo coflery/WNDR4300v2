@@ -1,0 +1,9 @@
+#btnsContainer_div1 { width:35%; float:left; }
+
+#btnsContainer_div2 { width:35%; float:left; }
+
+#allBtns_div { width:30%; }
+
+.type-file-file{position:absolute;opacity:0;filter:alpha(opacity=0);z-index: 2;font-size:15px;width:300px;padding-top:4px}
+
+.short_common_bt{ height: 22px; color: #f2f2f2; font-family: Arial; font-weight: Bold; font-size: 14px; background-color: transparent; border: none; cursor: pointer; padding-bottom: 2px;width:100px; background: url(../image/buttons.gif) no-repeat -200px -66px}

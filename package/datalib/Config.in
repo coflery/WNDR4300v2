@@ -1,0 +1,30 @@
+# datalib configuration
+
+config DNI_DATALIB_GIT_TREEISH
+	string
+	prompt "treeish of dni datalib git repository"
+	default "datalib-dni3"
+	help
+          Input the treeish of dni datalib git repository which you want to build
+
+config DNI_DATALIB_GIT_REPOSITORY
+	string
+	prompt "name of dni datalib git repository"
+	default "datalib.git"
+	help
+	  Input the name of dni datalib git repository which you want to build
+
+config DNI_DATALIB_GIT_URL
+	string
+	prompt "url of dni datalib git repository"
+	default "ssh://dniserver/scm/dnigit/common/apps/datalib.git"
+	help
+	  Input the url of dni datalib git repository which you want to build
+
+config DATALIB_MAGIC
+	string "Datalib Magic Number"
+	default 0x20080724
+
+config DATALIB_SPACE
+	string "Datalib config space"
+	default 0x20000

@@ -1,0 +1,170 @@
+#!/bin/sh
+
+if [ "$(cat /proc/hw_board_type)" != "WNDR4520" ]; then
+#wndr4300v2/wndr4500v3 button detect code
+### Button status defination
+FREE=0	# Button is pop up
+PUSH=1	# Button is pressed
+HOLD=2	# Button is pressed and hold on a moment
+
+### Free button pressed state
+free_pushbut=10
+free_wifibut=20
+free_resetbut=30
+
+### Tool
+CONFIG=/bin/config
+
+file=/proc/simple_config/button_state
+buttonstate=
+pushbutton=${FREE}
+wifibutton=${FREE}
+resetbutton=${FREE}
+
+while [ 1 ]
+do
+	if [ -f /tmp/factory_test ];then
+		/bin/sleep 1
+		#get states of buttons
+	        buttonstate=$(/bin/cat ${file})
+		wifibutton=$(/bin/echo ${buttonstate} | cut -c 4)
+		if [ ${PUSH} -eq ${wifibutton} ]; then
+        	        wlan up
+                	echo ${free_wifibut} > ${file}
+	        fi
+
+		continue
+	fi
+
+	#get states of buttons
+	buttonstate=$(/bin/cat ${file})
+	pushbutton=$(/bin/echo ${buttonstate} | cut -c 2)
+	wifibutton=$(/bin/echo ${buttonstate} | cut -c 4)
+	resetbutton=$(/bin/echo ${buttonstate} | cut -c 6)
+
+	if [ ${PUSH} -eq ${pushbutton} ]; then
+	    if [ "x$($CONFIG get quick_wps_fastlane)" = "xwps" ]; then
+		if [ "$(${CONFIG} get endis_wl_radio)" = "1" -a "$(${CONFIG} get endis_wl_wps)" = "0" ] ||
+		[ "$(${CONFIG} get endis_wla_radio)" = "1" -a "$(${CONFIG} get endis_wla_wps)" = "0" ]
+		then
+			# WPS is disabled, WPS LED will be controlled by kernel to blinking
+			echo 1 > /proc/simple_config/diswps
+		elif [ "$(${CONFIG} get endis_wl_radio)" != "0" -o "$(${CONFIG} get endis_wla_radio)" != "0" ]; then
+			if [ "x$($CONFIG get wl_hw_btn_state)" != "xoff" ]; then
+				# WPS is enabled
+				echo 0 > /proc/simple_config/diswps
+				wlan wps --pbc_start
+				echo "start" > /tmp/wps_process_state
+			fi
+		fi
+	    else
+	    	wps_fastlane pressed
+	    fi
+		echo ${free_pushbut} > ${file}
+	fi
+
+	if [ ${PUSH} -eq ${wifibutton} ]; then
+		wlan toggle
+		echo ${free_wifibut} > ${file}
+	fi
+
+	if [ ${PUSH} -eq ${resetbutton} ]; then
+		/sbin/reboot
+		echo ${free_resetbut} > ${file}
+	elif [ ${HOLD} -eq ${resetbutton} ]; then
+		/bin/config default
+		/sbin/reboot
+		echo ${free_resetbut} > ${file}
+	fi
+
+	/bin/sleep 1
+done
+
+else
+#wndr4500v3 button detect code
+### Button status defination
+FREE=0  # Button is pop up
+PUSH=1  # Button is pressed
+HOLD=2  # Button is pressed and hold on a moment
+
+RELEASE=0   # wifiwps button is pop up
+WPSRUN=1    # wifiwps button is pressed less than 2s
+NONE=2      # wifiwps button is pressed between 2s and 5s
+WIFIONOFF=3 # wifiwps button is pressed more than 5s
+
+### Free button pressed state
+free_wifiwpsbut=10
+free_resetbut=20
+
+### Tool
+CONFIG=/bin/config
+
+file=/proc/simple_config/button_state
+buttonstate=
+wifiwpsbutton=${RELEASE}
+resetbutton=${FREE}
+
+while [ 1 ]
+do
+	if [ -f /tmp/factory_test ];then
+		/bin/sleep 1
+		echo ${free_wifiwpsbut} > ${file}
+		echo ${free_resetbut} > ${file}
+		continue
+	fi
+
+	#get states of buttons
+	buttonstate=$(/bin/cat ${file})
+	wifiwpsbutton=$(/bin/echo ${buttonstate} | cut -c 2)
+	resetbutton=$(/bin/echo ${buttonstate} | cut -c 4)
+
+	if [ ${WPSRUN} -eq ${wifiwpsbutton} ]; then
+	    if [ "x$($CONFIG get quick_wps_fastlane)" = "xwps" ]; then
+		if [ "$(${CONFIG} get endis_wl_radio)" = "1" -a "$(${CONFIG} get endis_wl_wps)" = "0" ] || 
+		[ "$(${CONFIG} get endis_wla_radio)" = "1" -a "$(${CONFIG} get endis_wla_wps)" = "0" ]
+		then
+			# WPS is disabled, WPS LED will be controlled by kernel to blinking
+			echo 1 > /proc/simple_config/diswps
+		elif [ "$(${CONFIG} get endis_wl_radio)" != "0" -o "$(${CONFIG} get endis_wla_radio)" != "0" ]; then
+			if [ "x$($CONFIG get wl_hw_btn_state)" != "xoff" ]; then
+				# WPS is enabled
+				echo 0 > /proc/simple_config/diswps
+				wlan wps --pbc_start
+				echo "start" > /tmp/wps_process_state
+			fi
+		fi
+	    else
+	    	wps_fastlane pressed
+	    fi
+		echo ${free_wifiwpsbut} > ${file}
+	fi
+
+	if [ ${WIFIONOFF} -eq ${wifiwpsbutton} ]; then
+		wlan toggle
+		echo ${free_wifiwpsbut} > ${file}
+	fi
+
+	if [ ${PUSH} -eq ${resetbutton} ]; then
+		/sbin/reboot
+		echo ${free_resetbut} > ${file}
+	elif [ ${HOLD} -eq ${resetbutton} ]; then
+		/bin/config default
+		/sbin/reboot
+		echo ${free_resetbut} > ${file}
+	fi
+
+	/bin/sleep 1
+done
+fi
+
+
+
+
+
+
+
+
+
+
+
+

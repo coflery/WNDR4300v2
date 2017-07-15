@@ -1,0 +1,23 @@
+#!/bin/sh
+
+CONFIG=/bin/config
+SED=/bin/sed
+AVAHI_SEV_CONF_DIR=/tmp/avahi/services
+AVAHI_CONF_DIR=/usr/config/avahi/services
+afpd_name=`/bin/config get usb_deviceName`
+afpd_name_for_tm="$afpd_name(for Time Machine)"
+case "$1" in
+       adisk)
+               $SED -e s/%h/"$afpd_name_for_tm"/g  $AVAHI_CONF_DIR/adisk.service  > $AVAHI_SEV_CONF_DIR/adisk.service
+       ;;
+       afpd)
+               $SED -e s/%h/"$afpd_name_for_tm"/g  $AVAHI_CONF_DIR/afpd.service  > $AVAHI_SEV_CONF_DIR/afpd.service
+       ;;
+       http)
+               $SED -e s/%h/"$afpd_name_for_tm"/g  $AVAHI_CONF_DIR/http.service  > $AVAHI_SEV_CONF_DIR/http.service
+       ;;
+       smbd)
+               $SED -e s/%h/"$afpd_name_for_tm"/g  $AVAHI_CONF_DIR/smbd.service  > $AVAHI_SEV_CONF_DIR/smbd.service
+       ;;
+esac
+

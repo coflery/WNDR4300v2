@@ -1,0 +1,16 @@
+Source-Makefile: package/libvorbis/Makefile
+Package: libvorbis
+Version: 1.2.0-1
+Depends: 
+Provides: 
+Section: libs
+Category: Libraries
+Title: libvorbis
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: libvorbis-1.2.0.tar.gz
+Type: ipkg
+Description: libvorbis
+http://www.xiph.org
+@@
+
+

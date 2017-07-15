@@ -1,0 +1,17 @@
+Source-Makefile: package/libxml2/Makefile
+Package: libxml2
+Version: 2.7.2-2
+Depends: +libpthread +zlib
+Provides: 
+Build-Depends: libtool
+Section: libs
+Category: Libraries
+Title: Gnome XML library
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: libxml2-2.7.2.tar.gz
+Type: ipkg
+Description:   A library for manipulating XML and HTML resources.
+http://xmlsoft.org/
+@@
+
+

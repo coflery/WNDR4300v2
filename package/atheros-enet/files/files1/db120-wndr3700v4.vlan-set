@@ -1,0 +1,56 @@
+#!/bin/sh
+
+nif=phy0
+
+get_reg() # $1: reg_addr
+{
+	ethreg -i $nif $1 | awk '{print $5}'
+}
+
+set_reg() # $1: reg_addr, $2: value, $3: mask
+{
+	if [ $# == 2 ]; then
+		ethreg -i $nif $1=$2
+		return
+	fi
+
+	local v0=$(get_reg $1)
+	local v_value=$(($2 & $3))
+	local v_clear=$(($3 ^ 0xffffffff))
+	ethreg -i $nif $1=$(($v0 & $v_clear | $v_value))
+}
+
+iptv_port_mask=$(($1 & 0xf)) 
+
+# port 1~4 (LAN ports)
+vlan1_lans=0
+vlan2_lans=0
+for i in 1 2 3 4; do
+	# the port order is changed per Netgear's request
+	# USBport LAN4 LAN3 LAN2 LAN1 WAN.
+	i_mask=$((1 << $(((5 - $i) - 1)) ))
+	if [ $(($iptv_port_mask & $i_mask)) == 0 ]; then
+		echo "set LAN port $i as non IPTV port"
+		port_val=0x00010001
+		vlan1_lans=$(($vlan1_lans | 0x1 << $((2 * $(($i - 1)) )) ))
+		vlan2_lans=$(($vlan2_lans | 0x3 << $((2 * $(($i - 1)) )) ))
+	else
+		echo "set LAN port $i as IPTV port"
+		port_val=0x00020001
+		vlan1_lans=$(($vlan1_lans | 0x3 << $((2 * $(($i - 1)) )) ))
+		vlan2_lans=$(($vlan2_lans | 0x1 << $((2 * $(($i - 1)) )) ))
+	fi
+
+	port_addr=$((0x420 + $((8 * $i)) )) # port1_vlan_ctrl0 ~ port4_vlan_ctrl0
+	set_reg $port_addr $port_val 0x0fff0fff # CVID, SVID
+done
+#v_610_vlan1=$((0x001bc020 | $(($vlan1_lans << 6)) ))
+v_610_vlan2=$((0x001b4020 | $(($vlan2_lans << 6)) ))
+
+#set_reg 0x614 0x80010003 # purge the vlan 1 entry.
+#set_reg 0x610 $v_610_vlan1
+#set_reg 0x614 0x80010002 # add the vlan 1 entry.
+
+set_reg 0x614 0x80020003 # purge the vlan 2 entry.
+set_reg 0x610 $v_610_vlan2
+set_reg 0x614 0x80020002 # add the vlan 2 entry.

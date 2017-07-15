@@ -1,0 +1,127 @@
+#!/bin/sh
+
+if [ -f /tmp/.staup ]; then
+    echo "STA is already up"
+    exit
+fi
+
+MODLIST=`lsmod | grep atd | cut -f1,0 -d" "`
+
+if [ "${MODLIST}" = "atd" ]; then
+    echo "STA is already up"
+    exit
+fi
+
+. /etc/ath/stacfg
+
+echo 1 > /tmp/.staup
+
+/etc/rc.d/rc.wlan up
+
+i=0
+WIFI_FOUND=0
+while [ "$i" != "30" ]
+do
+    cat /proc/net/dev | grep wifi0
+    if [ "$?" = "0" ]; then
+        echo wifi0 detected...
+        WIFI_FOUND=1
+        break
+    else
+        sleep 1
+	fi
+    i=$(($i+1))
+done
+
+if [ "$WIFI_FOUND" != "1" ]; then
+    echo Fail to detect WLAN...
+    exit 1
+else
+    echo Configuring ${VAP_NAME}0...
+fi
+
+##
+## STA VAP creation
+##
+wlanconfig ${VAP_NAME} create wlandev wifi0 wlanmode sta nosbeacon
+iwconfig ${VAP_NAME}0 essid ${STA_SSID}
+
+##
+## set debug mode output
+##
+
+if [ "${HALDEBUG}" = "" ]; then
+	HALDEBUG=0x0
+fi
+
+if [ "${ATHDEBUG}" = "" ]; then
+	ATHDEBUG=0x0
+fi
+
+if [ "${DEBUGMODE}" = "" ]; then
+	DEBUGMODE=0x100
+fi
+iwpriv wifi0 HALDbg $HALDEBUG
+iwpriv wifi0 ATHDebug $ATHDEBUG
+iwpriv ${VAP_NAME}0 dbgLVL $DEBUGMODE
+
+#
+# Set the chain masks
+#
+
+if [ "${TX_CHAINMASK}" != "" -a "${TX_CHAINMASK}" != "0" ]; then
+	iwpriv wifi0 txchainmask $TX_CHAINMASK
+fi
+
+if [ "${RX_CHAINMASK}" != ""  -a "${RX_CHAINMASK}" != "0" ]; then
+	iwpriv wifi0 rxchainmask $RX_CHAINMASK
+fi
+
+##
+## network bring up
+##
+ifconfig br0 0.0.0.0
+ifconfig ${VAP_NAME}0 ${STA_IPADDR} netmask ${STA_NETMASK}
+
+##
+## security bring up
+##
+
+if [ "${STA_SECMODE}" = "WEP" ]; then
+	#
+	# Insert the keys as required
+	#
+	#iwpriv ${VAP_NAME}0 authmode 2
+	iwconfig ${VAP_NAME}0 enc s:${STA_WEPKEY}	
+fi
+
+if [ "${STA_SECMODE}" = "WPA" ]; then
+	CONFIG=/tmp/config.wpa
+	echo -e "ap_scan=1" > $CONFIG
+	echo -e "network={" >> $CONFIG
+	echo -e "\tssid=\"${STA_SSID}\"" >> $CONFIG
+    if [ "${STA_WPA}" = "1" ]; then
+        echo -e "\tproto=WPA" >> $CONFIG
+    elif [ "${STA_WPA}" = "2" ]; then
+        echo -e "\tproto=WPA2" >> $CONFIG
+    fi
+	echo -e "\tkey_mgmt=WPA-PSK" >> $CONFIG
+	echo -e "\tpairwise=${STA_CYPHER}" >> $CONFIG
+	echo -e "\tpsk=\"${PSK_KEY}\"" >> $CONFIG
+	echo -e "}" >> $CONFIG
+	atd_wsupp_bridge -i ath0 -c $CONFIG -s &
+fi
+
+if [ "${STA_SECMODE}" = "WPS" ]; then
+	CONFIG=/tmp/config.wps
+	echo -e "ap_scan=1" > $CONFIG
+	echo -e "network={" >> $CONFIG
+	echo -e "\tkey_mgmt=WPS" >> $CONFIG
+	echo -e "\teap=WSC" >> $CONFIG
+	echo -e "\tidentity=\"WFA-SimpleConfig-Enrollee-1-0\"" >> $CONFIG
+	echo -e "\tphase1=\"pin=${WPS_PIN}\"" >> $CONFIG
+	echo -e "}" >> $CONFIG
+	atd_wsupp_bridge -i ath0 -c $CONFIG -s &
+fi
+
+ifconfig ath0 up

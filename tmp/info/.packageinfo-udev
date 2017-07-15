@@ -1,0 +1,30 @@
+Source-Makefile: package/udev/Makefile
+Package: udev
+Version: 106-1
+Depends: @LINUX_2_6
+Provides: 
+Section: utils
+Category: Utilities
+Title: Dynamic device management subsystem
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: udev-106.tar.bz2
+Type: ipkg
+Description: Dynamic device management subsystem
+http://www.kernel.org/pub/linux/utils/kernel/hotplug/udev.html
+@@
+
+Package: udevtrigger
+Version: 106-1
+Depends: @LINUX_2_6
+Provides: 
+Section: utils
+Category: Utilities
+Title: Small utility to request kernel devices events for coldplug
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: udev-106.tar.bz2
+Type: ipkg
+Description: Small utility to request kernel devices events for coldplug
+http://www.kernel.org/pub/linux/utils/kernel/hotplug/udev.html
+@@
+
+

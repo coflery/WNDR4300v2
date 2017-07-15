@@ -1,0 +1,20 @@
+config EZ_IPUPDATE_GIT_TREEISH
+	string
+	prompt "treeish of dni ez-ipupdate git repository"
+	default "ez-ipupdate-v3.0.10-dni21"
+	help
+           Input the treeish of dni ez-ipupdate git repository which you want to build
+
+config EZ_IPUPDATE_GIT_REPOSITORY
+	string
+	prompt "name of dni ez-ipupdate git repository"
+	default "ez-ipupdate.git"
+	help
+	   Input the name of dni ez-ipupdate git repository which you want to build
+
+config EZ_IPUPDATE_GIT_URL
+	string
+	prompt "url of dni ez-ipupdate git repository"
+	default "dniserver/scm/dnigit/common/apps/ez-ipupdate.git"
+	help
+	   Input the url of dni ez-ipupdate git repository which you want to build

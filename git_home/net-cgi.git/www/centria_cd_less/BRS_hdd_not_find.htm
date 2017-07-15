@@ -1,0 +1,119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<!--link rel="stylesheet" type="text/css" href="hdd_cd_less.css" /-->
+<link rel="stylesheet" type="text/css" href="style/hijack_style.css" />
+<link rel="stylesheet" type="text/css" href="style/form.css" />
+<script language="javascript" type="text/javascript" src="hdd_is_Mac.js"></script>
+</head>
+<body onLoad=loadvalue();>
+<script>
+<% cfg_set("hddnofind", "1") %> //when no hdd is find, run this case. and we set one value hddnofind to 1(default is 0). after reboot router.the BRS_index to check hddnofind,if 1,show hdd_not_find page. if 0, run previous old process.
+<% commit() %>
+var repeat="";
+var string="help info";
+var is_Mac = detectOS();
+var sata_exist="<% cfg_get("sata_diskname") %>";
+
+function loadvalue()
+{
+    top.wait_TM = 1;
+
+	if (sata_exist != "")//not find disk
+		location.href="BRS_success.html";
+}
+</script>
+<form method="post" action="">
+<input type="hidden" name="submit_flag" value="" />
+<script language="javascript" type="text/javascript">var ts="";</script>
+<!--div class="wizard_words_div_S">
+		<h1>Cann't find the hard disk!</h1>
+
+		<br>
+		<p>Please turn off the router power,plug in a SATA hard disk,then power the router on and wait till the router HDD LED is on.before clicking <b>Next</b></p>
+		
+		<p>It's not recommended that you click <b>Skip this</b> button to skip the hard disk installation.</p>
+</div-->
+<div class="wizard_content_div">
+<div  style="float:left; margin-left:120px; margin-top:40px;" >
+	<!--div id="WLinfo" align=center style="width:80%"-->
+	<TABLE align=center width="360px"; style="border:0px solid #000000;">
+		<TR><TD  width=40px; height=40px;><div class="case_not_find"> </div></TD>
+		<TD><p class="case_red_big">$hdd_internal $not_find.</p></TD></TR>
+		<TR><TD></TD>
+		<TD >
+		<TABLE align=center width="400px"; style="border:0px solid #000000; margin:0 40px 0 0;" >
+				<TR ><TD colspan=2 align="left" class="success_font">$follow_step
+</TD></TR>
+				<TR><TD width=55% class="success_font_normal">1. $hdd_not_find_step1 </TD></TR>
+				<TR><TD class="success_font_normal">2. $hdd_not_find_step2</TD></TR>
+				<TR><TD class="success_font_normal">3. $hdd_not_find_step3 </TD></TR>
+				<TR><TD class="success_font_normal">4. $hdd_not_find_step4 <!--img width=20px; src="/image/hdd/Header_Help_Icon.jpg" onmouseover="alert(string);"--></TD></TR>
+				<TR><TD>&nbsp;&nbsp;&nbsp;&nbsp;</TD></TR>
+				<TR><TD class="app_header_font">$hdd_not_find_step_next</TD></TR>
+		</TABLE></TD>
+		</TR>
+		</TABLE>
+		<p></p>
+	</div>
+<div  style="width:150px;margin: 2px 100px auto auto;">
+		<TABLE width=100% border=1 cellpadding=0 cellspacing=2>
+         <TR>
+		 <!--TD nowrap  > <a href="F:/linux ran/1.avi">shipinpofang</a></TD-->
+	   <TD nowrap ><img style="height:276px;"src="/image/hdd/Install_HDD.gif"></TD>
+       </TR>
+	   <TR><TD class="app_header_font"> $hdd_video  </TD></TR>
+      </TABLE>
+</div>
+
+	<div id="buttons_div_02" class="wizard_buttons_div" align="center">
+		<TABLE align=center width="90%" border=0 cellpadding=0 cellspacing=2>
+         <TR>
+		 <TD nowrap colspan=2 align=left>
+		<INPUT  class="short_common_hdd" type='button' name="exit" value='$exit_mark' onClick='click_exit()'></TD>
+	   <TD nowrap colspan=2 align=right>
+		  <INPUT class="long_common_hdd" type='button' name="Next" value='$skip_mark' onClick='goto_skip()'>&nbsp;&nbsp;&nbsp;&nbsp;
+	      <INPUT class="short_common_hdd" type='button' name="Next" value='$next_mark >' onClick='click_next( document.forms[0])'>
+	       </TD>
+       </TR>
+
+      </TABLE>
+	</div>			
+</div>
+
+
+
+<script>
+//var sata_num="<% cfg_get("sata_partition_count") %>"; //need one var which not ready
+//var sata_recognized="<% sata_if_regnizd() %>";
+//var sata_partition_status="<% cfg_get("sata_partition_status") %>"; // need var which not ready
+
+function click_exit(cf)
+{
+ 
+	    location.href="BRS_hdd_success.htm"; 
+}
+
+function goto_skip()
+{
+	/*if( is_Mac == "Mac")// formatted and is recognized 
+			location.href="BRS_hdd_genie_mac_stal.htm"; // is mac OS
+	else
+			location.href="BRS_hdd_genie_stal.htm";*/
+   location.href="BRS_hdd_download.htm";
+}
+
+function click_next()
+{	
+	  if (sata_exist == "")//not find disk
+		location.href="BRS_hdd_not_find.htm"; // not find sign
+	 else
+	 {
+		location.href="BRS_success.html";
+	 }
+}
+</script>
+</form>
+</body>
+</html>

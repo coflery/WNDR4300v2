@@ -1,0 +1,208 @@
+# MadWifi configuration
+
+menu "Configurations"
+
+config ATHEROS_MADWIFI_GIT_TREEISH
+	string
+	prompt "treeish of atheros madwifi git repository"
+	default "madwifi-11n-aquila-dni43"
+	help
+	  Input the treeish of atheros-aquila-madwifi git repository which you want to build
+
+config ATHEROS_MADWIFI_GIT_REPOSITORY
+	string
+	prompt "name of atheros madwifi git repository"
+	default "madwifi-11n.git"
+	help
+	  Input the name of atheros-aquila-madwifi git repository which you want to build
+
+config ATHEROS_MADWIFI_GIT_URL
+	string
+	prompt "url of atheros madwifi git repository"
+	default "ssh://dniserver/scm/dnigit/vendor/atheros/madwifi-11n/spencer/madwifi-11n.git"
+     	help
+	  Input the url of atheros-aquila-madwifi git repository which you want to build
+
+config ATHEROS_MADWIFI_SUPPORT_DFS
+	bool "Enable DFS"
+	depends on PACKAGE_kmod-atheros-aquila-madwifi
+	default n
+
+config ATHEROS_MADWIFI_SUPPORT_MCAST_ENHANCEMENT
+	bool "Enable IEEE80211 Multicast Enhancement"
+	depends on PACKAGE_kmod-atheros-aquila-madwifi
+	default y
+
+config ATHEROS_MADWIFI_SUPPORT_SW_CRYPTO
+	bool "Enable Software crypto"
+	depends on PACKAGE_kmod-atheros-aquila-madwifi
+	default y
+
+config ATHEROS_MADWIFI_SUPPORT_BUILD_OPTIMIZED
+	bool "Enable Building optimization"
+	depends on PACKAGE_kmod-atheros-aquila-madwifi
+	default y
+
+config ATHEROS_MADWIFI_SUPPORT_HORNET
+	bool "Support Atheros HORNET chip"
+	depends on PACKAGE_kmod-atheros-aquila-madwifi
+	default n
+
+config ATHEROS_MADWIFI_SUPPORT_AR9300
+	bool "Support Atheros AR9300 chip"
+	depends on PACKAGE_kmod-atheros-aquila-madwifi
+	default n
+
+config ATHEROS_MADWIFI_SUPPORT_IQUE
+	bool "Support Atheros iQueue feature"
+	depends on PACKAGE_kmod-atheros-aquila-madwifi
+	default y
+
+config ATHEROS_MADWIFI_SUPPORT_IQUE_EXT
+	bool "Support Atheros iQueue EXT feature"
+	depends on PACKAGE_kmod-atheros-aquila-madwifi
+	default y
+
+config ATHEROS_MADWIFI_SUPPORT_PAPRD
+	bool "Support Atheros PAPRD feature"
+	depends on PACKAGE_kmod-atheros-aquila-madwifi
+	default n
+
+config ATHEROS_MADWIFI_NO_5G_SUPPORT
+	bool "Disable 5G support"
+	depends on PACKAGE_kmod-atheros-aquila-madwifi
+	default y
+
+config ATHEROS_MADWIFI_SUPPORT_PKTLOG
+	bool "Enable Atheros packet log"
+	depends on PACKAGE_kmod-atheros-aquila-madwifi
+	default y
+
+config ATHEROS_MADWIFI_SUPPORT_RPTPLACEMENT
+	bool "Support repeater placement"
+	depends on PACKAGE_kmod-atheros-aquila-madwifi
+	default y
+
+config ATHEROS_MADWIFI_RADIOS
+       int "Number of RADIO"
+       depends on PACKAGE_kmod-atheros-aquila-madwifi && !TARGET_wndr4500v3
+       default 1
+
+config ATHEROS_MADWIFI_CAL_LOCATIONS
+       string "Calibration Address"
+       depends on PACKAGE_kmod-atheros-aquila-madwifi && !TARGET_wndr4500v3
+       default 0xbfff1000
+
+config ATHEROS_MADWIFI_CAL_LOCATIONS_PCI
+       string "Calibration Address for PCI"
+       depends on PACKAGE_kmod-atheros-aquila-madwifi && TARGET_wndr4500v3
+       default 0xbfff1000
+
+config ATHEROS_MADWIFI_CAL_LOCATIONS_AHB
+       string "Calibration Address for AHB"
+       depends on PACKAGE_kmod-atheros-aquila-madwifi && TARGET_wndr4500v3
+       default 0xbfff0000
+
+config ATHEROS_MADWIFI_READ_2G_MAC_ADDR
+       bool "Read 2.4G MAC address from specified location in flash"
+       depends on PACKAGE_kmod-atheros-aquila-madwifi
+       default n
+
+config ATHEROS_MADWIFI_2G_MAC_ADDR_LOC
+       string "Read 2.4G MAC address from ..."
+       depends on PACKAGE_kmod-atheros-aquila-madwifi
+       depends ATHEROS_MADWIFI_READ_2G_MAC_ADDR
+       default 0xbfff1000
+
+config ATHEROS_MADWIFI_READ_5G_MAC_ADDR
+       bool "Read 5G MAC address from specified location in flash"
+       depends on PACKAGE_kmod-atheros-aquila-madwifi
+       default n
+
+config ATHEROS_MADWIFI_5G_MAC_ADDR_LOC
+       string "Read 5G MAC address from ..."
+       depends on PACKAGE_kmod-atheros-aquila-madwifi
+       depends ATHEROS_MADWIFI_READ_5G_MAC_ADDR
+       default 0xbfff5000
+
+config ATHEROS_MADWIFI_SUPPORT_VOWEXT
+       bool "enable ATH_SUPPORT_VOWEXT"
+       depends on PACKAGE_kmod-atheros-aquila-madwifi
+       default n
+
+config ATHEROS_MADWIFI_SUPPORT_VOW_EXT_STATS
+       bool "enable ATH_VOW_EXT_STATS"
+       depends on PACKAGE_kmod-atheros-aquila-madwifi
+       default n
+
+config ATHEROS_MADWIFI_SUPPORT_VOW_TIDSCHED
+       bool "enable VOW_TIDSCHED"
+       depends on PACKAGE_kmod-atheros-aquila-madwifi
+       default n
+
+config ATHEROS_MADWIFI_SUPPORT_VOW_LOGLATENCY
+       bool "enable VOW_LOGLATENCY"
+       depends on PACKAGE_kmod-atheros-aquila-madwifi
+       default n
+
+config ATHEROS_MADWIFI_SUPPORT_CFEND
+       bool "enable ATH_SUPPORT_CFEND"
+       depends on PACKAGE_kmod-atheros-aquila-madwifi
+       default n
+
+config ATHEROS_MADWIFI_SUPPORT_DESCFAST
+       bool "enable ATH_SUPPORT_DESCFAST"
+       depends on PACKAGE_kmod-atheros-aquila-madwifi
+       default n
+
+config ATHEROS_MADWIFI_SUPPORT_TDLS
+       bool "enable ATH_SUPPORT_TDLS"
+       depends on PACKAGE_kmod-atheros-aquila-madwifi
+       default n
+
+config ATHEROS_MADWIFI_SUPPORT_GREEN_AP
+       bool "enable Green AP (ATH_SUPPORT_GREEN_AP)"
+       depends on PACKAGE_kmod-atheros-aquila-madwifi
+       default n
+
+config ATHEROS_MADWIFI_SUPPORT_AR5416_INT_MITIGATION
+       bool "enable ATH_SUPPORT_AR5416_INT_MITIGATION"
+       depends on PACKAGE_kmod-atheros-aquila-madwifi
+       default n
+
+config ATHEROS_MADWIFI_SUPPORT_CAP_AMSDU
+       bool "enable AMSDU capability (ATH_CAP_AMSDU)"
+       depends on PACKAGE_kmod-atheros-aquila-madwifi
+       default n
+
+config ATHEROS_MADWIFI_SUPPORT_HOWL
+       bool "enable HOWL support"
+       depends on PACKAGE_kmod-atheros-aquila-madwifi
+       default n
+
+config ATHEROS_MADWIFI_PLATFORM_PATCH
+       bool "Apply platform specific patch"
+       depends on PACKAGE_kmod-atheros-aquila-madwifi
+       default n
+
+config ATHEROS_MADWIFI_RXBUF
+       int "Number of receive buffer"
+       depends on PACKAGE_kmod-atheros-aquila-madwifi
+       default 512
+
+config ATHEROS_MADWIFI_TXBUF
+       int "Number of transmission buffer"
+       depends on PACKAGE_kmod-atheros-aquila-madwifi
+       default 512
+
+config ATHEROS_MADWIFI_USE_CLIENT_BRIDGE
+	bool "Use client bridge feature"
+	depends on PACKAGE_kmod-atheros-aquila-madwifi
+	default n
+
+config ATHEROS_MADWIFI_DISPLAY_SCAN_IN_PROC
+	bool "Display scan result in proc system"
+	depends on PACKAGE_kmod-atheros-aquila-madwifi
+	default n
+
+endmenu

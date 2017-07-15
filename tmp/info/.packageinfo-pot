@@ -1,0 +1,21 @@
+Source-Makefile: package/pot/Makefile
+Package: pot
+Version: 4
+Depends: @TARGET_dniwndr3700u2631||TARGET_wndr4500v3
+Provides: 
+Section: net
+Category: Network
+Title: POT
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: POT
+@@
+Config:
+	menu "Configurations"
+		depends on PACKAGE_pot
+		source "package/pot/Config.in"
+	endmenu
+@@
+
+

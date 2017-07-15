@@ -1,0 +1,16 @@
+Source-Makefile: package/amule/Makefile
+Package: amule
+Version: 2.3.1-1
+Depends: +libpng +libpthread +libncurses +libreadline +libwxwidgets +libcryptoxx 
+Provides: 
+Build-Depends: libgd libwxwidgets
+Section: utils
+Category: Network
+Title: A multi-platform eMule-like ed2k client
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: aMule-2.3.1.tar.bz2
+Type: ipkg
+Description: A multi-platform eMule-like ed2k client
+@@
+
+

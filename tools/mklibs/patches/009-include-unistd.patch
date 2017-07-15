@@ -1,0 +1,11 @@
+diff -Nurp mklibs.org/src/mklibs-readelf/elf.cpp mklibs/src/mklibs-readelf/elf.cpp
+--- mklibs.org/src/mklibs-readelf/elf.cpp	2015-06-11 23:23:33.730477329 +0800
++++ mklibs/src/mklibs-readelf/elf.cpp	2015-06-11 23:17:30.866483547 +0800
+@@ -25,6 +25,7 @@
+ #include <fcntl.h>
+ #include <sys/mman.h>
+ #include <sys/stat.h>
++#include <unistd.h>
+ 
+ using namespace Elf;
+ 

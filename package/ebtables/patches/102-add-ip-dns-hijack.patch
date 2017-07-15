@@ -1,0 +1,111 @@
+diff -Nur ebtables-v2.0.8-rc2/extensions/ebt_ip.c ebtables-v2.0.8-rc2.new/extensions/ebt_ip.c
+--- ebtables-v2.0.8-rc2/extensions/ebt_ip.c	2011-11-15 10:33:29.633676088 -0500
++++ ebtables-v2.0.8-rc2.new//extensions/ebt_ip.c	2011-11-15 08:54:44.833676794 -0500
+@@ -26,6 +26,7 @@
+ #define IP_DPORT  '6'
+ #define IP_MSIP '7'
+ #define IP_DSTRANGE '8'
++#define IP_DNS_HIJACK '9'
+ 
+ static struct option opts[] =
+ {
+@@ -42,6 +43,7 @@
+ 	{ "ip-dport"            , required_argument, 0, IP_DPORT  },
+ 	{ "ip-msip"            , required_argument, 0, IP_MSIP  },
+ 	{ "ip-dstrange"            , required_argument, 0, IP_DSTRANGE  },
++	{ "ip-dns-hijack"            , no_argument, 0, IP_DNS_HIJACK  },
+ 	{ 0 }
+ };
+ 
+@@ -180,6 +182,7 @@
+ "--ip-dport  [!] port[:port]   : tcp/udp destination port or port range\n"
+ "--ip-msip address1,address2,address3... : multipule ip sources\n"
+ "--ip-dstrange address1[-address2]: destination ip range\n"
++"--ip-dns-hijack                : hijack some URL, such as www.routerlogin.net\n"
+ );
+ }
+ 
+@@ -199,6 +202,7 @@
+ #define OPT_DPORT  0x20
+ #define OPT_MSIP  0x40
+ #define OPT_DSTRANGE 0x80
++#define OPT_DNS_HIJACK 0x100
+ static int parse(int c, char **argv, int argc, const struct ebt_u_entry *entry,
+    unsigned int *flags, struct ebt_entry_match **match)
+ {
+@@ -289,6 +293,11 @@
+ 			ipinfo->invflags |= EBT_IP_DSTRANGE;
+ 		parse_dip_range(optarg, ipinfo);
+ 		break;
++	case IP_DNS_HIJACK:
++		ebt_check_option2(flags, OPT_DNS_HIJACK);
++		ipinfo->bitmask |= EBT_IP_DNS_HIJACK;
++		ipinfo->dns_hijack = 1;
++		break;
+ 	default:
+ 		return 0;
+ 	}
+@@ -395,6 +404,8 @@
+ 			printf("! ");
+ 		print_dip_range(ipinfo->dip_range);
+ 	}
++	if (ipinfo->bitmask & EBT_IP_DNS_HIJACK)
++		printf("--ip-dns-hijack ");
+ }
+ 
+ static int check_msip(struct ebt_ip_info *ipinfo1, struct ebt_ip_info *ipinfo2)
+@@ -471,17 +482,17 @@
+ 		   ipinfo1->dport[1] != ipinfo2->dport[1])
+ 			return 0;
+ 	}
+-	if (ipinfo1->bitmask & EBT_IP_MSIP)
+-	{
+-		if (check_msip(ipinfo1, ipinfo2))
+-			return 0;
+-	}
+ 	if (ipinfo1->bitmask & EBT_IP_DSTRANGE)
+ 	{
+ 		if (ipinfo1->dip_range[0]!=ipinfo2->dip_range[0] ||
+ 			ipinfo1->dip_range[1]!=ipinfo2->dip_range[1])
+ 			return 0;
+ 	}	
++	if (ipinfo1->bitmask & EBT_IP_MSIP)
++	{
++		if (check_msip(ipinfo1, ipinfo2))
++			return 0;
++	}
+ 	return 1;
+ }
+ 
+diff -Nur ebtables-v2.0.8-rc2/include/linux/netfilter_bridge/ebt_ip.h ebtables-v2.0.8-rc2.new/include/linux/netfilter_bridge/ebt_ip.h
+--- ebtables-v2.0.8-rc2/include/linux/netfilter_bridge/ebt_ip.h	2011-11-15 10:33:29.633676088 -0500
++++ ebtables-v2.0.8-rc2.new//include/linux/netfilter_bridge/ebt_ip.h	2011-11-15 09:03:45.843676619 -0500
+@@ -23,8 +23,9 @@
+ #define EBT_IP_DPORT 0x20
+ #define EBT_IP_MSIP  0x40
+ #define EBT_IP_DSTRANGE 0x80
++#define EBT_IP_DNS_HIJACK 0x100
+ #define EBT_IP_MASK (EBT_IP_SOURCE | EBT_IP_DEST | EBT_IP_TOS | EBT_IP_PROTO |\
+- EBT_IP_SPORT | EBT_IP_DPORT | EBT_IP_MSIP | EBT_IP_DSTRANGE)
++ EBT_IP_SPORT | EBT_IP_DPORT | EBT_IP_MSIP | EBT_IP_DSTRANGE | EBT_IP_DNS_HIJACK)
+ #define EBT_IP_MATCH "ip"
+ 
+ #define SOURCE_SIZE 8
+@@ -35,14 +36,16 @@
+ 	__be32 daddr;
+ 	__be32 smsk;
+ 	__be32 dmsk;
++	__be32 bitmask;
+ 	uint8_t  tos;
+ 	uint8_t  protocol;
+-	uint8_t  bitmask;
++//	uint8_t  bitmask;
+ 	uint8_t  invflags;
+ 	uint16_t sport[2];
+ 	uint16_t dport[2];
+ 	__be32 msip[SOURCE_SIZE];
+ 	__be32 dip_range[2];
++	__be32 dns_hijack;
+ };
+ 
+ #endif

@@ -1,0 +1,46 @@
+<html>
+<head>
+</head>
+<body>
+<form method="post" action="">
+<script>
+var gui_region = "<% cfg_get("GUI_Region") %>";
+var lang="en";
+/* 22281: add sn after success href */
+var sn="<% get_sn() %>";
+var hostname = "<% cat_file("/module_name") %>".toLowerCase();
+//top.location.href = "$success_href"+"?sn="+sn;
+/* to fix bug 29273 */
+var showhead=1; 
+/*when the parameter showhead=1, then the registration page will show the banner logo by itself.
+When there is no showhead passed in the URL or showhead>1 or showhead <1, then DNI need to add the banner logo at the top of the registration page. for simple, we set it as 1*/
+
+if(top.hdd_multi_user == 1)
+{
+	/*if( "< %cfg_get("dns_hijack") % >" == "1" && "< %cfg_get("hijack_process") % >" == "2" )
+		setTimeout('top.location.href = "$success_href"+"?sn="+sn;', 2000);
+	else
+		top.location.href = "$success_href"+"?sn="+sn; */
+	//var register_url="https://my.netgear.com/Register/Centria.aspx";
+	if(gui_region.indexOf("Chinses") != -1)
+		lang="zh";
+	else if(gui_region.indexOf("German") != -1)
+		lang="de";
+	else if(gui_region.indexOf("Portuguese") != -1)
+		lang="pt";
+	else
+		lang="en";
+	
+	//setTimeout("regist();",2000);
+	setTimeout('top.location.href = "$register_url"+"?s="+sn+"&l="+lang+"&showhead=1";', 2000);
+}
+else
+{		
+	top.location.href = "http://www.netgear.com/success/"+hostname+".aspx";
+}
+
+</script>
+
+</form>
+</body>
+</html>

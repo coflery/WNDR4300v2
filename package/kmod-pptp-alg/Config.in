@@ -1,0 +1,22 @@
+# kmod-pptp-alg configuration
+config PPTP_ALG_GIT_TREEISH
+	string
+	prompt "treeish of pptp-alg git repository"
+	default "alg-pptp-v2.6.31-dni3"
+	help
+           Input the treeish of kmod-pptp-alg git repository which you want to build
+
+config PPTP_ALG_GIT_REPOSITORY
+	string
+	prompt "name of pptp-alg git repository"
+	default "kmod-pptp.git"
+	help
+	   Input the name of kmod-pptp-alg git repository which you want to build
+
+config PPTP_ALG_GIT_URL
+	string
+	prompt "url of pptp-alg git repository"
+	default "ssh://dniserver/scm/dnigit/common/kmods/kmod-pptp.git"
+	help
+	   Input the url of kmod-pptp-alg git repository which you want to build
+

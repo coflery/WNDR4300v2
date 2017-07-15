@@ -1,0 +1,72 @@
+#!bin/sh
+# clear /etc/passwd and /etc/group file.
+SMB_CONF_DIR=/tmp/config
+SMB_PASSWD_DIR=/etc/samba/smbpasswd
+
+# initial directory /tmp/config
+rm -f $SMB_CONF_DIR/passwd+
+rm -f $SMB_CONF_DIR/gshadow
+rm -f $SMB_CONF_DIR/shadow
+
+# clear passwd and init root and nobody user .
+echo root:!:0:0:root:/tmp:/bin/ash              >$SMB_CONF_DIR/passwd
+echo guest:*:65534:65534:guest:/var:/bin/false  >>$SMB_CONF_DIR/passwd
+
+# clear group and init groot and nogroup
+echo admin:x:0:                                 >$SMB_CONF_DIR/group
+echo guest:x:65534:                             >>$SMB_CONF_DIR/group
+
+adduser -G admin admin -D
+
+# clear smbpasswd file
+echo "">$SMB_PASSWD_DIR
+
+count=1
+    COUNTER_USER=$(/bin/config show | grep admin_user | wc -l)
+    COUNTER_GROUP=$(/bin/config show | grep admin_group | wc -l)
+	# "COUNTER_USER-2" exclude "admin" and "guest" account
+    COUNTER_USER=`expr   $COUNTER_USER   -   2`
+    COUNTER_USER=`expr   $COUNTER_USER   +   1`
+    COUNTER_GROUP=`expr   $COUNTER_GROUP   +   1`
+    #dynamicly obtain lan ip of borad,and write to smb.conf
+    #echo [global] >/tmp/samba/smb.conf 
+    #echo interfaces = br0 $(/bin/config get lan_ipaddr)/24 >>/tmp/samba/smb.conf
+    #cat /usr/config/smb.conf >>/tmp/samba/smb.conf
+	
+    #while loop finish add group to /etc/group file.
+    while [ $count -lt $COUNTER_GROUP ]
+    do
+      group=$(/bin/config show | grep admin_group${count} | awk '{print $1}' | sed 's/[a-z]*[_][a-z]*[0-9]*[=]/''/')
+	  group1=$(grep ^$group /etc/group | awk -F: '{print $1}')
+	  #echo $group1
+	  #echo $group
+	  if [ -z $group1 ];then
+	     addgroup $group  
+	  fi
+	  count=`expr   $count   +   1`
+    done
+	# while finish adduser and smbpasswd command according with user and passwd from config.
+    
+    #add "admin" user
+    passwd=$(/bin/config show | grep admin_userAdmin | awk '{print $5}')
+    smbpasswd admin $passwd
+    #add "guest" user
+    passwd=$(/bin/config show | grep admin_userGuest | awk '{print $5}')
+    smbpasswd guest $passwd
+    
+    
+    count=1
+    while [ $count -lt $COUNTER_USER ]
+    do
+      group=$(/bin/config show | grep admin_user${count} | awk '{print $2}')
+	  #echo user group is $group
+      passwd=$(/bin/config show | grep admin_user${count} | awk '{print $5}')
+      user=$(/bin/config show | grep admin_user${count} | awk '{print $1}' | sed 's/[a-z]*[_][a-z]*[0-9]*[=]/''/')
+	  #echo user name is $user
+	  #echo user password is $passwd
+      # before create user delete user dir.    
+      rm -rf /tmp/$user
+	  adduser -G $group -D $user
+      smbpasswd $user $passwd
+      count=`expr   $count   +   1`
+    done

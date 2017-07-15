@@ -1,0 +1,24 @@
+#!/bin/sh
+LANIF="br0"
+LANIP=`ifconfig $LANIF | grep "inet addr:" |  sed 's/:/ /g' |awk '{print $3}'`
+port_reservation ()
+{
+	line=$(echo "$1" | awk '{print $4, $5, $6, $7}')
+	src=$(echo "$line" |awk '{print $1}' | awk -F= '{ print $2 }')
+	dst=$(echo "$line" |awk '{print $2}' | awk -F= '{ print $2 }')
+	if [ "$src" = "$LANIP" ]; then
+		port="$(echo "$line" |awk '{print $3}' | awk -F= '{ print $2 }')"
+	else
+		port="$(echo "$line" |awk '{print $4}' | awk -F= '{ print $2 }')"
+	fi
+	ret=`cat /tmp/port_reservation | grep ",$port,"`
+	if [ "x$ret" = "x" ] ; then
+		echo -n "$port," >> /tmp/port_reservation
+	fi
+}
+
+echo -n "," > /tmp/port_reservation
+cat /proc/net/ip_conntrack | sed -n '/ASSURED/p' | while read line
+do
+	port_reservation "$line"
+done

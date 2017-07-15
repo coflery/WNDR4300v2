@@ -1,0 +1,44 @@
+Source-Makefile: package/dni-iproute2/Makefile
+Package: dni-ip
+Version: 3.3.0-1
+Depends: +libnl-tiny
+Provides: 
+Section: net
+Category: Network
+Title: Routing control utility
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iproute2-3.3.0.tar.bz2
+Type: ipkg
+Description: Routing control utility
+http://linux-net.osdl.org/index.php/Iproute2
+@@
+
+Package: dni-tc
+Version: 3.3.0-1
+Depends: @TARGET_WNDR3700U||TARGET_wndr4500v3
+Provides: 
+Section: net
+Category: Network
+Title: Traffic control utility
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iproute2-3.3.0.tar.bz2
+Type: ipkg
+Description: Traffic control utility
+http://linux-net.osdl.org/index.php/Iproute2
+@@
+
+Package: dni-genl
+Version: 3.3.0-1
+Depends: @TARGET_WNDR3700U||TARGET_wndr4500v3
+Provides: 
+Section: net
+Category: Network
+Title: General netlink utility frontend
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: iproute2-3.3.0.tar.bz2
+Type: ipkg
+Description: General netlink utility frontend
+http://linux-net.osdl.org/index.php/Iproute2
+@@
+
+

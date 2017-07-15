@@ -1,0 +1,52 @@
+#!/bin/sh /etc/rc.common
+START=19
+INSMOD=/sbin/insmod
+MODDIR=/lib/modules/2.6.31
+
+start()
+{
+	[ -x /etc/init.d/init.enet.0 ] && /etc/init.d/init.enet.0
+
+	# it seems eth0 must up first, otherwise, atheros_header disappears.
+	ifconfig eth0 up
+	ifconfig eth0 down
+
+	#set vlan interface
+	ifconfig $LAN_IF up
+	vconfig add $LAN_IF 1
+	vconfig add $LAN_IF 2
+	LAN_USE_IF=$LAN_IF.1
+	IPTV_USE_IF=$LAN_IF.2
+	ifconfig $LAN_USE_IF up
+	ifconfig $IPTV_USE_IF up
+
+	# set wan_factory_mac
+	wan_default_mac=$(get_mac_addr wan)
+	$CONFIG set wan_factory_mac="$wan_default_mac"
+	echo "init.enet: Default WAN MAC is : $wan_default_mac"
+
+	# set lan mac
+	lan_default_mac=$(get_mac_addr lan)
+	ifconfig $LAN_IF hw ether $lan_default_mac
+	brctl addif $BR_IF $LAN_USE_IF
+	ifconfig $BR_IF hw ether $lan_default_mac
+	echo "init.enet: Default LAN MAC is : $lan_default_mac"
+
+	local mod_dni_enet=`lsmod | grep dni_enet`
+        if [ "x$mod_dni_enet" = "x" ]; then
+                $INSMOD $MODDIR/dni_enet.ko
+        fi
+	brctl addif $BR_IF $IPV6_PASS_THROUGH_NAME
+
+	ifconfig $WAN_PHYNAME down
+	ifconfig $IPTV_USE_IF down
+	brctl addbr $WAN_IF
+	brctl addif $WAN_IF $WAN_PHYNAME
+	brctl addif $WAN_IF $IPTV_USE_IF
+	brctl setfd $WAN_IF 0
+	ifconfig $WAN_PHYNAME up
+	ifconfig $IPTV_USE_IF up
+	ifconfig $WAN_IF up
+	ifconfig $IPV6_PASS_THROUGH_NAME up
+}
+

@@ -1,0 +1,7 @@
+#!/bin/sh
+rmmod ehci-hcd
+rmmod usb-storage
+rmmod usbcore
+insmod /lib/modules/$(uname -r)/usb/ar9130_udc.ko
+insmod /lib/modules/$(uname -r)/usb/g_audio.ko
+echo "Configured USB in device mode"

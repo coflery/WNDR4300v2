@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+
+<head>
+<% hijack_title() %>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="style/hijack_style.css" />
+<script language="javascript" type="text/javascript" src="script/brs_hijack.js"></script>
+<script language="javascript" type="text/javascript" src="script/funcs.js"></script>
+<script language="javascript" type="text/javascript" src="script/brs_00_03_ap_setup.js"></script>
+<% hijack_language() %>
+<script>
+function initPage()
+{
+	var head_tag  = document.getElementsByTagName("h1");
+
+	var btns_container_div = document.getElementById("btnsContainer_div");
+
+	var master="<% cfg_get("http_loginname") %>";
+	if( master == "admin" ){
+		btns_container_div.onclick = function()
+		{
+			return checkap(document.forms[0]);
+		}
+	}
+
+	loadvalue()
+	//show firmware version
+	showFirmVersion("none");
+}
+</script>
+</head>
+<body>
+<% deleteFiles("/tmp/ping_result", "/tmp/wget_file_result") %>
+<% form_submit("apply", "BRS_04_applySettings.html", "wl_ap_mode")  %>
+<script language="javascript" type="text/javascript">
+var wps_progress_status="<% wps_process_status() %>";
+</script>
+<input type="hidden" name="hid_enable_apmode">
+<input type="hidden" name="hid_dyn_get_ip">
+<input type="hidden" name="hid_ap_ipaddr">
+<input type="hidden" name="hid_ap_subnet">
+<input type="hidden" name="hid_ap_gateway">
+<input type="hidden" name="ap_dnsaddr1">
+<input type="hidden" name="ap_dnsaddr2">
+<div class="wizard_content_div">
+
+	<div id="choices_div" class="wizard_words_div">
+		<h1><script>document.write(bh_ap_setup_title)</script></h1>
+		<div id="choices_div" class="helpChoice_divs">
+			<p><script>document.write(bh_ap_setup_type_select)</script></p>
+			<div class="radio_div">
+				<input type="radio" name="dyn_get_ip" value="1" checked="checked" onclick="ap_notshow()"/><script>document.write(bh_ap_setup_type_item1)</script>
+			</div>
+			<div class="radio_div">
+				<input type="radio" name="dyn_get_ip" value="0"onclick="ap_show()" /><script>document.write(bh_ap_setup_type_item2)</script>
+			</div>
+<table id="static_ip" width="80%" style="display:none">
+<TR id=ap_addr>
+	<TD>&nbsp;</TD><TD>&nbsp;</TD>
+	<TD nowrap><script>document.write(bh_info_mark_ip)</script></TD>
+	<TD nowrap align=right>
+		<input type="text" name="APaddr1"  size="3" autocomplete="off" maxlength="3" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkey('num',event);" onkeyup="keyup(event,this);" >.
+		<input type="text" name="APaddr2"  size="3" autocomplete="off" maxlength="3" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkey('num',event);" onkeyup="keyup(event,this);">.
+		<input type="text" name="APaddr3"  size="3" autocomplete="off" maxlength="3" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkey('num',event);" onkeyup="keyup(event,this);">.
+		<input type="text" name="APaddr4"  size="3" autocomplete="off" maxlength="3" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkey('num',event);" onkeyup="keyup(event,this);">
+	</TD>
+</TR>
+<TR id=ap_mask>
+	<TD>&nbsp;</TD><TD>&nbsp;</TD>
+	<TD nowrap><script>document.write(bh_ip_subnet_mask)</script></TD>		
+	<TD nowrap align=right>
+		<input type="text" name="APmask1"  size="3" autocomplete="off" maxlength="3" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkey('num',event);" onkeyup="keyup(event,this);" >.
+		<input type="text" name="APmask2"  size="3" autocomplete="off" maxlength="3" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkey('num',event);" onkeyup="keyup(event,this);">.
+		<input type="text" name="APmask3"  size="3" autocomplete="off" maxlength="3" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkey('num',event);" onkeyup="keyup(event,this);">.
+		<input type="text" name="APmask4"  size="3" autocomplete="off" maxlength="3" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkey('num',event);" onkeyup="keyup(event,this);">
+	</TD> 
+</TR>
+<TR id=ap_gateway>
+	<TD>&nbsp;</TD><TD>&nbsp;</TD>
+	<TD nowrap><script>document.write(bh_sta_routes_gtwip)</script></TD>		
+	<TD nowrap align=right>
+		<input type="text" name="APgateway1"  size="3" autocomplete="off" maxlength="3" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkey('num',event);" onkeyup="keyup(event,this);" >.
+		<input type="text" name="APgateway2"  size="3" autocomplete="off" maxlength="3" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkey('num',event);" onkeyup="keyup(event,this);">.
+		<input type="text" name="APgateway3"  size="3" autocomplete="off" maxlength="3" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkey('num',event);" onkeyup="keyup(event,this);">.
+		<input type="text" name="APgateway4"  size="3" autocomplete="off" maxlength="3" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkey('num',event);" onkeyup="keyup(event,this);">
+	</TD>
+</TR>
+<TR id=ap_daddr>
+	<TD>&nbsp;</TD><TD>&nbsp;</TD>
+	<TD nowrap><script>document.write(bh_primary_dns)</script></TD>
+	<TD nowrap align=right>
+	<input type="text" name="APDAddr1"  size="3" autocomplete="off" maxlength="3" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkey('num',event);" onkeyup="keyup(event,this);" >.
+	<input type="text" name="APDAddr2"  size="3" autocomplete="off" maxlength="3" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkey('num',event);" onkeyup="keyup(event,this);">.
+	<input type="text" name="APDAddr3"  size="3" autocomplete="off" maxlength="3" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkey('num',event);" onkeyup="keyup(event,this);">.
+	<input type="text" name="APDAddr4"  size="3" autocomplete="off" maxlength="3" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkey('num',event);" onkeyup="keyup(event,this);">
+	</TD>
+</TR>
+<TR id=ap_pdaddr>
+	<TD>&nbsp;</TD><TD>&nbsp;</TD>
+	<TD nowrap><script>document.write(bh_secondary_dns)</script></TD>
+	<TD nowrap align=right>
+	<input type="text" name="APPDAddr1"  size="3" autocomplete="off" maxlength="3" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkey('num',event);" onkeyup="keyup(event,this);" >.
+	<input type="text" name="APPDAddr2"  size="3" autocomplete="off" maxlength="3" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkey('num',event);" onkeyup="keyup(event,this);">.
+	<input type="text" name="APPDAddr3"  size="3" autocomplete="off" maxlength="3" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkey('num',event);" onkeyup="keyup(event,this);">.
+	<input type="text" name="APPDAddr4"  size="3" autocomplete="off" maxlength="3" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkey('num',event);" onkeyup="keyup(event,this);">
+	</TD>
+</TR>
+</table>
+
+		</div>
+		<p><script>document.write(bh_ap_setup_note)</script></p>
+	</div>
+
+	<div id="buttons_div_02" class="wizard_buttons_div" align="center">
+		<div id="btnsContainer_div" class="buttons_img_div"  align="center">
+		<script>
+			var master="<% cfg_get("http_loginname") %>";
+			if( master == "admin" )
+				document.write('<img src="image/ca-little-purple-button.gif" />');
+			else
+				document.write('<img src="image/ca-little-grey-button.png" />');
+		</script>
+
+			<div id="btn_div" class="buttons_words_div"><script>document.write(bh_next_mark)</script></div>
+		</div>
+	</div>
+	
+</div>
+
+</form>
+</body>
+
+</html>

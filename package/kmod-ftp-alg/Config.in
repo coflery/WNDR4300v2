@@ -1,0 +1,22 @@
+# kmod-ftp-alg configuration
+config FTP_ALG_GIT_TREEISH
+	string
+	prompt "treeish of kmod-ftp-alg git repository"
+	default "kmod-ftp-v2.6.31-dni5"
+	help
+           Input the treeish of kmod-ftp-alg git repository which you want to build
+
+config FTP_ALG_GIT_REPOSITORY
+        string
+        prompt "name of kmod-ftp-alg git repository"
+        default "kmod-ftp.git"
+        help
+           Input the name of kmod-ftp-alg git repository which you want to build
+
+config FTP_ALG_GIT_URL
+        string
+        prompt "url of kmod-ftp-alg git repository"
+        default "ssh://dniserver/scm/dnigit/common/kmods/kmod-ftp.git"
+        help
+           Input the url of kmod-ftp-alg git repository which you want to build
+

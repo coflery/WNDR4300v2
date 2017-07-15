@@ -1,0 +1,149 @@
+ETH_NAME=phy0
+
+# MAC0 RGMII
+#ethreg -i $ETH_NAME 0x624=0x007f7f7f    # reset to 0x3f3f3f3f when if up
+#ethreg -i $ETH_NAME 0x10=0x40000000     # reset to 0xc1000000 when if up
+#ethreg -i $ETH_NAME 0x4=0x07600000      # reset to 0x07500000 when if up
+#ethreg -i $ETH_NAME 0xc=0x01000000      # reset to 0x01000000 when if up
+#ethreg -i $ETH_NAME 0x7c=0x7e           # reset to 0x000000fe when if up
+
+# Recognize tag packet from CPU
+ethreg -i $ETH_NAME 0x620=0x000004f0
+ethreg -i $ETH_NAME 0x660=0x0014017e
+ethreg -i $ETH_NAME 0x66c=0x0014017d
+ethreg -i $ETH_NAME 0x678=0x0014017b
+ethreg -i $ETH_NAME 0x684=0x00140177
+ethreg -i $ETH_NAME 0x690=0x0014016f
+ethreg -i $ETH_NAME 0x69c=0x0014015f
+
+# Insert PVID 1 to LAN ports
+ethreg -i $ETH_NAME 0x420=0x00010001
+ethreg -i $ETH_NAME 0x428=0x00010001
+ethreg -i $ETH_NAME 0x430=0x00010001
+ethreg -i $ETH_NAME 0x438=0x00010001
+ethreg -i $ETH_NAME 0x440=0x00010001
+
+# Insert PVID 2 to WAN port 
+ethreg -i $ETH_NAME 0x448=0x00020001
+
+# Egress tag packet to CPU and untagged packet to LAN port
+ethreg -i $ETH_NAME 0x424=0x00002040
+ethreg -i $ETH_NAME 0x42c=0x00001040
+ethreg -i $ETH_NAME 0x434=0x00001040
+ethreg -i $ETH_NAME 0x43c=0x00001040
+ethreg -i $ETH_NAME 0x444=0x00001040
+ethreg -i $ETH_NAME 0x44c=0x00001040
+
+# Group port - 0,1,2,3,4 to VID 1 
+ethreg -i $ETH_NAME 0x610=0x001bd560
+# BUSY is changed to bit[31],need to modify register write driver
+ ethreg -i $ETH_NAME 0x614=0x80010002
+#ethreg -i $ETH_NAME -p 0x18 0x0=0x3
+#ethreg -i $ETH_NAME -p 0x10 0xa=0x0002
+#ethreg -i $ETH_NAME -p 0x10 0xb=0x8001
+
+# Group port - 0 and 5  to VID 2
+ethreg -i $ETH_NAME 0x610=0x001b7fe0
+# BUSY is changed to bit[31],need to modify register write driver
+ ethreg -i $ETH_NAME 0x614=0x80020002
+#ethreg -i $ETH_NAME -p 0x18 0x0=0x3
+#ethreg -i $ETH_NAME -p 0x10 0xa=0x0002
+#ethreg -i $ETH_NAME -p 0x10 0xb=0x8002
+
+# Enable IGMP SNOOPING on LAN ports
+ethreg -i $ETH_NAME 0x210=0x06060606
+ethreg -i $ETH_NAME 0x214=0x01000006
+
+ethreg -i $ETH_NAME 0x30=0x80000302 # enable ACL
+
+# add a ACL to flood SSDP packets on LAN ports.
+ethreg -i $ETH_NAME 0x404=0xeffffffa # DIP=ef-ff-ff-fa (239.255.255.250)
+ethreg -i $ETH_NAME 0x408=0x00000000
+ethreg -i $ETH_NAME 0x40c=0x00000000
+ethreg -i $ETH_NAME 0x410=0x00000001 # Vlan 1
+ethreg -i $ETH_NAME 0x414=0x00000001 # Source port 0, cpu port
+ethreg -i $ETH_NAME 0x400=0x80000000 # add a IPv4 rule
+ethreg -i $ETH_NAME 0x404=0xffffffff # DIP mask, check ef-ff-ff-fa
+ethreg -i $ETH_NAME 0x408=0x00000000 
+ethreg -i $ETH_NAME 0x40c=0x00000000
+ethreg -i $ETH_NAME 0x410=0x00030000
+ethreg -i $ETH_NAME 0x414=0x000000c2
+ethreg -i $ETH_NAME 0x400=0x80000100 # add a IPv4 mask
+ethreg -i $ETH_NAME 0x404=0x00000000
+ethreg -i $ETH_NAME 0x408=0xc0000000 # Lan port 1,2,3,4
+ethreg -i $ETH_NAME 0x40c=0x00000013
+ethreg -i $ETH_NAME 0x410=0x00000000
+ethreg -i $ETH_NAME 0x414=0x00000000
+ethreg -i $ETH_NAME 0x400=0x80000200 # add a IPv4 result
+
+# add a ACL to flood IPv6 multical packets on LAN ports.
+ethreg -i $ETH_NAME 0x404=0x00000000 # DA=33:33:XX:XX:XX:XX
+ethreg -i $ETH_NAME 0x408=0x00003333
+ethreg -i $ETH_NAME 0x40c=0x00000000
+ethreg -i $ETH_NAME 0x410=0x00000001 # Vlan 1
+ethreg -i $ETH_NAME 0x414=0x00000001 # Source port 0, CPU port
+ethreg -i $ETH_NAME 0x400=0x80000001 # add a MAC rule, index 1
+ethreg -i $ETH_NAME 0x404=0x00000000 # DIP mask, check 33:33
+ethreg -i $ETH_NAME 0x408=0x0000ffff
+ethreg -i $ETH_NAME 0x40c=0x00000000
+ethreg -i $ETH_NAME 0x410=0x00000fff 
+ethreg -i $ETH_NAME 0x414=0x000000f9 # start&end, tagged frame, vid mask,mac acl
+ethreg -i $ETH_NAME 0x400=0x80000101 # add a MAC mask, index 1
+ethreg -i $ETH_NAME 0x404=0x00000000
+ethreg -i $ETH_NAME 0x408=0xc0000000
+ethreg -i $ETH_NAME 0x40c=0x00000013
+ethreg -i $ETH_NAME 0x410=0x00000000
+ethreg -i $ETH_NAME 0x414=0x00000000
+ethreg -i $ETH_NAME 0x400=0x80000201 # add a MAC result
+
+# add a ACL to flood Lan IPv6 multical packets to CPU port.
+ethreg -i $ETH_NAME 0x404=0x00000000 # DA=33:33:XX:XX:XX:XX
+ethreg -i $ETH_NAME 0x408=0x00003333
+ethreg -i $ETH_NAME 0x40c=0x00000000
+ethreg -i $ETH_NAME 0x410=0x00000000 
+ethreg -i $ETH_NAME 0x414=0x0000001e # Source port 1,2,3,4
+ethreg -i $ETH_NAME 0x400=0x80000003 # add a MAC rule, index 3
+ethreg -i $ETH_NAME 0x404=0x00000000 # DIP mask, check 33:33
+ethreg -i $ETH_NAME 0x408=0x0000ffff
+ethreg -i $ETH_NAME 0x40c=0x00000000
+ethreg -i $ETH_NAME 0x410=0x00000000
+ethreg -i $ETH_NAME 0x414=0x000000c9 # start&end, untagged frame, without vid,mac acl
+ethreg -i $ETH_NAME 0x400=0x80000103 # add a MAC mask, index 3
+ethreg -i $ETH_NAME 0x404=0x00000000
+ethreg -i $ETH_NAME 0x408=0xe0000000
+ethreg -i $ETH_NAME 0x40c=0x00000013
+ethreg -i $ETH_NAME 0x410=0x00000000
+ethreg -i $ETH_NAME 0x414=0x00000000
+ethreg -i $ETH_NAME 0x400=0x80000203 # add a MAC result
+
+
+# add a ACL to flood IPv6 multical packets on WAN ports.
+ethreg -i $ETH_NAME 0x404=0x00000000 # DA=33:33:XX:XX:XX:XX
+ethreg -i $ETH_NAME 0x408=0x00003333
+ethreg -i $ETH_NAME 0x40c=0x00000000
+ethreg -i $ETH_NAME 0x410=0x00000002 # Vlan 2
+ethreg -i $ETH_NAME 0x414=0x00000001 # Source port 0, CPU port
+ethreg -i $ETH_NAME 0x400=0x80000002 # add a MAC rule, index 2
+ethreg -i $ETH_NAME 0x404=0x00000000 # DIP mask, check 33:33
+ethreg -i $ETH_NAME 0x408=0x0000ffff
+ethreg -i $ETH_NAME 0x40c=0x00000000
+ethreg -i $ETH_NAME 0x410=0x00000fff
+ethreg -i $ETH_NAME 0x414=0x000000f9 # start&end, tagged frame, vid mask,mac acl
+ethreg -i $ETH_NAME 0x400=0x80000102 # add a MAC mask, index 2
+ethreg -i $ETH_NAME 0x404=0x00000000
+ethreg -i $ETH_NAME 0x408=0x00000000
+ethreg -i $ETH_NAME 0x40c=0x00000014
+ethreg -i $ETH_NAME 0x410=0x00000000
+ethreg -i $ETH_NAME 0x414=0x00000000
+ethreg -i $ETH_NAME 0x400=0x80000202 # add a MAC result
+
+
+ethreg -i phy0 0x0004=0x07500000
+ethreg -i phy0 0x000c=0x01000000
+
+ifconfig $ETH_NAME up
+vconfig add $ETH_NAME 1
+vconfig add $ETH_NAME 2
+ifconfig eth0 up
+ifconfig eth1 up
+

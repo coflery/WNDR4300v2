@@ -1,0 +1,82 @@
+<% http_header("style/form.css", "/funcs.js", "/vlan.js") %>
+<% body_header("_VLAN_IPTV", "VLAN_IPTV.htm", "apply_vlan_add") %>
+<div class="page_title">$vlan_add_head</div>
+<div class="fix_button">
+<TABLE width=100% border=0 cellpadding=0 cellspacing=2>
+<TR>
+        <TD nowrap colspan=2 align=center>
+	<input class="cancel_bt" type='button' name='Cancel' value='$cancel_mark' onClick='location.href="VLAN_IPTV.htm";'>&nbsp;&nbsp;
+        <input class="apply_bt" type='submit' name='Apply' value='$apply_mark' onClick="return check_vlan_input(document.forms[0],'add')";>
+        </TD>
+</TR>
+</TABLE>
+
+</div>
+<div id="main" class="main_top_button"> 
+<% table_header() %>
+
+<script>
+<% vlan_items_xss() %>
+var con_endis_wl_radio="<% cfg_get("endis_wl_radio") %>";
+var con_endis_wla_radio="<% cfg_get("endis_wla_radio") %>";
+var get_endis_guestNet="<% cfg_get("wlg1_endis_guestNet") %>";
+var get_endis_guestNet_an="<% cfg_get("wla1_endis_guestNet") %>";
+
+function loadvalue()
+{
+	var cf=document.forms[0];
+	if(con_endis_wl_radio=="1")
+		cf.vlan_bgn_wlan.disabled=false;
+	else
+		cf.vlan_bgn_wlan.disabled=true;
+	if(con_endis_wla_radio=="1")
+		cf.vlan_an_wlan.disabled=false;
+	else
+		cf.vlan_an_wlan.disabled=true;
+	if(get_endis_guestNet=="1")
+		cf.vlan_bgn_guest.disabled=false;
+	else
+		cf.vlan_bgn_guest.disabled=true;
+	if(get_endis_guestNet_an=="1")
+		cf.vlan_an_guest.disabled=false;
+	else
+		cf.vlan_an_guest.disabled=true;
+}
+</script>
+<input type="hidden" name="hid_wired_port" value="0" />
+<input type="hidden" name="hid_wireless_port" value="0" />
+
+<TR>
+	<TD nowrap><B>$sta_routes_name</B></TD>
+	<TD nowrap><input type="text" name="vlan_name" value="" size="20" onKeyPress="return getkey( 'ssid',event)"></TD>
+</TR>
+<TR id="vlanid">
+	<TD nowrap><B>$vlan_id</B></TD>
+	<TD nowrap><input type="text" name="vlan_id" value="" size="20" onKeyPress="return getkey( 'num',event)">(1~4094)</TD>
+</TR>
+<TR id="vlanpro">
+	<TD nowrap><B>$qos_priority</B></TD>
+	<TD nowrap><input type="text" name="vlan_priority" value="" size="20" onKeyPress="return getkey( 'num',event)">(0~7)</TD>
+</TR>
+</table>
+
+<table border="0" cellpadding="0" cellspacing="0">
+<tr>
+	<td align="center"><input type="checkbox" name="vlan_port1">Port1</td>
+	<td align="center"><input type="checkbox" name="vlan_port2">Port2</td>
+	<td align="center"><input type="checkbox" name="vlan_port3">Port3</td>
+	<td align="center"><input type="checkbox" name="vlan_port4">Port4</td>
+	<td>&nbsp;</td>
+	<td align="center"><input type="checkbox" name="vlan_bgn_wlan">WiFi-2.4G</td>
+	<td align="center"><input type="checkbox" name="vlan_an_wlan">WiFi-5G</td>
+	<td align="center"><input type="checkbox" name="vlan_bgn_guest">Guest-2.4G</td>
+	<td align="center"><input type="checkbox" name="vlan_an_guest">Guest_5G</td>
+</tr>
+</table>
+
+</div>
+<% help_box("0","_VLAN_iptv") %>
+</FORM>
+</BODY>
+</HTML>
+

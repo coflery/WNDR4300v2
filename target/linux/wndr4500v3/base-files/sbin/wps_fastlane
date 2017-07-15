@@ -1,0 +1,32 @@
+#! /bin/sh
+
+CONFIG=/bin/config
+
+netwall_cmd='/etc/init.d/net-wan restart > /dev/console'
+fastlane_switch(){
+	if [ "$($CONFIG get qos_endis_on)" -eq "1" -a "$($CONFIG get qos_mode)" -eq "1" ]; then
+		if [ "$($CONFIG get qos_fast_status)" -eq "1" ]; then
+			$CONFIG set qos_fast_status=0
+		else
+			$CONFIG set qos_fast_status=1
+		fi
+		eval $netwall_cmd
+	fi
+}
+
+if [ "x$($CONFIG get quick_wps_fastlane)" = "xfastlane" ]; then
+		echo "wps button now use for fastlane"
+		case "$1" in
+			pressed)
+				fastlane_switch
+				exit 255
+			;;
+			released)
+				exit 255
+			;;
+			*)
+				echo "fastlane button wrong paramters"
+				exit 255
+			;;
+		esac
+fi

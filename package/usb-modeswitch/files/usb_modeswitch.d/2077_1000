@@ -1,0 +1,12 @@
+######################################################## 
+# D-Link DWM-162-U5, DWM-162
+
+DefaultVendor= 0x2077
+DefaultProduct=0x1000
+
+#TargetVendor=  0x1e0e
+#TargetProductList="ce16,cd17,cefe"
+
+CheckSuccess=20
+
+MessageContent="5553424312345678000000000000061b000000020000000000000000000000"

@@ -1,0 +1,7 @@
+#!/bin/sh
+
+MODULE_PATH=/lib/modules/2.6.31/offload
+insmod $MODULE_PATH/adf.ko
+insmod $MODULE_PATH/hif_gmac.ko tgt_if="eth0.2"
+insmod $MODULE_PATH/fwd.ko
+insmod $MODULE_PATH/atd.ko

@@ -1,0 +1,27 @@
+config NOIP_GIT_TREEISH
+	string
+	prompt "treeish of noip git repository"
+	default "noip-2.1.9-dni1"
+	help
+           Input the treeish of noip git repository which you want to build
+
+config NOIP_GIT_REPOSITORY
+	string
+	prompt "name of noip git repository"
+	default "noip.git"
+	help
+	   Input the name of noip git repository which you want to build
+
+config NOIP_GIT_URL
+	string
+	prompt "url of noip git repository"
+	default "ssh://dniserver/scm/dnigit/common/apps/noip.git"
+	help
+	   Input the url of noip git repository which you want to build
+	   
+config NOIP_USE_LOCAL_SRC
+	bool
+	prompt "use location source codes of noip module"
+	default n
+	help
+	  Change to use Local Source Codes, Not from git repository.

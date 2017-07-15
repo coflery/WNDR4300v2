@@ -1,0 +1,10 @@
+ap_scan=1
+network={
+	ssid="psk-test"
+	scan_ssid=1
+	proto=WPA
+	key_mgmt=WPA-PSK
+	pairwise=TKIP
+	psk="12345678"
+}
+

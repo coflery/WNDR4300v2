@@ -1,0 +1,20 @@
+config LLTD_GIT_TREEISH
+	string
+	prompt "treeish of lltd git repository"
+	default "lltd-v1.2-dni2"
+	help
+           Input the treeish of lltd git repository which you want to build
+
+config LLTD_GIT_REPOSITORY
+        string
+        prompt "name of lltd git repository"
+        default "lltd.git"
+        help
+           Input the name of lltd git repository which you want to build
+
+config LLTD_GIT_URL
+        string
+        prompt "url of lltd git repository"
+        default "ssh://dniserver/scm/dnigit/common/apps/lltd.git"
+        help
+           Input the url of lltd git repository which you want to build

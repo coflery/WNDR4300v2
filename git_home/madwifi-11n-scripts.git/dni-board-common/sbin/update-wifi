@@ -1,0 +1,1379 @@
+#!/bin/sh
+
+dni_apup=/sbin/dni_apup
+
+. /etc/dni-wifi-config
+
+# include board specific configuration file.
+[ -f /etc/ath/board.conf ] && . /etc/ath/board.conf
+
+N="
+"
+wl_prefix=
+
+append() {
+	local var="$1"
+	local value="$2"
+	local sep="${3:- }"
+
+	eval "export ${NO_EXPORT:+-n} -- \"$var=\${$var:+\${$var}\${value:+\$sep}}\$value\""
+}
+
+get_intf_onoff()
+{
+    parent_radio=`echo $2 | awk -F _ '{print $1}'`
+    eval wl_onoff=\$`echo $2`_if_onoff
+    eval wl_parent_onoff=\$`echo $parent_radio`_if_onoff
+    eval wl_parent_exist=\$`echo $parent_radio`_exist
+    if [ "$wl_parent_exist" = "on" ] && [ "$wl_onoff" = "on" -o "$parent_radio" = "$2" ] &&
+        [ "$wl_parent_onoff" = "on" -o "x$FORCE_CREATE_VAP" = "xon" ]; then
+        eval export -- "${1}=on"
+    else
+        eval export -- "${1}=off"
+    fi
+}
+
+# This function is to get the prefix of environment variables.
+# If environment variables are all named according to same rule, then
+# this function will provide help on getting environment variables.
+get_wl_prefix()
+{
+    case "$1" in
+        wlg)
+            wl_prefix=wl
+            ;;
+        wla)
+            wl_prefix=wla
+            ;;
+        wlg_guest)
+            wl_prefix=wlg1
+            ;;
+        wla_guest)
+            wl_prefix=wla1
+            ;;
+    esac
+}
+
+assign_suffix_and_vap_option()
+{
+    suffix_0=""
+    suffix_1="_2"
+    suffix_2="_3"
+    suffix_3="_4"
+    suffix_4="_5"
+    suffix_5="_6"
+
+    index=0
+
+    create_string=""
+
+    > /tmp/guestvap
+
+    if [ "$wlg_exist" = "on" ]; then
+        if [ "$wlg_wds_onoff" = "on" -a \
+            "$wlg_wds_role" = "repeater" -a "$wlg_wds_repeater_assoc_onoff" = "on" ]; then
+            if [ "$wlg_if_onoff" = "on" ]; then
+                eval wlg_wds_repeater_suffix=\$suffix_${index}
+                index=$(( $index+1 ))
+            elif [ "$wlg_if_onoff" = "off" -a "x$FORCE_CREATE_VAP" = "xon" ]; then
+                eval wlg_wds_repeater_suffix=\$suffix_${index}
+                index=$(( $index+1 ))
+                append create_string "cfg -a AP_VAP_CREATE_ONLY${wlg_wds_repeater_suffix}=on" "$N"
+            fi
+        fi
+    fi
+
+    if [ "$wla_exist" = "on" ]; then
+        if [ "$wla_wds_onoff" = "on" -a \
+            "$wla_wds_role" = "repeater" -a "$wla_wds_repeater_assoc_onoff" = "on" ]; then
+            if [ "$wla_if_onoff" = "on" ]; then
+                eval wla_wds_repeater_suffix=\$suffix_${index}
+                index=$(( $index+1 ))
+            elif [ "$wla_if_onoff" = "off" -a "x$FORCE_CREATE_VAP" = "xon" ]; then
+                eval wla_wds_repeater_suffix=\$suffix_${index}
+                index=$(( $index+1 ))
+                append create_string "cfg -a AP_VAP_CREATE_ONLY${wla_wds_repeater_suffix}=on" "$N"
+            fi
+        fi
+    fi
+
+    # we also counter the number of radio here.
+    if [ "$wlg_exist" = "on" ]; then
+        if [ "$wlg_if_onoff" = "on" ]; then
+            eval wlg_suffix=\$suffix_${index}
+            index=$(( $index+1 ))
+            num_radio=$(( $num_radio+1 ))
+        elif [ "$wlg_if_onoff" = "off" -a "x$FORCE_CREATE_VAP" = "xon" ]; then
+            eval wlg_suffix=\$suffix_${index}
+            index=$(( $index+1 ))
+            num_radio=$(( $num_radio+1 ))
+            append create_string "cfg -a AP_VAP_CREATE_ONLY${wlg_suffix}=on" "$N"
+        fi
+    fi
+
+    if [ "$wla_exist" = "on" ]; then
+        if [ "$wla_if_onoff" = "on" ]; then
+            eval wla_suffix=\$suffix_${index}
+            index=$(( $index+1 ))
+            num_radio=$(( $num_radio+1 ))
+        elif [ "$wla_if_onoff" = "off" -a "x$FORCE_CREATE_VAP" = "xon" ]; then
+            eval wla_suffix=\$suffix_${index}
+            index=$(( $index+1 ))
+            num_radio=$(( $num_radio+1 ))
+            append create_string "cfg -a AP_VAP_CREATE_ONLY${wla_suffix}=on" "$N"
+        fi
+    fi
+
+    if [ "$wlg_exist" = "on" ]; then
+        if [ "$wlg_guest_if_onoff" = "on" ]; then
+            echo ath${index} >> /tmp/guestvap
+            if [ "$wlg_if_onoff" = "on" ]; then
+                eval wlg_guest_suffix=\$suffix_${index}
+                index=$(( $index+1 ))
+            elif [ "$wlg_if_onoff" = "off" -a "x$FORCE_CREATE_VAP" = "xon" ]; then
+                eval wlg_guest_suffix=\$suffix_${index}
+                index=$(( $index+1 ))
+                append create_string "cfg -a AP_VAP_CREATE_ONLY${wlg_guest_suffix}=on" "$N"
+            fi
+        fi
+    fi
+
+    if [ "$wla_exist" = "on" ]; then
+        if [ "$wla_guest_if_onoff" = "on" ]; then
+            echo ath${index} >> /tmp/guestvap
+            if [ "$wla_if_onoff" = "on" ]; then
+                eval wla_guest_suffix=\$suffix_${index}
+                index=$(( $index+1 ))
+            elif [ "$wla_if_onoff" = "off" -a "x$FORCE_CREATE_VAP" = "xon" ]; then
+                eval wla_guest_suffix=\$suffix_${index}
+                index=$(( $index+1 ))
+                append create_string "cfg -a AP_VAP_CREATE_ONLY${wla_guest_suffix}=on" "$N"
+            fi
+        fi
+    fi
+
+    num_interface=$index
+cat <<EOF >> $dni_apup
+$create_string
+EOF
+}
+
+check_if_onoff()
+{
+    parent_radio=`echo $1 | awk -F _ '{print $1}'`
+    eval wl_onoff=\$`echo $1`_if_onoff
+    eval wl_parent_onoff=\$`echo $parent_radio`_if_onoff
+    eval wl_parent_exist=\$`echo $parent_radio`_exist
+    if [ "$wl_parent_exist" = "on" ] && [ "$wl_onoff" = "on" -o "$parent_radio" = "$1" ] &&
+        [ "$wl_parent_onoff" = "on" -o "x$FORCE_CREATE_VAP" = "xon" ]; then
+        return 1;
+    else
+        return 0;
+    fi
+}
+
+# There is no check of radio on/off in this function, so it is
+# caller's duty to check the radio on/off.
+# Return:
+#        1: IS wds client interface
+#        0: NOT wds client interface
+check_wds_client_intf()
+{
+    eval wl_wds_onoff=\$`echo $1`_wds_onoff
+    eval wl_wds_role=\$`echo $1`_wds_role
+    eval wl_wds_repeater_assoc_onoff=\$`echo $1`_wds_repeater_assoc_onoff
+
+    if [ "x$wl_wds_onoff" = "xon" -a "x$wl_wds_role" = "xrepeater" -a \
+        "x$wl_wds_repeater_assoc_onoff" = "xoff" ]; then
+        # This is wds client interface
+        return 1;
+    else
+        return 0;
+    fi
+}
+
+generate_radio_id()
+{
+    if [ "$1" = "" ]; then
+        return;
+    fi
+    check_if_onoff $1
+
+    if [ "$?" != "0" ]; then
+        eval wl_suffix=\$`echo $1`_suffix
+        eval wl_value=\$`echo $1`_radio_id
+        cat <<EOF >> $dni_apup
+cfg -a AP_RADIO_ID${wl_suffix}=$wl_value
+EOF
+    fi
+}
+
+generate_startmode()
+{
+    if [ $num_radio -eq 2 ]; then
+        cat <<EOF >> $dni_apup
+cfg -a AP_STARTMODE=dual
+EOF
+    elif [ $num_radio -eq 1 ]; then
+        if [ $num_interface -eq 1 ]; then
+	    if [ "x$wl_cb_if_onoff" = "xon" ]; then
+	    cat <<EOF >> $dni_apup
+cfg -a AP_STARTMODE=cb
+cfg -a AP_RFPARAM_HACK=1
+EOF
+	    else
+	    cat <<EOF >> $dni_apup
+cfg -a AP_STARTMODE=standard
+cfg -a AP_RFPARAM_HACK=1
+EOF
+            fi
+        else
+        cat <<EOF >> $dni_apup
+cfg -a AP_STARTMODE=multi
+cfg -a AP_RFPARAM_HACK=1
+EOF
+        fi
+    else
+    # no radio is enabled, we don't need to generate following configuration
+        exit 0;
+    fi
+
+    generate_radio_id "wlg"
+    generate_radio_id "wla"
+
+    generate_radio_id "wlg_guest"
+    generate_radio_id "wla_guest"
+}
+
+generate_country()
+{
+        cat <<EOF >> $dni_apup
+cfg -a ATH_countrycode=$country_code
+EOF
+}
+
+generate_wifi_hw_button_state()
+{
+    if [ $num_radio -eq 2 ]; then
+        hw_btn_state=$wl_hw_btn_state
+    else
+        hw_btn_state=$wlg_if_onoff
+    fi
+
+    if [ "x$wl_cb_if_onoff" = "xon" ]; then
+  	hw_btn_state="on"
+    fi
+    cat <<EOF >> $dni_apup
+cfg -a WIFI_HW_BUTTON_STATE=$hw_btn_state
+EOF
+}
+
+generate_wps()
+{
+    eval wps_onoff=\$`echo $1`_wps_onoff
+
+    if [ "$wps_onoff" = "on" ]; then
+        eval wl_suffix=\$`echo $1`_suffix
+        eval wl_wps_configured=\$`echo $1`_wps_configured
+        if [ "x$wsc_lock_down" = "x1" ]; then
+            wl_wps_ap_setup_locked=1
+        else
+            eval wl_wps_ap_setup_locked=\$`echo $1`_wps_ap_setup_locked
+        fi
+        if [ "$wl_wps_configured" = "configured" ]; then
+            wl_wps_configured_status=1;
+            wl_wps_enable_onoff=2
+        else
+            wl_wps_configured_status=0;
+            wl_wps_enable_onoff=1
+        fi
+        if [ "$num_radio" = "1" ] || \
+           [ "$num_radio" = "2" -a "$wlg_wps_onoff" = "on" -a "$wla_wps_onoff" = "on" ]; then
+            # This is a trick to have apup bring hostapd up.
+            cat <<EOF >> $dni_apup
+cfg -a WPS_ENABLE${wl_suffix}=$wl_wps_enable_onoff
+EOF
+        fi
+        cat <<EOF >> $dni_apup
+cfg -a WSC_CONFIGURED${wl_suffix}=$wl_wps_configured_status
+cfg -a WSC_AP_SETUP_LOCKED${wl_suffix}=$wl_wps_ap_setup_locked
+cfg -a WSC_AP_AUTO_LOCKED${wl_suffix}=$wsc_lock_down
+EOF
+    fi
+}
+
+generate_ssid()
+{
+        eval wl_suffix=\$`echo $1`_suffix
+        eval wl_value=\$`echo $1`_ssid
+        check_wds_client_intf $1
+        if [ "$?" != "0" ]; then
+            # We need to assing string "any" to SSID if this interface is 
+            # WDS client interface
+            cat <<EOF >>$dni_apup
+cfg -a AP_SSID${wl_suffix}="any"
+cfg -a AP_ANYSSID_HACK${wl_suffix}=0
+EOF
+        else
+            echo "$wl_value" > /tmp/tmpssid.$$
+            sed -i -e 's/\$/\\\\\\\$/g' /tmp/tmpssid.$$
+            wl_value=`cat /tmp/tmpssid.$$`
+            rm -f /tmp/tmpssid.$$
+            cat <<EOF >>$dni_apup
+cfg -a AP_SSID${wl_suffix}="$wl_value"
+cfg -a AP_ANYSSID_HACK${wl_suffix}=1
+EOF
+        fi
+}
+
+generate_chainmask()
+{
+	eval wl_suffix=\$`echo $1`_suffix
+	eval wl_value=\$`echo $1`_chainmask
+	cat <<EOF >>$dni_apup
+cfg -a AP_TX_CHAINMASK${wl_suffix}=$wl_value
+cfg -a AP_RX_CHAINMASK${wl_suffix}=$wl_value
+EOF
+}
+generate_channel()
+{
+        eval wl_suffix=\$`echo $1`_suffix
+        eval wl_value=\$`echo $1`_channel
+        cat <<EOF >>$dni_apup
+cfg -a AP_PRIMARY_CH${wl_suffix}=$wl_value
+EOF
+}
+
+generate_chmode()
+{
+        eval wl_suffix=\$`echo $1`_suffix
+        eval wl_value=\$`echo $1`_chmode
+        cat <<EOF >>$dni_apup
+cfg -a AP_CHMODE${wl_suffix}=$wl_value
+EOF
+}
+
+generate_pureg()
+{
+        eval wl_suffix=\$`echo $1`_suffix
+        eval wl_value=\$`echo $1`_pureg_onoff
+        if [ "$wl_value" = "on" ]; then
+            cat <<EOF >>$dni_apup
+cfg -a PUREG${wl_suffix}=1
+EOF
+        fi
+}
+
+generate_puren()
+{
+        eval wl_suffix=\$`echo $1`_suffix
+        eval wl_value=\$`echo $1`_puren_onoff
+        if [ "$wl_value" = "on" ]; then
+            cat <<EOF >>$dni_apup
+cfg -a PUREN${wl_suffix}=1
+EOF
+        fi
+}
+
+generate_security()
+{
+        eval wl_suffix=\$`echo $1`_suffix
+        eval wl_sectype=\$`echo $1`_sectype
+        case "$wl_sectype" in
+            off)
+                cat <<EOF >>$dni_apup
+cfg -a AP_SECMODE${wl_suffix}=None
+EOF
+                ;;
+            *wep*)
+                get_wl_prefix "$1"
+                load_wep_config "$wl_prefix" "$1"
+                eval wl_wep_auth_type=\$wep_auth_type_`echo $((${1}_auth))`
+                eval wl_wep_keyix=\$"${1}_key"
+                eval wl_key_length=\$"${1}_key_length"
+                eval wps_wephack_onoff=\$`echo $1`_wps_onoff
+                wps_onoff="off"
+                if [ "$wps_wephack_onoff" = "off" -a "$wl_cb_if_onoff" = "on" ]; then
+                    cat <<EOF >> $dni_apup
+cfg -a AP_SECMODE${wl_suffix}=WEP
+cfg -a AP_SECFILE${wl_suffix}=WEP
+cfg -a AP_PRIMARY_KEY${wl_suffix}=`expr ${wl_wep_keyix} - 1`
+EOF
+                    for idx in 1 2 3 4; do
+                        eval wl_wep_key=\$"${1}_key${idx}"
+                        if [ -n $wl_wep_key ]; then
+			    wl_wep_key=$(echo "$wl_wep_key" |sed -r 's/\\/\\\\/g')
+                            wl_wep_key=$(echo "$wl_wep_key" |sed -r 's/`/\\\`/g')
+                            wl_wep_key=$(echo "$wl_wep_key" |sed -r 's/\"/\\\"/g')
+                            wl_wep_key=$(echo "$wl_wep_key" |sed -r 's/\$/\\\$/g')
+
+                            cat <<EOF >> $dni_apup
+cfg -a WEPKEY_${idx}${wl_suffix}="${wl_wep_key}"
+EOF
+                        fi
+                    done
+                    case "$wl_wep_auth_type" in
+                        open)
+                            cat <<EOF >>$dni_apup
+cfg -a AP_WEP_MODE${wl_suffix}=1
+EOF
+                            ;;
+                        *)
+                            cat <<EOF  >>$dni_apup
+cfg -a AP_WEP_MODE${wl_suffix}=3
+EOF
+                            ;;
+		    esac
+                elif [ "$wps_wephack_onoff" = "off" ]; then
+                wl_wep_file="/etc/ath/wep_file${wl_suffix}"
+                cat <<EOF > $wl_wep_file
+#!/bin/sh
+EOF
+                for idx in 1 2 3 4; do
+                    eval wl_wep_key=\$"${1}_key${idx}"
+                    wep_len=`expr length "$wl_wep_key"`
+                    if [ $wl_key_length = "5" ]; then
+                        if [ "$wep_len" = "10" ]; then
+                            cat <<EOF >> $wl_wep_file
+iwconfig \${APNAME} enc [$idx] ${wl_wep_key}
+EOF
+                        elif [ "$wep_len" = "5" ]; then
+                            # add \ before some special character or it may bring error 
+                            wl_wep_key=$(echo "$wl_wep_key" |sed -r 's/\\/\\\\/g')
+                            wl_wep_key=$(echo "$wl_wep_key" |sed -r 's/`/\\\`/g')
+                            wl_wep_key=$(echo "$wl_wep_key" |sed -r 's/\"/\\\"/g')
+                            wl_wep_key=$(echo "$wl_wep_key" |sed -r 's/\$/\\\$/g')
+                            cat <<EOF >> $wl_wep_file
+iwconfig \${APNAME} enc s:"${wl_wep_key}" [$idx]
+EOF
+                        fi
+                    else
+                        if [ "$wep_len" = "26" ]; then
+                            cat <<EOF >> $wl_wep_file
+iwconfig \${APNAME} enc [$idx] ${wl_wep_key}
+EOF
+                        elif [ "$wep_len" = "13" ]; then
+                            wl_wep_key=$(echo "$wl_wep_key" |sed -r 's/\\/\\\\/g')
+                            wl_wep_key=$(echo "$wl_wep_key" |sed -r 's/`/\\\`/g')
+                            wl_wep_key=$(echo "$wl_wep_key" |sed -r 's/\"/\\\"/g')
+                            wl_wep_key=$(echo "$wl_wep_key" |sed -r 's/\$/\\\$/g')
+                            cat <<EOF >> $wl_wep_file
+iwconfig \${APNAME} enc s:"${wl_wep_key}" [$idx]
+EOF
+                        fi
+                    fi
+                done
+                case "$wl_wep_auth_type" in
+                    shared)
+                        cat <<EOF >>$wl_wep_file
+iwpriv \${APNAME} authmode 2
+iwconfig \${APNAME} enc [$wl_wep_keyix] restricted
+EOF
+                        ;;
+                    auto)
+                        cat <<EOF >>$wl_wep_file
+iwpriv \${APNAME} authmode 4
+iwconfig \${APNAME} enc [$wl_wep_keyix]
+EOF
+                        ;;
+                    *)
+                        cat <<EOF >>$wl_wep_file
+iwpriv \${APNAME} authmode 1
+iwconfig \${APNAME} enc [$wl_wep_keyix] open
+EOF
+                        ;;
+                esac
+                cat <<EOF >> $dni_apup
+cfg -a AP_SECMODE${wl_suffix}=DNI_WEP
+cfg -a AP_SECFILE${wl_suffix}=$wl_wep_file
+EOF
+                else
+                    # generate WEP_WPS file
+                    cat <<'EOF' > $wl_wps_file
+#!/bin/sh
+
+RADIO=${RADIO:=0}
+
+cfg -t${APINDEX} /etc/ath/WSC_WEP.conf > /etc/wpa2/WSC_${APNAME}.conf
+sed -i '/ssid/ s/\\\\/\\/g' /etc/wpa2/WSC_${APNAME}.conf
+sed -i "/ssid/ s/\\\\\`/\`/g" /etc/wpa2/WSC_${APNAME}.conf
+sed -i "/ssid/ s/\\\\\"/\"/g" /etc/wpa2/WSC_${APNAME}.conf
+sed -i "/ssid/ s/\\\\\\\$/\$/g" /etc/wpa2/WSC_${APNAME}.conf
+echo -e "${CREATE_MASK}\t\tbss ${APNAME}" >> /tmp/aplist$RADIO
+echo -e "${CREATE_MASK}\t\t{" >> /tmp/aplist$RADIO
+echo -e "${CREATE_MASK}\t\t\tconfig /etc/wpa2/WSC_${APNAME}.conf" >> /tmp/aplist$RADIO
+echo -e "${CREATE_MASK}\t\t}" >> /tmp/aplist$RADIO
+if [ "x$VAP_CREATE_ONLY" = "xon" ]; then
+    touch /tmp/aplist$RADIO.stop
+fi
+
+EOF
+                    cat <<EOF >>$dni_apup
+cfg -a AP_SECMODE${wl_suffix}=WEP
+cfg -a DNI_WEPKEY_INDEX${wl_suffix}=`expr ${wl_wep_keyix} - 1`
+cfg -a DNI_WEPKEY0${wl_suffix}=`eval echo $"${1}_key1"`
+cfg -a DNI_WEPKEY1${wl_suffix}=`eval echo $"${1}_key2`
+cfg -a DNI_WEPKEY2${wl_suffix}=`eval echo $"${1}_key3`
+cfg -a DNI_WEPKEY3${wl_suffix}=`eval echo $"${1}_key4`
+cfg -a AP_WPSFILE${wl_suffix}=$wl_wps_file
+cfg -a WPS_ENABLE_WEPHACK${wl_suffix}=1
+EOF
+                    case "$wl_wep_auth_type" in
+                        open)
+                            cat <<EOF >>$dni_apup
+cfg -a DNI_AUTH_METHOD${wl_suffix}=1
+EOF
+                            ;;
+                        *)
+                            cat <<EOF >>$dni_apup
+cfg -a DNI_AUTH_METHOD${wl_suffix}=3
+EOF
+                            ;;
+                    esac
+                fi
+                ;;
+            *psk*)
+                get_wl_prefix "$1"
+                dni_config_get_psk_phrase wl_psk_phrase "$wl_prefix" "$wl_sectype"
+
+                # crypto defaults: WPA2 vs WPA1
+                case "$wl_sectype" in
+                    wpa2*|WPA2*|*PSK2*|*psk2*)
+                        wl_wpa=2
+                        wl_crypto="CCMP"
+                        ;;
+                    *mixed*)
+                        wl_wpa=3
+                        wl_crypto="CCMP\\ TKIP"
+                        ;;
+                    *)
+                        wl_wpa=1
+                        wl_crypto="TKIP"
+                        ;;
+                esac
+                if [ "${#wl_psk_phrase}" = "64" ]; then
+                    wl_psk_is_hex="1"
+                else
+                    wl_psk_is_hex="0"
+                fi
+                echo "$wl_psk_phrase" > /tmp/tmppskkey.$$
+                sed -i -e 's/\$/\\\$/g' /tmp/tmppskkey.$$
+                wl_psk_phrase=`cat /tmp/tmppskkey.$$`
+                rm -f /tmp/tmppskkey.$$
+                cat <<EOF >> $dni_apup
+cfg -a AP_SECMODE${wl_suffix}=WPA
+cfg -a AP_WPA${wl_suffix}=$wl_wpa
+cfg -a AP_CYPHER${wl_suffix}=$wl_crypto
+cfg -a PSK_KEY${wl_suffix}="$wl_psk_phrase"
+cfg -a WPA_IS_HEX${wl_suffix}=$wl_psk_is_hex
+cfg -a AP_SECFILE${wl_suffix}=PSK
+cfg -a AP_WPA_GROUP_REKEY${wl_suffix}=86400
+EOF
+                ;;
+            *wpa*)
+                get_wl_prefix "$1"
+
+                load_wpa_config "$wl_prefix" "$wl_sectype"
+
+                cat <<EOF >> $dni_apup
+cfg -a AP_SECMODE${wl_suffix}=WPA
+cfg -a AP_SECFILE${wl_suffix}=EAP
+cfg -a AP_WPA${wl_suffix}=$wl_wpa
+cfg -a AP_CYPHER${wl_suffix}=$wl_crypto
+cfg -a AP_IPADDR=$lan_ipaddr
+cfg -a AP_AUTH_SERVER${wl_suffix}=$wl_auth_sv_ip
+cfg -a AP_AUTH_PORT${wl_suffix}=$wl_auth_sv_port
+cfg -a AP_AUTH_SECRET${wl_suffix}="$wl_auth_sv_secret"
+EOF
+                ;;
+        esac
+}
+
+generate_hide_ssid()
+{
+        eval wl_suffix=\$`echo $1`_suffix
+        eval wl_value=\$`echo $1`_hide_ssid_onoff
+        if [ "$wl_value" = "on" ]; then
+            cat <<EOF >>$dni_apup
+cfg -a AP_HIDE_SSID${wl_suffix}=1
+EOF
+        else
+            cat <<EOF >>$dni_apup
+cfg -a AP_HIDE_SSID${wl_suffix}=0
+EOF
+        fi
+}
+
+generate_protocol_setting()
+{
+        eval wl_suffix=\$`echo $1`_suffix
+        eval parent_radio=`echo $1 | awk -F _ '{print $1}'`
+        eval wl_rts_value=\$`echo $parent_radio`_rts
+        eval wl_frag_value=\$`echo $parent_radio`_frag
+        eval wl_wmm_value=\$`echo $parent_radio`_wmm_onoff
+        eval wl_preamble_value=\$`echo $parent_radio`_preamble
+        eval wl_country_ie_value=\$`echo $parent_radio`_country_ie_onoff
+        cat <<EOF >>$dni_apup
+cfg -a AP_RTS${wl_suffix}=$wl_rts_value
+cfg -a AP_FRAG${wl_suffix}=$wl_frag_value
+EOF
+        if [ "$wl_wmm_value" = "on" ]; then
+            cat <<EOF >>$dni_apup
+cfg -a AP_WMM${wl_suffix}=1
+EOF
+        else
+            cat <<EOF >>$dni_apup
+cfg -a AP_WMM${wl_suffix}=0
+EOF
+        fi
+        case "$wl_preamble_value" in
+            *long*)
+                cat <<EOF >>$dni_apup
+cfg -a AP_SHPREAMBLE${wl_suffix}=0
+EOF
+                ;;
+            *)
+                cat <<EOF >>$dni_apup
+cfg -a AP_SHPREAMBLE${wl_suffix}=1
+EOF
+                ;;
+        esac
+        if [ "$wl_country_ie_value" = "on" ]; then
+            cat <<EOF >>$dni_apup
+cfg -a AP_COUNTRY_IE${wl_suffix}=1
+EOF
+        else
+            cat <<EOF >>$dni_apup
+cfg -a AP_COUNTRY_IE${wl_suffix}=0
+EOF
+        fi
+}
+
+generate_acl()
+{
+    parent_radio=`echo $1 | awk -F _ '{print $1}'`
+
+    eval wl_acl_onoff=\$`echo $parent_radio`_acl_onoff
+    if [ "$wl_acl_onoff" = "off" ]; then
+        return;
+    fi
+
+    eval wl_suffix=\$`echo $1`_suffix
+    wl_acl_file="/etc/ath/acl_file${wl_suffix}"
+
+    cat<<'EOF' > $wl_acl_file
+#!/bin/sh
+
+iwpriv ${APNAME} maccmd 1
+EOF
+    dni_config_get acl_sta_num wl_acl_num
+    acl_sta_num=${acl_sta_num:-0}
+    num=1
+    while [ $num -le $acl_sta_num ]; do
+        dni_config_get mac "wlacl${num}"
+        addr=$(echo "$mac" | while read name value; do echo "$value"; done)
+cat <<EOF >> $wl_acl_file
+iwpriv \${APNAME} addmac $addr 00:00:00:00:00:00
+EOF
+        num=$(($num + 1))
+    done
+    cat <<EOF >> $dni_apup
+cfg -a AP_ACLFILE${wl_suffix}=$wl_acl_file
+EOF
+}
+
+generate_wds()
+{
+    eval wl_wds_onoff=\$`echo $1`_wds_onoff
+    if [ "$wl_wds_onoff" = "off" ]; then
+        return;
+    fi
+    eval wl_wds_role=\$`echo $1`_wds_role
+
+    eval wl_suffix=\$`echo $1`_suffix
+
+    # The variable naming of wds is different with others.
+    # Use another way for it.
+    case "$1" in
+        wlg)
+            wl_wds_postfix=
+            ;;
+        wla)
+            wl_wds_postfix="_a"
+            ;;
+    esac
+
+    # ROOTAP (Base station) section
+    if [ "$wl_wds_role" = "rootap" ]; then
+        wl_wds_file="/etc/ath/wds_file${wl_suffix}"
+        cat<<EOF > $wl_wds_file
+#!/bin/sh
+brctl stp br0 $wds_stp_onoff
+wlanconfig \${APNAME} nawds mode 1
+EOF
+        for idx in 1 2 3 4; do
+            dni_config_get wl_repeater_mac repeater_mac${idx}${wl_wds_postfix}
+            if [ "x$wl_repeater_mac" != "x" ]; then
+                cat <<EOF >> $wl_wds_file
+iwpriv \${APNAME} addmac $wl_repeater_mac
+wlanconfig \${APNAME} nawds add-repeater $wl_repeater_mac 1
+EOF
+            fi
+        done
+
+        dni_config_get wds_client_assoc_onoff wds_endis_mac_client${wl_wds_postfix}
+
+        if [ "$wds_client_assoc_onoff" = "off" ]; then
+            cat <<EOF >> $wl_wds_file
+iwpriv \${APNAME} maccmd 1
+EOF
+        fi
+
+        cat <<EOF >> $dni_apup
+cfg -a AP_MODE${wl_suffix}=ap-wds
+cfg -a AP_WDSFILE${wl_suffix}=$wl_wds_file
+EOF
+    fi
+
+    # Repeater Section.
+    if [ "$wl_wds_role" = "repeater" ]; then
+        eval wl_wds_repeater_assoc_onoff=\$`echo $1`_wds_repeater_assoc_onoff
+        dni_config_get wl_wds_rootap_mac basic_station_mac${wl_wds_postfix}
+
+        # Does not allow wireless client association.
+        if [ "$wl_wds_repeater_assoc_onoff" = "off" ]; then
+            wl_wds_file="/etc/ath/wds_file${wl_suffix}"
+            cat<<EOF > $wl_wds_file
+#!/bin/sh
+brctl stp br0 $wds_stp_onoff
+iwconfig \${APNAME} ap $wl_wds_rootap_mac
+EOF
+            cat <<EOF >> $dni_apup
+cfg -a AP_MODE${wl_suffix}=sta-wds
+cfg -a AP_IGNORE11D${wl_suffix}=1
+cfg -a AP_WDSFILE${wl_suffix}=$wl_wds_file
+EOF
+        else
+            # allow wireless client association, so there will be two
+            # interfaces created.
+            eval wl_wds_repeater_suffix=\$`echo $1`_wds_repeater_suffix
+            wl_wds_file="/etc/ath/wds_file${wl_wds_repeater_suffix}"
+            eval wl_wds_repeater_radio_id=\$`echo $1`_wds_repeater_radio_id
+            eval wl_channel=\$`echo $1`_channel
+            eval wl_chmode=\$`echo $1`_chmode
+            if [ "x$revert_wds_activate_order" = "xon" ]; then
+                cat <<EOF >> $dni_apup
+cfg -a REVERT_WDS_ACT_ORDER=1
+EOF
+            fi
+
+            cat <<EOF >> $dni_apup
+cfg -a AP_MODE${wl_suffix}=ap-wds-ind
+cfg -a AP_IGNORE11D${wl_wds_repeater_suffix}=1
+cfg -a AP_SSID${wl_wds_repeater_suffix}="any"
+cfg -a AP_ANYSSID_HACK${wl_wds_repeater_suffix}=0
+cfg -a AP_MODE${wl_wds_repeater_suffix}=sta-wds-ind
+cfg -a AP_WDSFILE${wl_wds_repeater_suffix}=$wl_wds_file
+cfg -a AP_RADIO_ID${wl_wds_repeater_suffix}=$wl_wds_repeater_radio_id
+cfg -a AP_CHMODE${wl_wds_repeater_suffix}=$wl_chmode
+cfg -a AP_PRIMARY_CH${wl_wds_repeater_suffix}=$wl_channel
+EOF
+
+            cat<<EOF > $wl_wds_file
+#!/bin/sh
+brctl stp br0 $wds_stp_onoff
+iwconfig \${APNAME} ap $wl_wds_rootap_mac
+
+iwpriv \${APNAME} | grep wdsind 2>&1 > /dev/null
+
+if [ \$? -eq 0 ]; then
+    iwpriv \${APNAME} wdsind 1
+fi
+
+EOF
+        fi
+    fi
+
+}
+
+generate_lan_restricted_access()
+{
+    eval wl_lan_restricted_access_onoff=\$`echo $1`_lan_restricted_access_onoff
+    # if lan restricted access is off, it means every one can access the network, but
+    # we also need to generate ebtables rules.
+    #if [ "$wl_lan_restricted_access_onoff" = "off" ]; then
+        #return;
+    #fi
+
+    eval wl_suffix=\$`echo $1`_suffix
+    wl_lan_restricted_access_file="/etc/ath/lan_restricted_access_file${wl_suffix}"
+
+    cat<<'EOF' > $wl_lan_restricted_access_file
+#!/bin/sh
+
+ETH_P_ARP=0x0806
+ETH_P_RARP=0x8035
+ETH_P_IP=0x0800
+IPPROTO_ICMP=1
+IPPROTO_UDP=17
+IPPROTO_TCP=6
+DHCPS_DHCPC=67:68
+PORT_DNS=53
+PORT_HTTP=80
+
+EOF
+    if [ "$lan_restricted_access_init_printed" = "no" ]; then
+        cat <<'EOF' >>$wl_lan_restricted_access_file
+ebtables -D FORWARD -p $ETH_P_ARP -j ACCEPT
+ebtables -D FORWARD -p $ETH_P_RARP -j ACCEPT
+ebtables -D FORWARD -p $ETH_P_IP --ip-proto $IPPROTO_UDP --ip-dport $DHCPS_DHCPC -j ACCEPT
+ebtables -D INPUT -p $ETH_P_IP --ip-proto $IPPROTO_UDP --ip-dport $DHCPS_DHCPC -j ACCEPT
+ebtables -D INPUT -p $ETH_P_IP --ip-proto $IPPROTO_UDP --ip-dport $PORT_DNS -j ACCEPT
+ebtables -L | grep  "ath" > /tmp/wifi_rules
+while read loop
+        do
+                ebtables -D INPUT $loop;
+                ebtables -D FORWARD $loop;
+        done < /tmp/wifi_rules
+rm  /tmp/wifi_rules
+
+EOF
+
+	if [ "$wl_lan_restricted_access_onoff" = "on" ]; then
+		cat <<'EOF' >>$wl_lan_restricted_access_file
+ebtables -P FORWARD ACCEPT
+ebtables -A FORWARD -p $ETH_P_ARP -j ACCEPT
+ebtables -A FORWARD -p $ETH_P_RARP -j ACCEPT
+ebtables -A FORWARD -p $ETH_P_IP --ip-proto $IPPROTO_UDP --ip-dport $DHCPS_DHCPC -j ACCEPT
+ebtables -P INPUT ACCEPT
+ebtables -A INPUT -p $ETH_P_IP --ip-proto $IPPROTO_UDP --ip-dport $DHCPS_DHCPC -j ACCEPT
+ebtables -A INPUT -p $ETH_P_IP --ip-proto $IPPROTO_UDP --ip-dport $PORT_DNS -j ACCEPT
+
+EOF
+	fi
+        lan_restricted_access_init_printed="yes";
+    fi
+
+	if [ "$wl_lan_restricted_access_onoff" = "on" ]; then
+	    cat <<EOF >> $wl_lan_restricted_access_file
+ebtables -A FORWARD -i \${APNAME} -j DROP
+ebtables -A FORWARD -o \${APNAME} -j DROP
+ebtables -A INPUT -i \${APNAME} -p \$ETH_P_IP --ip-dst $lan_ipaddr -j DROP
+ifconfig br0 | grep inet6 | awk '{print \$3}' | awk -F / '{print \$1}' >> /tmp/ipv6.tmp
+while read loop
+	do
+		ebtables -t filter -A INPUT -i \${APNAME} -p ipv6 --ip6-dst \$loop --ip6-proto tcp --ip6-dport \$PORT_HTTP -j DROP
+	done < /tmp/ipv6.tmp
+rm /tmp/ipv6.tmp
+EOF
+	elif [ "$wl_lan_restricted_access_onoff" = "off" ]; then
+		cat <<'EOF' >> $wl_lan_restricted_access_file
+ebtables -A INPUT -i ${APNAME} -p $ETH_P_IP --ip-proto $IPPROTO_UDP --ip-dport 23 -j DROP
+ebtables -A INPUT -i ${APNAME} -p $ETH_P_IP --ip-proto $IPPROTO_TCP --ip-dport 23 -j DROP
+EOF
+	fi
+
+    cat <<EOF >> $dni_apup
+cfg -a AP_LAN_RESTRICTED_ACS_FILE${wl_suffix}=$wl_lan_restricted_access_file
+EOF
+}
+
+generate_wireless_isolation()
+{
+    eval wl_wireless_isolation_onoff=\$`echo $1`_wireless_isolation_onoff
+    if [ "$wl_wireless_isolation_onoff" = "off" ]; then
+        return;
+    fi
+    eval wl_wireless_isolation=1 # This assign seems redundant
+    eval wl_suffix=\$`echo $1`_suffix
+
+    cat <<EOF>> $dni_apup
+cfg -a AP_WIRELESS_ISOLATION${wl_suffix}=$wl_wireless_isolation
+EOF
+}
+
+generate_bintval()
+{
+    eval wl_suffix=\$`echo $1`_suffix
+
+    case "$1" in
+        wlg)
+            cat <<EOF >> $dni_apup
+cfg -a BINTVAL${wl_suffix}=100
+EOF
+            ;;
+        wla)
+            cat <<EOF >> $dni_apup
+cfg -a BINTVAL${wl_suffix}=100
+EOF
+            ;;
+        wlg_guest)
+            cat <<EOF >> $dni_apup
+cfg -a BINTVAL${wl_suffix}=200
+EOF
+            ;;
+        wla_guest)
+            cat <<EOF >> $dni_apup
+cfg -a BINTVAL${wl_suffix}=200
+EOF
+            ;;
+    esac
+}
+
+generate_dtim()
+{
+    eval wl_suffix=\$`echo $1`_suffix
+
+    case "$1" in
+        wlg | wla)
+            check_if_onoff "$1_guest"
+            # guest network is disabled
+            if [ "$?" = "0" ]; then
+                cat <<EOF >> $dni_apup
+cfg -a DTIM${wl_suffix}=$wl_dtim_wo_guest
+EOF
+            else
+                cat <<EOF >> $dni_apup
+cfg -a DTIM${wl_suffix}=$wl_dtim_w_guest
+EOF
+            fi
+            ;;
+        wlg_guest | wla_guest)
+            cat <<EOF >> $dni_apup
+cfg -a DTIM${wl_suffix}=$wl_guest_dtim
+EOF
+            ;;
+    esac
+}
+
+generate_PIN()
+{
+    eval wl_suffix=\$`echo $1`_suffix
+
+    /sbin/fetchPIN
+
+    if [ -f /tmp/wpspin-setted ]; then
+        eval pin_num=`cat /tmp/wpspin-setted`
+    else
+        if [ -f /tmp/wpspin ]; then
+            eval pin_num=`cat /tmp/wpspin`
+        fi
+    fi
+
+    cat <<EOF >> $dni_apup
+cfg -a WSC_PIN${wl_suffix}=${pin_num:-12345670}
+EOF
+}
+
+generate_wds_security()
+{
+    if [ "$1" = "" ]; then
+       return;
+    fi
+
+    eval parent_radio=`echo $1 | awk -F _ '{print $1}'`
+    eval wl_onoff=\$`echo $parent_radio`_wds_onoff
+    eval wl_parent_onoff=\$`echo $parent_radio`_if_onoff
+    eval wl_suffix=\$`echo $1`_suffix
+    eval parent_suffix=\$`echo $parent_radio`_suffix
+    eval wl_wds_role=\$`echo $parent_radio`_wds_role
+
+    if [ "$parent_radio" = "wlg" ]; then
+        wl_prefix=wl
+    else
+        wl_prefix=wla
+    fi
+
+    if [ "$wl_onoff" = "on" ] && \
+        [ "$wl_parent_onoff" = "on" -o "x$FORCE_CREATE_VAP" = "xon" ] && \
+        [ "$wl_wds_role" = "repeater" -a "$wl_sectype" = "wep" ]; then
+        load_wep_config "$wl_prefix" "$parent_radio"
+
+        eval wl_sectype=\$`echo $parent_radio`_sectype
+        eval wl_wep_auth_type=\$wep_auth_type_`echo $((${parent_radio}_auth))`
+        eval wl_wep_keyix=\$"${parent_radio}_key"
+        eval wl_key_length=\$"${parent_radio}_key_length"
+
+        wl_wep_file="/etc/ath/wep_file${wl_suffix}"
+        eval wl_wds_repeater_assoc_onoff=\$`echo ${parent_radio}`_wds_repeater_assoc_onoff
+        if [ "x$wl_wds_repeater_assoc_onoff" = "xoff" ]; then
+            # do nothing for repeater client mode
+            return;
+        fi
+        cat <<EOF > $wl_wep_file
+#!/bin/sh
+EOF
+        for idx in 1 2 3 4; do
+            eval wl_wep_key=\$"${parent_radio}_key${idx}"
+            wep_len=`expr length "$wl_wep_key"`
+            if [ $wl_key_length = "5" ]; then
+                if [ $wep_len = "10" ]; then
+                    cat <<EOF >> $wl_wep_file
+iwconfig \${APNAME} enc [$idx] ${wl_wep_key}
+EOF
+                elif [ $wep_len = "5" ]; then
+                    # add \ before some special character or it may bring error 
+                    wl_wep_key=$(echo "$wl_wep_key" |sed -r 's/\\/\\\\/g')
+                    wl_wep_key=$(echo "$wl_wep_key" |sed -r 's/`/\\\`/g')
+                    wl_wep_key=$(echo "$wl_wep_key" |sed -r 's/\"/\\\"/g')
+                    wl_wep_key=$(echo "$wl_wep_key" |sed -r 's/\$/\\\$/g')
+                    cat <<EOF >> $wl_wep_file  
+iwconfig \${APNAME} enc s:"${wl_wep_key}" [$idx]
+EOF
+                fi
+            else
+                if [ $wep_len = "26" ]; then
+                    cat <<EOF >> $wl_wep_file
+iwconfig \${APNAME} enc [$idx] ${wl_wep_key}
+EOF
+                elif [ $wep_len = "13" ]; then
+                    wl_wep_key=$(echo "$wl_wep_key" |sed -r 's/\\/\\\\/g')
+                    wl_wep_key=$(echo "$wl_wep_key" |sed -r 's/`/\\\`/g')
+                    wl_wep_key=$(echo "$wl_wep_key" |sed -r 's/\"/\\\"/g')
+                    wl_wep_key=$(echo "$wl_wep_key" |sed -r 's/\$/\\\$/g')
+                    cat <<EOF >> $wl_wep_file     
+iwconfig \${APNAME} enc s:"${wl_wep_key}" [$idx]
+EOF
+                fi
+            fi
+            done
+            case "$wl_wep_auth_type" in
+                shared)
+                    cat <<EOF >>$wl_wep_file
+iwpriv \${APNAME} authmode 2
+iwconfig \${APNAME} enc [$wl_wep_keyix] restricted
+EOF
+                    ;;
+                auto)
+                    cat <<EOF >>$wl_wep_file
+iwpriv \${APNAME} authmode 4
+iwconfig \${APNAME} enc [$wl_wep_keyix]
+EOF
+                    ;;
+                *)
+                    cat <<EOF >>$wl_wep_file
+iwpriv \${APNAME} authmode 1
+iwconfig \${APNAME} enc [$wl_wep_keyix] open
+EOF
+                    ;;
+            esac
+            cat <<EOF >> $dni_apup
+cfg -a AP_SECMODE${wl_suffix}=DNI_WEP
+cfg -a AP_SECFILE${wl_suffix}=$wl_wep_file
+EOF
+    fi
+}
+
+generate_wps_information()
+{
+wsc_serial_number=`dd if=/dev/mtd7 bs=1c count=6 2>/dev/null | hexdump -v -e '1/1 "%02x"'`
+    cat <<EOF >> $dni_apup
+cfg -a WSC_MANUFACTURER="$wsc_manufactuer"
+cfg -a WSC_MODEL_NAME="$wsc_model_name"
+cfg -a WSC_MODEL_NUMBER="$wsc_model_number"
+cfg -a WSC_SERIAL_NUMBER="$wsc_serial_number"
+${wsc_upnp_ad_period:+cfg -a WSC_UPNP_AD_PERIOD="$wsc_upnp_ad_period"}
+${wsc_upnp_ad_ttl:+cfg -a WSC_UPNP_AD_TTL="$wsc_upnp_ad_ttl"}
+${wsc_conf_reload_time:+cfg -a WSC_CONF_RELOAD_TIME="$wsc_conf_reload_time"}
+${wsc_pin_attack_check:+cfg -a WSC_AP_PIN_ATTACK_CHECK=$wsc_pin_attack_check}
+${wsc_pin_attack_num:+cfg -a WSC_AP_PIN_ATTACK_NUM=$wsc_pin_attack_num}
+${wsc_pin_history_failures:+cfg -a WSC_AP_PIN_HISTORY_FAILURES=$wsc_pin_history_failures}
+${wsc_uuid_mac:+cfg -a WSC_UUID_MAC=$wsc_uuid_mac}
+EOF
+}
+
+generate_wps_device_name()
+{
+    eval wps_onoff=\$`echo $1`_wps_onoff
+
+    if [ "$wps_onoff" = "off" ]; then
+        return;
+    fi
+
+    eval wl_suffix=\$`echo $1`_suffix
+
+    if [ $num_radio -eq 2 ]; then
+        if [ "$1" = "wlg" ]; then
+            wl_device_name="`echo $wps_device_name`(Wireless AP)"
+        else
+            wl_device_name="`echo $wps_device_name`(Wireless AP)"
+        fi
+    elif [ $num_radio -eq 1 ]; then
+	wl_device_name="`echo $wps_device_name`(Wireless AP)"
+    else
+    # no radio is enabled, we don't need to generate following configuration
+        exit 0;
+    fi
+
+    cat <<EOF >> $dni_apup
+cfg -a WSC_NAME${wl_suffix}="$wl_device_name"
+EOF
+}
+
+generate_doth()
+{
+    eval wl_doth=0
+    eval wl_suffix=\$`echo $1`_suffix
+
+    cat <<EOF>> $dni_apup
+cfg -a AP_DOTH${wl_suffix}=$wl_doth
+EOF
+}
+
+generate_tpscale()
+{
+    temp_string=""
+    if [ "$wlg_exist" = "on" -a "x$wlg_tpscale" != "x" ]; then
+        append temp_string "cfg -a AP_G_BAND_TPSCALE=$wlg_tpscale" "$N"
+    fi
+    if [ "$wla_exist" = "on" -a "x$wla_tpscale" != "x" ]; then
+        append temp_string "cfg -a AP_A_BAND_TPSCALE=$wla_tpscale" "$N"
+    fi
+
+cat <<EOF >> $dni_apup
+$temp_string
+EOF
+}
+
+generate_powerctrl()
+{
+    temp_string=""
+    if [ "$wlg_exist" = "on" -a "x$wlg_powerctrl" != "x" ]; then
+        append temp_string "cfg -a AP_G_BAND_POWERCTRL=$wlg_powerctrl" "$N"
+    fi
+    if [ "$wla_exist" = "on" -a "x$wla_powerctrl" != "x" ]; then
+        append temp_string "cfg -a AP_A_BAND_POWERCTRL=$wla_powerctrl" "$N"
+    fi
+
+cat <<EOF >> $dni_apup
+$temp_string
+EOF
+}
+
+generate_wps_led_behavior()
+{
+    if [ "$wla_exist" = "on" ]; then
+    	if [ "${wlg_if_onoff}" = "on" -a "${wl_hw_btn_state}" = "on" -a "${wlg_sectype}" != "off" ] || 
+	   [ "${wla_if_onoff}" = "on" -a "${wl_hw_btn_state}" = "on" -a "${wla_sectype}" != "off" ]; then
+	      wps_led_behavior=1
+	else
+	      wps_led_behavior=0
+	fi
+    elif [ "$wlg_exist" = "on" ]; then
+    	if [ "${wlg_if_onoff}" = "on" -a "${wlg_sectype}" != "off" ]; then
+	      wps_led_behavior=2
+	else
+	      wps_led_behavior=1
+	fi
+    fi
+cat <<EOF >> $dni_apup
+cfg -a WPS_LED_BEHAVIOR=${wps_led_behavior}
+EOF
+}
+
+generate_video_mode()
+{
+    eval wl_video_mode_onoff=\$`echo $1`_video_mode_onoff
+    eval wl_suffix=\$`echo $1`_suffix
+
+    if [ "$wl_video_mode_onoff" = "on" ]; then
+        cat <<EOF >> $dni_apup
+cfg -a AP_VIDEO_MODE${wl_suffix}=1
+EOF
+    fi
+}
+
+generate_wps_disable_ie()
+{
+    parent_radio=`echo $1 | awk -F _ '{print $1}'`
+
+    eval wl_acl_onoff=\$`echo $parent_radio`_acl_onoff
+    if [ "$wl_acl_onoff" = "off" ]; then
+        return;
+    fi
+
+    eval wl_suffix=\$`echo $1`_suffix
+
+    dni_config_get acl_sta_num wl_acl_num
+    acl_sta_num=${acl_sta_num:-0}
+    if [ "$acl_sta_num" = "0" ]; then
+        cat <<EOF >> $dni_apup
+cfg -a WSC_DISABLE_IE${wl_suffix}=1
+EOF
+    fi
+}
+
+generate_disablecoext()
+{
+    eval wl_suffix=\$`echo $1`_suffix
+    eval disablecoext=\$`echo $1`_disablecoext
+
+    disablecoext=${disablecoext:=0}
+
+    cat <<EOF >> $dni_apup
+cfg -a AP_DISABLECOEXT${wl_suffix}=$disablecoext
+EOF
+}
+
+generate_hs20()
+{
+    eval wl_suffix=\$`echo $1`_suffix
+    eval hs20=\$`echo $1`_hs20_onoff
+
+    if [ "x$hs20" = "xon" ]; then
+        eval disable_dgaf=\$`echo $1`_hs20_disable_dgaf
+        eval hessid=\$`echo $1`_hs20_hessid
+        eval ant=\$`echo $1`_hs20_ant
+        eval internet=\$`echo $1`_hs20_internet
+        eval asra=\$`echo $1`_hs20_asra
+        eval esr=\$`echo $1`_hs20_esr
+        eval uesa=\$`echo $1`_hs20_uesa
+        eval venuegroup=\$`echo $1`_hs20_venuegroup
+        eval venuetype=\$`echo $1`_hs20_venuetype
+        eval roaming_consortium=\$`echo $1`_hs20_roaming_consortium
+        eval roaming_consortium2=\$`echo $1`_hs20_roaming_consortium2
+        cat <<EOF >> $dni_apup
+cfg -a AP_HOTSPOT${wl_suffix}=1
+cfg -a AP_HOTSPOT_DISABLE_DGAF${wl_suffix}=$disable_dgaf
+cfg -a AP_HOTSPOT_HESSID${wl_suffix}=$hessid
+cfg -a AP_HOTSPOT_ANT${wl_suffix}=$ant
+cfg -a AP_HOTSPOT_INTERNET${wl_suffix}=$internet
+cfg -a AP_HOTSPOT_ASRA${wl_suffix}=$asra
+cfg -a AP_HOTSPOT_ESR${wl_suffix}=$esr
+cfg -a AP_HOTSPOT_UESA${wl_suffix}=$uesa
+cfg -a AP_HOTSPOT_VENUEGROUP${wl_suffix}=$venuegroup
+cfg -a AP_HOTSPOT_VENUETYPE${wl_suffix}=$venuetype
+cfg -a AP_HOTSPOT_ROAMING_CONSORTIUM${wl_suffix}=$roaming_consortium
+cfg -a AP_HOTSPOT_ROAMINGCONSORTIUM2${wl_suffix}=$roaming_consortium2
+EOF
+    fi
+}
+
+generate_nss()
+{
+    eval wl_suffix=\$`echo $1`_suffix
+
+    if [ "$1" != "wla" ]; then
+        # So far only 11AC NSS is needed to set
+        return;
+    fi
+
+    if [ -n "$nss_11ac" ] && [ "$nss_11ac" != 0 ]; then
+        cat <<EOF >> $dni_apup
+cfg -a NSS_11AC=$nss_11ac
+EOF
+    fi
+}
+
+
+cat <<EOF > $dni_apup
+#!/bin/sh
+
+export PATH="$PATH:/etc/ath"
+cfg -x
+EOF
+
+assign_suffix_and_vap_option
+
+generate_startmode
+generate_country
+generate_tpscale
+generate_wps_information
+generate_wifi_hw_button_state
+
+get_intf_onoff _tmp_wlg_onoff "wlg"
+
+if [ "x$_tmp_wlg_onoff" = "xon" ]; then
+    generate_wps "wlg"
+    generate_wps_device_name "wlg"
+    generate_ssid "wlg"
+    generate_chainmask "wlg"
+    generate_channel "wlg"
+    generate_chmode "wlg"
+    generate_pureg "wlg"
+    generate_puren "wlg"
+    generate_security "wlg"
+    generate_hide_ssid "wlg"
+    generate_protocol_setting "wlg"
+    generate_acl "wlg"
+    generate_wds "wlg"
+    # The lan restricted access for Primary SSID must executed first
+    # before guest network
+    generate_bintval "wlg"
+    generate_dtim "wlg"
+    generate_PIN "wlg"
+    generate_doth "wlg"
+    generate_disablecoext "wlg"
+    generate_wds_security "wlg_wds_repeater"
+    generate_wps_disable_ie "wlg"
+    generate_hs20 "wlg"
+fi
+
+get_intf_onoff _tmp_wla_onoff "wla"
+
+if [ "x$_tmp_wla_onoff" = "xon" ]; then
+    generate_wps "wla"
+    generate_wps_device_name "wla"
+    generate_ssid "wla"
+    generate_chainmask "wla"
+    generate_channel "wla"
+    generate_chmode "wla"
+    generate_security "wla"
+    generate_hide_ssid "wla"
+    generate_protocol_setting "wla"
+    generate_acl "wla"
+    generate_wds "wla"
+    # The lan restricted access for Primary SSID must executed first
+    # before guest network
+    generate_bintval "wla"
+    generate_dtim "wla"
+    generate_PIN "wla"
+    generate_disablecoext "wla"
+    generate_video_mode "wla"
+    generate_wds_security "wla_wds_repeater"
+    generate_wps_disable_ie "wla"
+    generate_hs20 "wla"
+    generate_nss "wla"
+fi
+
+get_intf_onoff _tmp_wlg_guest_onoff "wlg_guest"
+
+if [ "x$_tmp_wlg_guest_onoff" = "xon" ]; then
+    generate_ssid "wlg_guest"
+    generate_security "wlg_guest"
+    generate_hide_ssid "wlg_guest"
+    generate_protocol_setting "wlg_guest"
+    generate_acl "wlg_guest"
+    generate_lan_restricted_access "wlg_guest"
+    generate_wireless_isolation "wlg_guest"
+    generate_bintval "wlg_guest"
+    generate_dtim "wlg_guest"
+    generate_doth "wlg_guest"
+    generate_disablecoext "wlg_guest"
+fi
+
+get_intf_onoff _tmp_wla_guest_onoff "wla_guest"
+
+if [ "x$_tmp_wla_guest_onoff" = "xon" ]; then
+    generate_ssid "wla_guest"
+    generate_security "wla_guest"
+    generate_hide_ssid "wla_guest"
+    generate_protocol_setting "wla_guest"
+    generate_acl "wla_guest"
+    generate_lan_restricted_access "wla_guest"
+    generate_wireless_isolation "wla_guest"
+    generate_bintval "wla_guest"
+    generate_dtim "wla_guest"
+    generate_video_mode "wla_guest"
+fi
+
+generate_wps_led_behavior
+# generate apup at the end.
+# TODO: if there is not radio enabled, generate apup is not needed.
+cat <<EOF >> $dni_apup
+cfg -a WIRED_STRING_HACK=1
+${led_custom:+cfg -a LED_CUSTOM=$led_custom}
+apup
+EOF
+
+chmod +x $dni_apup

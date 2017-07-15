@@ -1,0 +1,20 @@
+diff -Nuar squashfs4.0/squashfs-tools/mksquashfs.c squashfs4.0-new/squashfs-tools/mksquashfs.c
+--- squashfs4.0/squashfs-tools/mksquashfs.c	2013-01-26 10:40:16.646896699 -0500
++++ squashfs4.0-new/squashfs-tools/mksquashfs.c	2013-01-26 10:45:20.046896849 -0500
+@@ -4346,6 +4346,8 @@
+ 				exit(1);
+ 			}
+ 			comp_name = argv[i];
++		} else if(strcmp(argv[i], "-lzma") == 0) {
++			comp_name = "lzma";
+ 		} else if(strcmp(argv[i], "-pf") == 0) {
+ 			if(++i == argc) {
+ 				ERROR("%s: -pf missing filename\n", argv[0]);
+@@ -4564,6 +4566,7 @@
+ 			ERROR("SYNTAX:%s source1 source2 ...  dest [options] "
+ 				"[-e list of exclude\ndirs/files]\n", argv[0]);
+ 			ERROR("\nFilesystem build options:\n");
++			ERROR("-lzma\t\t\tselect lzma compression\n");
+ 			ERROR("-comp <comp>\t\tselect <comp> compression\n");
+ 			ERROR("\t\t\tCompressors available:\n");
+ 			display_compressors("\t\t\t", COMP_DEFAULT);

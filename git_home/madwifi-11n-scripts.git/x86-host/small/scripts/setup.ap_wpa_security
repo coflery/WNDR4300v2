@@ -1,0 +1,17 @@
+echo 1 > /sys/bus/pci/rescan
+lspci | grep Ath
+
+./rc.wlan up
+sleep 1
+wlanconfig wlan create wlandev wifi0 wlanmode ap
+sleep 1
+iwconfig wlan0 channel 1
+sleep 2
+iwpriv wlan0 dbgLVL 0x88cf80000
+sleep 2
+echo ">>>> Bring up Interface ( Press Enter )"
+read
+hostapd -ddK -e /dev/random PSK.ap_bss_CCMP > aplog &
+#hostapd -ddK -e /dev/random PSK.ap_bss_TKIP > aplog &
+echo "Done"
+

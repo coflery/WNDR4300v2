@@ -1,0 +1,117 @@
+#!/bin/sh /etc/rc.common
+START=81
+
+CONFIG=/bin/config
+gui_region=$($CONFIG get GUI_Region)
+firmware_region=`cat /tmp/firmware_region | awk '{print $1}'`
+
+is_interface_exist()
+{
+	brctl show | awk '/br1/, /^$/' | grep $1 1>/dev/null
+
+        if [ $? = 0 ]; then
+                echo "1"
+        else
+                echo "0"
+        fi
+
+}
+
+restart_wireless(){
+	ifconfig $1 down
+	sleep 7
+	ifconfig $1 up
+}
+
+config_wireless_iptv()
+{
+	wl_1st_iptv="$($CONFIG get wan_brig_ssid1)"
+	wl_2nd_iptv="$($CONFIG get wan_brig_ssid2)"
+	wl_guest_iptv1="$($CONFIG get wan_brig_guest_ssid1)"
+	wl_guest_iptv2="$($CONFIG get wan_brig_guest_ssid2)"
+	wlg_guest_on="$($CONFIG get wlg1_endis_guestNet)"
+	wla_guest_on="$($CONFIG get wla1_endis_guestNet)"
+
+        #check if any wireless interface will be set as IPTV port
+        if [ "$wl_1st_iptv" = "1" -o "$wl_2nd_iptv" = "1" -o "$wl_guest_iptv1" = "1" -o "$wl_guest_iptv2" = "1" ]; then
+                if [ `is_interface_exist "br1"` = "0" ]; then
+                        brctl addbr br1
+                        brctl addif br1 eth1
+                        ifconfig br1 up
+                fi
+        fi
+
+        #if ath0 is to be set as IPTV port and ath0 has not benn added to br1, then add ath0 to br1
+        if [ "$wl_1st_iptv" = "1" ] && [ `is_interface_exist "ath0"` = "0" ]; then
+                brctl delif br0 ath0
+                brctl addif br1 ath0
+        elif [ "$wl_1st_iptv" = "0" ] && [ `is_interface_exist "ath0"` = "1" ]; then
+                brctl delif br1 ath0
+                brctl addif br0 ath0
+        fi
+
+        if [ "$wl_2nd_iptv" = "1" ] && [ `is_interface_exist "ath1"` = "0" ]; then
+                brctl delif br0 ath1
+                brctl addif br1 ath1
+        elif [ "$wl_2nd_iptv" = "0" ] && [ `is_interface_exist "ath1"` = "1" ]; then
+                brctl delif br1 ath1
+                brctl addif br0 ath1
+        fi
+
+	#if we only enable 5G Guest Network, now ath2 is 5G Gusest Network Interface.
+	if [ "$wlg_guest_on" = "0" -a "$wla_guest_on" = "1" ]; then
+		if [ "$wl_guest_iptv2" = "1" ] && [ `is_interface_exist "ath2"` = "0" ]; then
+			brctl delif br0 ath2
+			brctl addif br1 ath2
+		elif [ "$wl_guest_iptv2" = "0" ] && [ `is_interface_exist "ath2"` = "1" ]; then
+			brctl delif br1 ath2
+			brctl addif br0 ath2
+		fi
+	else
+		if [ "$wl_guest_iptv1" = "1" ] && [ `is_interface_exist "ath2"` = "0" ]; then
+			brctl delif br0 ath2
+			brctl addif br1 ath2
+		elif [ "$wl_guest_iptv1" = "0" ] && [ `is_interface_exist "ath2"` = "1" ]; then
+			brctl delif br1 ath2
+			brctl addif br0 ath2
+		fi
+
+		if [ "$wl_guest_iptv2" = "1" ] && [ `is_interface_exist "ath3"` = "0" ]; then
+			brctl delif br0 ath3
+			brctl addif br1 ath3
+		elif [ "$wl_guest_iptv2" = "0" ] && [ `is_interface_exist "ath3"` = "1" ]; then
+			brctl delif br1 ath3
+			brctl addif br0 ath3
+		fi
+	fi
+
+	if [ "$wl_1st_iptv" = "0" -a "$wl_2nd_iptv" = "0" -a "$wl_guest_iptv1" = "0" -a "$wl_guest_iptv2" = "0" ] &&
+	   [ `is_interface_exist "br1"` = "1" ]; then
+		ifconfig br1 down
+		brctl delbr br1
+		ifconfig eth1 up
+	fi
+}
+
+config_wire_port(){
+	vlan-set $($CONFIG get iptv_mask) 1>/tmp/vlan-set-result
+	dni_eth --switch-lan-phy 9 --switch-lan-mask $($CONFIG get iptv_mask_change) 
+	#After restart the changed port,reset the iptv_mask_change to '0'
+	$CONFIG set iptv_mask_change=0
+}
+
+if [ "$firmware_region" = "" ] || [ "$firmware_region" = "WW" ]; then
+	if [ "$gui_region" = "Russian" -o "$gui_region" = "Chinese" ]; then
+		config_wire_port
+		config_wireless_iptv
+	else
+		vlan-set 0 1>/tmp/vlan-set-result
+	fi
+elif [ "$firmware_region" = "RU" -o "$firmware_region" = "PR" ]; then
+	config_wire_port
+	config_wireless_iptv
+else
+	vlan-set 0 1>/tmp/vlan-set-result
+fi
+
+

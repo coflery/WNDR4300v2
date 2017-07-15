@@ -1,0 +1,139 @@
+#!/bin/sh
+
+. /etc/ath/apcfg
+
+
+if [ $WDS_MODE = repeater ]; then
+	wlanconfig ath create wlandev wifi0 wlanmode ap
+	wlanconfig ath create wlandev wifi0 wlanmode sta nosbeacon
+elif [ $WDS_MODE = client ]; then
+	wlanconfig ath create wlandev wifi0 wlanmode sta nosbeacon
+else
+	wlanconfig ath create wlandev wifi0 wlanmode ap
+fi
+
+# increase queue length
+TXQUEUELEN=1000
+ifconfig ath0 txqueuelen $TXQUEUELEN
+if [ $WDS_MODE = repeater ]; then
+	ifconfig ath1 txqueuelen $TXQUEUELEN
+fi
+ifconfig wifi0 txqueuelen $TXQUEUELEN
+
+iwpriv ath0 bgscan 0
+if [ $WDS_MODE = repeater ]; then
+	iwpriv ath1 bgscan 0
+fi
+
+# turn on wds mode
+if [ $WDS_MODE = rootap -o $WDS_MODE = client -o $WDS_MODE = repeater ]; then
+	iwpriv ath0 wds 1
+fi 
+
+if [ $WDS_MODE = repeater ]; then
+	iwpriv ath1 wds 1
+fi
+
+# 11n configuration section
+#
+
+# turn on halfgi
+iwpriv ath0 shortgi 1
+if [ $WDS_MODE = repeater ]; then
+	iwpriv ath1 shortgi 1
+fi
+
+# mode is 11ng which is the only supported mode
+if [ $AP_CONTROL_CH = 11na ]; then
+	MODE=11na
+	FREQ=""
+elif [ $AP_CONTROL_CH = 11ng ]; then
+	MODE=11ng
+	FREQ=""
+elif [ $AP_CONTROL_CH -gt 14 ]; then
+	MODE=11na
+	FREQ="freq $AP_CONTROL_CH"
+else
+	MODE=11ng
+	FREQ="freq $AP_CONTROL_CH"
+fi
+
+iwpriv ath0 mode $MODE
+if [ $WDS_MODE = repeater ]; then
+	iwpriv ath1 mode $MODE
+fi
+
+if [ $MODE = 11ng ]; then
+	echo 1 > /proc/sys/dev/ath/hal/forceBiasAuto
+fi
+
+# cwmmode 0 is static 20; cwmmode 1 is dyn 2040; cwmmode 2 is static 40
+CWMMODE=1
+iwpriv ath0 cwmmode $CWMMODE
+if [ $WDS_MODE = repeater ]; then
+	iwpriv ath1 cwmmode $CWMMODE
+fi
+
+# set extension channel below control channel
+iwpriv ath0 extoffset $AP_EXTN_CH_OFFSET
+if [ $WDS_MODE = repeater ]; then
+	iwpriv ath1 extoffset $AP_EXTN_CH_OFFSET
+fi
+# set extension channel offset to 20Mhz (25Mhz not supported yet)
+iwpriv ath0 extprotspac 0
+if [ $WDS_MODE = repeater ]; then
+	iwpriv ath1 extprotspac 0
+fi
+
+# disable aggregation
+#iwpriv ath0 ampdu 0
+#if [ $WDS_MODE = repeater ]; then
+#	iwpriv ath1 ampdu 0
+#fi
+
+# set ampdu limit to 50000
+AMPDULIMIT=50000
+iwpriv ath0 ampdulimit $AMPDULIMIT
+if [ $WDS_MODE = repeater ]; then
+	iwpriv ath1 ampdulimit $AMPDULIMIT
+fi
+
+
+# set debug mode output
+DEBUGMODE=0x100
+echo $DEBUGMODE > /proc/sys/net/ath0/debug
+if [ $WDS_MODE = repeater ]; then
+	echo $DEBUGMODE > /proc/sys/net/ath1/debug
+fi
+
+
+# set SSID and frequency
+iwconfig ath0 essid $AP_SSID mode master $FREQ
+if [ $WDS_MODE = repeater ]; then
+	iwconfig ath1 essid $AP_SSID mode managed $FREQ
+fi
+
+# setting a static rate will disable rate control
+#
+# set static rate series and tries
+# iwconfig ath0 rate 11n 0x8c8c8c8c
+# iwconfig ath0 retries 11n 0x04040404
+
+# set default chainmask
+TX_CHAINMASK=5
+iwpriv ath0 tx_chainmask $TX_CHAINMASK
+if [ $WDS_MODE = repeater ]; then
+	iwpriv ath1 tx_chainmask $TX_CHAINMASK
+fi
+
+
+# Change rx_chainmask depending on the mode 
+if [ $MODE = 11na ] ; then
+	RX_CHAINMASK=5
+else
+	RX_CHAINMASK=7
+fi
+iwpriv ath0 rx_chainmask $RX_CHAINMASK
+if [ $WDS_MODE = repeater ]; then
+	iwpriv ath1 rx_chainmask $RX_CHAINMASK
+fi

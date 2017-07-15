@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# This will kill the hostapd daemon optionally started by apup
+ps | grep -q hostapd
+if [ $? -eq 0 ]  ; then
+    kill `ps | grep hostapd | cut -b 0-5` 2> /dev/null
+fi
+ifconfig lo down
+
+# This will kill the wpa_supplicant daemon optionally started by apup
+ps | grep -q wpa_supplicant
+if [ $? -eq 0 ]  ; then
+    kill `ps | grep wpa_supplicant | cut -b 0-5` 2> /dev/null
+fi
+
+brctl delif br0 ath0
+brctl delif br0 ath1
+ifconfig ath0 down
+ifconfig ath1 down
+
+rmmod ath_pktlog
+rmmod ath_pci
+rmmod ath_rate_atheros
+rmmod ath_hal
+rmmod atrcm
+rmmod wlan_ccmp
+rmmod wlan_tkip
+rmmod wlan_wep
+rmmod wlan_acl
+rmmod wlan_xauth
+rmmod wlan_scan_ap
+rmmod wlan_scan_sta
+rmmod wlan

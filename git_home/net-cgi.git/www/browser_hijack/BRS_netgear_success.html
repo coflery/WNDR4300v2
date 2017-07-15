@@ -1,0 +1,17 @@
+<html>
+<head>
+</head>
+<body>
+<script>
+/* 22281: add sn after success href */
+var sn="<% get_sn() %>";
+//top.location.href = "$success_href"+"?sn="+sn;
+/* to fix bug 29273 */
+var hostname = "<% cat_file("/module_name") %>".toLowerCase();
+if( "<%cfg_get("dns_hijack") %>" == "1" && "<%cfg_get("hijack_process") %>" == "2" )
+	setTimeout('top.location.href = "http://www.netgear.com/success/"+hostname+".aspx"+"?sn="+sn;', 2000);
+else
+	top.location.href = "http://www.netgear.com/success/"+hostname+".aspx"+"?sn="+sn;
+</script>
+</body>
+</html>

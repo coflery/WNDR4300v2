@@ -1,0 +1,909 @@
+#!/bin/sh
+##################################################################################
+## configure_vlanvap
+##
+## shell function to configure the vap for vlan
+## arguments
+##   $1 - $APNAME - name of the interface eg. ath0
+##   $2 - $BRNAME - name of the bridge eg. br2
+##   $3 - $VLANID - Id of the VLAN, eg 2
+##   $4 - $SECMODE - Security mode like WPA
+##   $5 - $SECFILE - like 8021x.conf
+## call as
+##     configure_vlanvap ath0 br2 2 WPA wpa2EAP.conf
+##
+configure_vlanvap() {
+        VAPNAME=$1
+        VBRNAME=$2
+        VVLANID=$3
+        VSECMODE=$4
+        VSECFILE=$5
+        #verify sec args 
+        if [ "${VSECMODE}" != "None"]; then
+            if [ ${VSECFILE} = "None" ]; then
+                echo "No security file specified for $VSECMODE on $VAPNAME"
+                exit 1
+            fi
+        fi
+        #add tags on both eth0, eth1 and athx
+        VESSID=`iwconfig ${VAPNAME} | grep ESSID | cut -f2 -d\"`
+        brctl addbr $VBRNAME
+        brctl delif $BRIDGE_IF $VAPNAME
+        vconfig add $VAPNAME $VVLANID
+        vconfig add eth0 $VVLANID
+        vconfig add eth1 $VVLANID
+        brctl addif $VBRNAME $VAPNAME.$VVLANID
+        brctl addif $VBRNAME eth0.$VVLANID
+        brctl addif $VBRNAME eth1.$VVLANID
+        ifconfig $VAPNAME.$VVLANID up
+        ifconfig eth0.$VVLANID up
+        ifconfig eth1.$VVLANID up
+        ifconfig $VBRNAME up
+
+		##
+		## If hostapd or topology needs to know about this, lets create
+		## a bridge record
+		##
+
+        if [ "${VSECMODE}" != "WEP" -a "${VSECMODE}" != "None" ]; then
+            echo -e "\tinterface $VAPNAME" >> /tmp/bc$VVLANID
+        fi
+} 
+#end configure_vlanvap
+
+Check_HT_TKIP()
+{
+    isht=`expr match $AP_CHMODE .*HT.*`
+
+	# if HT mode is not enabled, then return
+
+    if [ "${isht}" -eq 0 ]
+    then
+		return 0
+    fi  
+
+    if [ "${AP_CYPHER}" = "TKIP" -a "${AP_SECMODE}" = "WPA" ]
+    then
+        echo "vap1: TKIP cannot be used with HT mode"
+        exit 1
+    fi  
+
+    i=2 
+
+    while [ $i -le 15 ] 
+    do  
+        istkip=`eval expr match '$'AP_CYPHER_$i 'TKIP$' 2>/dev/null`
+		secmode=`eval echo '$'AP_SECMODE_$i 2>/dev/null`
+        istkip=${istkip:="0"}
+		secmode=${secmode:="None"}
+
+        if [ "${istkip}" != "0" -a "${secmode}" = "WPA" ]
+        then
+            echo "vap$i: TKIP cannot be used with HT mode"
+            exit 1
+        fi  
+
+        i=`expr $i + 1`
+    done
+
+    return 0
+}
+
+#####################################################################################
+##
+## "main" procedure
+##
+
+if [ -f /tmp/.apup ]; then
+    echo "AP is already up"
+    exit
+fi
+
+MODLIST=`lsmod | grep ath_hal | cut -f1,0 -d" "`
+
+if [ "${MODLIST}" = "ath_hal" ]; then
+    echo "AP is already up"
+    exit
+fi
+
+##
+## Bring in the default environmental variables
+##
+
+. /etc/ath/apcfg
+
+ifconfig br0 $AP_IPADDR netmask $AP_NETMASK up
+
+# Check for TKIP & HT
+Check_HT_TKIP
+
+echo 1 > /tmp/.apup
+
+WAN_IF=${WAN_IF:=eth0}
+LAN_IF=${LAN_IF:=eth1}
+APVLANMODE=${AP_VLAN_MODE:="0"}
+HOSTAPD_VER=`hostapd -v 2>&1|grep hostapd|cut -f2 -d' '`
+
+if [ "${BEACON_INT}" = "" ]; then
+    BEACON_INT=100
+fi
+##
+## For safety, delete all /tmp nodes we may re-create
+##
+
+rm -rf /tmp/br*
+rm -rf /tmp/bc*
+rm -rf /tmp/ap*
+rm -rf /tmp/sta*
+rm -rf /tmp/top*
+
+ap_modes="standard rootap extap repeater repeater-ind wrap"
+
+for i in $ap_modes;
+do
+    if [ "${AP_STARTMODE}" = "${i}" ]; then
+        cfg -a DEF_ATH_countrycode=841
+    fi
+done
+
+##
+## Now, process the modes
+##
+
+if [ "${AP_STARTMODE}" = "standard" ]; then
+    makeVAP ap "$AP_SSID" 0:RF:$AP_PRIMARY_CH:$AP_CHMODE $BEACON_INT
+    if [ $? != 0 ]; then
+        echo "Unable to create VAP!"
+        exit
+    fi
+    activateVAP ath0 $BRIDGE_IF $AP_SECMODE $AP_SECFILE $WPS_ENABLE $WPS_VAP_TIE
+
+	if [ "$APVLANMODE" = "1" ]
+	then
+		vconfig add ath0 1
+		ifconfig ath0.1 up
+		brctl delif $BRIDGE_IF ath0
+		brctl addif $BRIDGE_IF ath0.1
+	fi
+fi
+
+##
+## See the activateVAP script for details on arguments.  Other configuration
+## examples are as follows:
+##
+
+##
+## Root AP for WDS
+##
+if [ "${AP_STARTMODE}" = "rootap" ]; then
+    makeVAP ap-wds "$AP_SSID" 0:RF:$AP_PRIMARY_CH:$AP_CHMODE $BEACON_INT
+    if [ $? != 0 ]; then
+        echo "Unable to create VAP!"
+        exit
+    fi
+    activateVAP ath0 $BRIDGE_IF $AP_SECMODE $AP_SECFILE $WPS_ENABLE
+fi
+
+##
+## REPEATER
+##
+if [ "${AP_STARTMODE}" = "repeater" -o "${AP_STARTMODE}" = "repeater-ind" ]; then
+    if [ "${AP_STARTMODE}" = "repeater" ]; then
+        APMODE="ap-wds"
+        STAMODE="sta-wds"
+    else
+        APMODE="ap-wds-ind"
+        STAMODE="sta-wds-ind"
+    fi
+    makeVAP ${APMODE} "$AP_SSID" 0:RF:$AP_PRIMARY_CH:$AP_CHMODE $BEACON_INT
+    if [ $? != 0 ]; then
+        echo "Unable to create VAP!"
+        exit
+    fi
+    makeVAP ${STAMODE} "$AP_SSID_2" 0:RF:$AP_PRIMARY_CH:$AP_CHMODE
+    if [ $? != 0 ]; then
+        echo "Unable to create VAP!"
+        exit
+    fi
+
+## Disable RADAR for AP vap's phy interface(wifiX) in WDS repeater mode
+    if [ "${AP_STARTMODE}" = "repeater" ]; then
+        radartool -i wifi0 disable
+    fi
+
+    if [ "${AP_SECMODE_2}" != "WPA" -a "${ROOTAP_MAC_2}" != "" ]; then
+        iwconfig ath1 ap $ROOTAP_MAC_2
+    fi
+
+    if [ "${AP_STARTMODE}" = "repeater-ind" ]; then
+	activateVAP ath0 $BRIDGE_IF $AP_SECMODE $AP_SECFILE
+	activateVAP ath1 $BRIDGE_IF $AP_SECMODE_2 $AP_SECFILE_2
+    else
+	activateVAP ath1 $BRIDGE_IF $AP_SECMODE_2 $AP_SECFILE_2
+	activateVAP ath0 $BRIDGE_IF $AP_SECMODE $AP_SECFILE
+    fi
+fi
+
+##
+## Extender AP
+##
+if [ "${AP_STARTMODE}" = "extap" ]; then
+	makeVAP ap $AP_SSID 0:RF:$AP_PRIMARY_CH:$AP_CHMODE $BEACON_INT
+	if [ $? != 0 ]; then
+		echo "Unable to create VAP!"
+		exit
+	fi
+
+	AP_SSID_2=${AP_SSID_2:=$AP_SSID}
+	ROOTAP_SSID=${ROOTAP_SSID:=$AP_SSID_2}
+
+	if [ "${ROOTAP_SSID}" = "any" -a  "${ROOTAP_MAC}" = "" ]; then
+		echo "ROOTAP_MAC should be set if ROOTAP_SSID=any"
+		exit 1
+	else
+		makeVAP sta-ext $ROOTAP_SSID 0:RF:$AP_PRIMARY_CH:$AP_CHMODE
+	fi
+
+	if [ "${AP_SECMODE_2}" != "WPA" -a "${ROOTAP_MAC_2}" != "" ]; then
+		iwconfig ath1 ap $ROOTAP_MAC_2
+	fi
+
+	activateVAP ath1 $BRIDGE_IF $AP_SECMODE_2 $AP_SECFILE_2
+	activateVAP ath0 $BRIDGE_IF $AP_SECMODE $AP_SECFILE
+fi
+
+##
+## Extender STA
+##
+if [ "${AP_STARTMODE}" = "extsta" ]; then
+
+	ROOTAP_SSID=${ROOTAP_SSID:=$AP_SSID}
+
+	if [ "${ROOTAP_SSID}" = "any" -a  "${ROOTAP_MAC}" = "" ]; then
+		echo "ROOTAP_MAC should be set if ROOTAP_SSID=any"
+		exit 1
+	else
+		makeVAP sta-ext-sin $ROOTAP_SSID 0:RF:$AP_PRIMARY_CH:$AP_CHMODE 
+	fi
+
+	if [ "${AP_SECMODE}" != "WPA" -a "${ROOTAP_MAC}" != "" ]; then
+		iwconfig ath0 ap $ROOTAP_MAC
+	fi
+
+	activateVAP ath0 $BRIDGE_IF $AP_SECMODE $AP_SECFILE $WPS_ENABLE $WPS_VAP_TIE
+fi
+
+##
+## "VIRTUAL WIRE" client
+##
+    if [ "${AP_STARTMODE}" = "client" ]; then
+        makeVAP sta-wds "$AP_SSID" 0:RF:$AP_PRIMARY_CH:$AP_CHMODE
+        if [ $? != 0 ]; then
+            echo "Unable to create VAP!"
+            exit
+        fi
+
+        if [ "${AP_SECMODE}" != "WPA" -a "${ROOTAP_MAC}" != "" ]; then
+            iwconfig ath0 ap $ROOTAP_MAC
+        fi
+
+        activateVAP ath0 $BRIDGE_IF $AP_SECMODE $AP_SECFILE
+    fi
+
+##
+## STATION FORWARDING
+##
+if [ "${AP_STARTMODE}" = "stafwd" ]; then
+    makeVAP sta-fwd-sin "$AP_SSID" 0:RF:$AP_PRIMARY_CH:$AP_CHMODE
+    if [ $? != 0 ]; then
+        echo "Unable to create VAP!"
+        exit
+    fi
+
+    activateVAP ath0 $BRIDGE_IF $AP_SECMODE $AP_SECFILE
+fi
+
+##
+## mBSSID case with all types of authentication
+## Note that WEP MUST be the first VAP
+## This is brute force, but effective.  Note that we set the becon interval
+## to 400
+##
+
+WEP_CONFIGURED=0
+my_vaps="'' _2 _3 _4 _5 _6 _7 _8 _9 _10 _11 _12 _13 _14 _15 _16"
+
+##
+## For the multi cases, we need to initialize the AP_RFPARAM parameters to make
+## the VAPs work correctly.
+##
+
+for i in $my_vaps;
+do
+    if [ "${i}" = "''" ]; then
+        i=""
+		rfFlag="RF"
+	else
+		rfFlag=""
+    fi
+    ITER_RFPARAM="AP_RFPARAM$i"
+    export $ITER_RFPARAM=$rfFlag:$AP_PRIMARY_CH:$AP_CHMODE
+done
+
+
+if [ "${AP_STARTMODE}" = "multi" -o "${AP_STARTMODE}" = "multi-ind" ]; then
+    NUM_VAP=0
+    NUM_STA_VAP=0
+    for i in $my_vaps;
+    do
+        ITER_SSID="AP_SSID$i"
+        ITER_MODE="AP_MODE$i"
+        ITER_SECMODE="AP_SECMODE$i"
+        ITER_RFPARAM="AP_RFPARAM$i"
+        eval ITER_SSID=\$$ITER_SSID
+        eval ITER_MODE=\$$ITER_MODE
+        eval ITER_SECMODE=\$$ITER_SECMODE
+        eval ITER_RFPARAM=\$$ITER_RFPARAM
+        if [ "x${ITER_SSID}" != "x" ]; then
+            if [ "${ITER_SECMODE}" = "WEP" ]; then
+                if [ "${WEP_CONFIGURED}" = "1" ]; then
+                    echo "Unable to create additional WEP VAP"
+                    exit 255
+                else
+                    WEP_CONFIGURED=1
+                fi
+            fi
+
+            if [ "${ITER_MODE}" = "ap-wds" -o "${ITER_MODE}" = "ap" ]; then
+                    cfg -a DEF_ATH_countrycode=841
+            fi
+
+            if [ "${ITER_MODE}" = "sta-wds" -o "${ITER_MODE}" = "sta" ]; then
+              if [ "${NUM_STA_VAP}" != 1 ]; then
+                NUM_VAP=$(($NUM_VAP+1))
+	        if [ "${BEACON_INT}" != "" ]; then
+	             BEACON_INTVAL=$(($BEACON_INT * $NUM_VAP))
+	        else
+	             BEACON_INTVAL=$((100*$NUM_VAP))
+                fi
+                if [ "${AP_STARTMODE}" = "multi-ind" ]; then
+                  if [ "${ITER_MODE}" = "sta-wds" ]; then
+                    ST_MODE="sta-wds-ind"
+                  else
+                    ST_MODE="sta-nwds-ind"
+                  fi
+                   makeVAP $ST_MODE "$ITER_SSID" 0:$ITER_RFPARAM $BEACON_INTVAL  
+                else
+                   makeVAP $ITER_MODE "$ITER_SSID" 0:$ITER_RFPARAM $BEACON_INTVAL
+                fi
+                iwconfig | grep -c ath | grep -i $NUM_VAP > /dev/null
+                if [ $? != 0 ]; then
+                    echo "Unable to create VAP!"
+                    exit
+                fi
+                 NUM_STA_VAP=1
+               else
+                  echo "Maximum number of STA VAPs exceeded for multi mode!!!"
+               fi 
+            else
+                NUM_VAP=$(($NUM_VAP+1))
+	        if [ "${BEACON_INT}" != "" ]; then
+	            BEACON_INTVAL=$(($BEACON_INT * $NUM_VAP))
+	        else
+	            BEACON_INTVAL=$((100*$NUM_VAP))
+                fi
+               if [ "${AP_STARTMODE}" = "multi-ind" ]; then
+                 if [ "${ITER_MODE}" = "ap-wds" ]; then
+                     AP_IN_MODE="ap-wds-ind"
+                 else
+                     AP_IN_MODE="ap-nwds-ind"
+                 fi
+                  makeVAP $AP_IN_MODE "$ITER_SSID" 0:$ITER_RFPARAM $BEACON_INTVAL
+               else
+                  makeVAP $ITER_MODE "$ITER_SSID" 0:$ITER_RFPARAM $BEACON_INTVAL
+               fi
+		iwconfig | grep -c ath | grep -i $NUM_VAP > /dev/null
+		if [ $? != 0 ]; then
+		    echo "Unable to create VAP!"
+		     exit
+                 fi
+            fi
+          fi
+      done
+
+
+
+
+    VAP_NUM=0
+    NUM_STA_VAP=0
+    for i in $my_vaps;
+    do
+   	ITER_SSID="AP_SSID$i"
+        ITER_SECMODE="AP_SECMODE$i"
+        ITER_SECFILE="AP_SECFILE$i"
+        ITER_WPS_ENABLE="WPS_ENABLE$i"
+        ITER_WPS_VAP_TIE="WPS_VAP_TIE$i"
+        eval ITER_SSID=\$$ITER_SSID
+        eval ITER_SECMODE=\$$ITER_SECMODE
+        eval ITER_SECFILE=\$$ITER_SECFILE
+        eval ITER_WPS_ENABLE=\$$ITER_WPS_ENABLE
+        eval ITER_WPS_VAP_TIE=\$$ITER_WPS_VAP_TIE
+        if [ "${ITER_MODE}" = "sta-wds" -o "${ITER_MODE}" = "sta" ]; then
+         if [ "${NUM_STA_VAP}" != 1 ]; then
+           if [ "_${ITER_SSID}" != "_" ]; then
+               activateVAP ath$VAP_NUM $BRIDGE_IF $ITER_SECMODE $ITER_SECFILE $ITER_WPS_ENABLE $ITER_WPS_VAP_TIE
+               VAP_NUM=$(($VAP_NUM+1))
+               NUM_STA_VAP=1
+           fi  
+          fi
+         else
+            if [ "_${ITER_SSID}" != "_" ]; then
+	       activateVAP ath$VAP_NUM $BRIDGE_IF $ITER_SECMODE $ITER_SECFILE $ITER_WPS_ENABLE $ITER_WPS_VAP_TIE
+	       VAP_NUM=$(($VAP_NUM+1))
+	    fi
+         fi
+    done
+fi
+
+
+if [ "${AP_STARTMODE}" = "multivlan" -o "${AP_STARTMODE}" = "multivlan-ind" ]; then
+    
+    WEP_CONFIGURED=0
+	
+    NUM_VAP=0
+    NUM_STA_VAP=0
+    for i in $my_vaps;
+    do
+        ITER_SSID="AP_SSID$i"
+        ITER_MODE="AP_MODE$i"
+        ITER_SECMODE="AP_SECMODE$i"
+        ITER_RFPARAM="AP_RFPARAM$i"
+        eval ITER_SSID=\$$ITER_SSID
+        eval ITER_MODE=\$$ITER_MODE
+        eval ITER_SECMODE=\$$ITER_SECMODE
+        eval ITER_RFPARAM=\$$ITER_RFPARAM
+        if [ "x${ITER_SSID}" != "x" ]; then
+            if [ "${ITER_SECMODE}" = "WEP" ]; then
+                if [ "${WEP_CONFIGURED}" = "1" ]; then
+                    echo "Unable to create additional WEP VAP"
+                    exit 255
+                else
+                    WEP_CONFIGURED=1
+                fi
+            fi
+
+            if [ "${ITER_MODE}" = "ap-wds" -o "${ITER_MODE}" = "ap" ]; then
+                    cfg -a DEF_ATH_countrycode=841
+            fi
+
+        if [ "${ITER_MODE}" = "sta-wds" -o "${ITER_MODE}" = "sta" ]; then
+           if [ "${NUM_STA_VAP}" != 1 ]; then
+               NUM_VAP=$(($NUM_VAP+1))
+               if [ "${BEACON_INT}" != "" ]; then
+                 BEACON_INTVAL=$(($BEACON_INT * $NUM_VAP))
+               else
+                 BEACON_INTVAL=$((100*$NUM_VAP))
+               fi
+               if [ "${AP_STARTMODE}" = "multivlan-ind" ]; then    
+                 if [ "${ITER_MODE}" = "sta-wds" ]; then
+                    ST_MODE="sta-wds-ind"
+                 else
+                    ST_MODE="sta-nwds-ind"
+                 fi
+                 makeVAP $ST_MODE "$ITER_SSID" $ITER_RADIO_ID:$ITER_RFPARAM $BEACON_INTVAL
+               else
+                 makeVAP $ITER_MODE "$ITER_SSID" 0:$ITER_RFPARAM $BEACON_INTVAL
+               fi
+               iwconfig | grep -c ath | grep -i $NUM_VAP > /dev/null
+               if [ $? != 0 ]; then
+                  echo "Unable to create VAP!"
+                  exit
+               fi
+               NUM_STA_VAP=1
+              else
+                echo "Maximum number of STA VAPs exceeded for multi vlan mode!!!"
+              fi
+            else
+               NUM_VAP=$(($NUM_VAP+1))
+               if [ "${BEACON_INT}" != "" ]; then
+	          BEACON_INTVAL=$(($BEACON_INT * $NUM_VAP))
+	       else
+		    BEACON_INTVAL=$((100*$NUM_VAP))
+		fi    
+                if [ "${AP_STARTMODE}" = "multivlan-ind" ]; then
+                 if [ "${ITER_MODE}" = "ap-wds" ]; then
+                    AP_IN_MODE="ap-wds-ind"
+                  else
+                    AP_IN_MODE="ap-nwds-ind"
+                  fi
+                  makeVAP $AP_IN_MODE "$ITER_SSID" 0:$ITER_RFPARAM $BEACON_INTVAL
+                else
+		  makeVAP $ITER_MODE "$ITER_SSID" 0:$ITER_RFPARAM $BEACON_INTVAL
+                fi
+		iwconfig | grep -c ath | grep -i $NUM_VAP > /dev/null
+		if [ $? != 0 ]; then
+		    echo "Unable to create VAP!"
+		    exit
+                fi
+             fi
+          fi
+      done
+
+
+    #
+    # Now, activate the VAPs
+    #
+
+    VAP_NUM=0
+    NUM_STA_VAP=0
+    for i in $my_vaps;
+    do
+        ITER_SSID="AP_SSID$i"
+        ITER_SECMODE="AP_SECMODE$i"
+        ITER_SECFILE="AP_SECFILE$i"
+        ITER_WPS_ENABLE="WPS_ENABLE$i"
+        ITER_WPS_VAP_TIE="WPS_VAP_TIE$i"
+        eval ITER_SSID=\$$ITER_SSID
+        eval ITER_SECMODE=\$$ITER_SECMODE
+        eval ITER_SECFILE=\$$ITER_SECFILE
+        eval ITER_WPS_ENABLE=\$$ITER_WPS_ENABLE
+        eval ITER_WPS_VAP_TIE=\$$ITER_WPS_VAP_TIE
+        if [ "${ITER_MODE}" = "sta-wds" -o "${ITER_MODE}" = "sta" ]; then
+         if [ "${NUM_STA_VAP}" != 1 ]; then
+           if [ "_${ITER_SSID}" != "_" ]; then
+              activateVAP ath$VAP_NUM $BRIDGE_IF $ITER_SECMODE $ITER_SECFILE $ITER_WPS_ENABLE $ITER_WPS_VAP_TIE
+              VAP_NUM=$(($VAP_NUM+1))
+           fi
+           NUM_STA_VAP=1
+         fi
+        else
+          if [ "_${ITER_SSID}" != "_" ]; then
+	      activateVAP ath$VAP_NUM $BRIDGE_IF $ITER_SECMODE $ITER_SECFILE $ITER_WPS_ENABLE $ITER_WPS_VAP_TIE
+	      VAP_NUM=$(($VAP_NUM+1))
+           fi
+        fi
+    done
+
+
+    #configure VLANS and bridges
+    brctl delif $BRIDGE_IF ${WAN_IF}
+    brctl delif $BRIDGE_IF ${LAN_IF}
+    ifconfig $BRIDGE_IF 0.0.0.0 up
+    if [ "${AP_AUTHIF}" = "WAN" ]; then 
+        ifconfig ${WAN_IF} $AP_IPADDR up
+	arpif=${WAN_IF}
+    else
+        ifconfig ${LAN_IF} $AP_IPADDR up
+	arpif=${LAN_IF}
+    fi
+    
+
+    #
+    #vlan ids must be choosen. This is to provide better control on number of vaps need to be created. 
+    #
+    VAP_NUM=0
+    for i in $my_vaps;
+    do
+        ITER_SSID="AP_SSID$i"
+        ITER_VLAN="AP_VLAN$i"
+        ITER_BRNAME="AP_BRNAME$i"
+        ITER_SECMODE="AP_SECMODE$i"
+        ITER_SECFILE="AP_SECFILE$i"
+        ITER_VIPADDR="AP_VIPADDR$i"
+        eval ITER_SSID=\$$ITER_SSID
+        eval ITER_VLAN=\$$ITER_VLAN
+        eval ITER_BRNAME=\$$ITER_BRNAME
+        eval ITER_SECMODE=\$$ITER_SECMODE
+        eval ITER_SECFILE=\$$ITER_SECFILE
+        eval ITER_VIPADDR=\$$ITER_VIPADDR
+
+        if [ "_${ITER_BRNAME}" = "_" ]; then
+            ITER_BRNAME=br${ITER_VLAN}
+        fi
+        if [ "_${ITER_VLAN}" != "_" ]; then
+            configure_vlanvap ath$VAP_NUM ${ITER_BRNAME:="br2"} ${ITER_VLAN} ${ITER_SECMODE:="None"} ${ITER_SECFILE:="None"} ${ITER_VIPADDR}
+        fi
+        if [ "_${ITER_SSID}" != "_" ]; then
+            VAP_NUM=$(($VAP_NUM+1))
+        fi
+    done
+    arping -U -c 1 -I ${arpif} $AP_IPADDR 
+
+fi
+
+##
+## IBSS MODE
+##
+if [ "${AP_STARTMODE}" = "adhoc" ]; then
+    makeVAP adhoc "$IBSS_SSID" 0:RF:$AP_PRIMARY_CH:$AP_CHMODE   
+    if [ $? != 0 ]; then
+        echo "Unable to create VAP!"
+        exit
+    fi
+
+    activateVAP ath0 br0 $AP_SECMODE $AP_SECFILE
+    brctl delif br0 ath0
+fi
+
+##
+## WRAP (Wireless Repeater AP) MODE
+##
+if [ "${AP_STARTMODE}" = "wrap" ]; then
+    # bring up the WRAP VAP
+    makeVAP wrap "$AP_SSID" $AP_RADIO_ID:$AP_RFPARAM
+    if [ $? != 0 ]; then
+        echo "Unable to create WRAP VAP!"
+        exit
+    fi
+    activateVAP ath0:$AP_RADIO_ID br0 $AP_SECMODE $AP_SECFILE $WPS_ENABLE $WPS_VAP_TIE
+
+    if [ ${WPS_ENABLE} -ne 0 ]; then
+        # bring up the master STA VAP if WPS is enabled
+        makeVAP sta-proxy "any" $AP_RADIO_ID:$AP_RFPARAM
+        if [ $? != 0 ]; then
+            echo "Unable to create main ProxySTA VAP!"
+            exit
+        fi
+        activateVAP ath1:$AP_RADIO_ID none $AP_SECMODE $AP_SECFILE $WPS_ENABLE $WPS_VAP_TIE
+    fi
+fi
+
+##############
+
+echo "CHH: System Configuration"
+cfg -s
+
+##############
+unset IS_WPA
+unset IS_WPS
+
+IS_WPA=`set | grep WPA`
+IS_WPS=`set | grep "WPS_ENABLE" | grep "='1'\|='2'"`
+
+##
+## Now, make the topology file
+##
+
+if [ "${IS_WPA}" != "" -o "${IS_WPS}" != "" ]; then
+    if [ "${HOSTAPD_VER}" = "v0.5.9" ]; then
+    	echo "Making Topology File . . ."
+    	# for vlan case we should not be adding $BRIDGE_IF 
+    	if [ -f /tmp/$BRIDGE_IF ] && [ "${AP_STARTMODE}" != "multivlan" ]; then
+        	echo -e "bridge $BRIDGE_IF" > /tmp/topology.conf
+        	echo -e "{" >> /tmp/topology.conf
+        	echo -e "\tipaddress ${AP_IPADDR}" >> /tmp/topology.conf
+        	echo -e "\tipmask ${AP_NETMASK}" >> /tmp/topology.conf
+        	cat /tmp/$BRIDGE_IF >> /tmp/topology.conf
+        	echo -e "\tinterface eth0" >> /tmp/topology.conf
+        	echo -e "\tinterface eth1" >> /tmp/topology.conf
+        	echo -e "}" >> /tmp/topology.conf
+    	else
+        	echo "bridge none" > /tmp/topology.conf
+        	echo "{" >> /tmp/topology.conf
+        	echo "}" >> /tmp/topology.conf
+    	fi
+
+        ##
+        ## Assume up to 16 vlan specifications
+        ##
+
+        if [ -f /tmp/bc${AP_VLAN} ]; then
+            echo -e "bridge ${AP_BRNAME}" >> /tmp/topology.conf
+            echo -e "{" >> /tmp/topology.conf
+            echo -e "\tinterface eth0.${AP_VLAN}" >> /tmp/topology.conf
+            echo -e "\tinterface eth1.${AP_VLAN}" >> /tmp/topology.conf
+            cat /tmp/bc${AP_VLAN} >> /tmp/topology.conf
+            echo -e "}" >> /tmp/topology.conf
+            #when the file is processed rename it with .done, so that we
+            #do not process it again. This should help when we have same
+            #vlan for all the vaps in mbssid
+            mv /tmp/bc${AP_VLAN} /tmp/bc${AP_VLAN}.done
+        fi
+
+        if [ -f /tmp/bc${AP_VLAN_2} ]; then
+            echo -e "bridge ${AP_BRNAME_2}" >> /tmp/topology.conf
+            echo -e "{" >> /tmp/topology.conf
+            echo -e "\tinterface eth0.${AP_VLAN_2}" >> /tmp/topology.conf
+            echo -e "\tinterface eth1.${AP_VLAN_2}" >> /tmp/topology.conf
+            cat /tmp/bc${AP_VLAN_2} >> /tmp/topology.conf
+            echo -e "}" >> /tmp/topology.conf
+            mv /tmp/bc${AP_VLAN_2} /tmp/bc${AP_VLAN_2}.done
+        fi
+
+        if [ -f /tmp/bc${AP_VLAN_3} ]; then
+            echo -e "bridge ${AP_BRNAME_3}" >> /tmp/topology.conf
+            echo -e "{" >> /tmp/topology.conf
+            echo -e "\tinterface eth0.${AP_VLAN_3}" >> /tmp/topology.conf
+            echo -e "\tinterface eth1.${AP_VLAN_3}" >> /tmp/topology.conf
+            cat /tmp/bc${AP_VLAN_3} >> /tmp/topology.conf
+            echo -e "}" >> /tmp/topology.conf
+            mv /tmp/bc${AP_VLAN_3} /tmp/bc${AP_VLAN_3}.done
+        fi
+
+        if [ -f /tmp/bc${AP_VLAN_4} ]; then
+            echo -e "bridge ${AP_BRNAME_4}" >> /tmp/topology.conf
+            echo -e "{" >> /tmp/topology.conf
+            echo -e "\tinterface eth0.${AP_VLAN_4}" >> /tmp/topology.conf
+            echo -e "\tinterface eth1.${AP_VLAN_4}" >> /tmp/topology.conf
+            cat /tmp/bc${AP_VLAN_4} >> /tmp/topology.conf
+            echo -e "}" >> /tmp/topology.conf
+            mv /tmp/bc${AP_VLAN_4} /tmp/bc${AP_VLAN_4}.done
+        fi
+
+        if [ -f /tmp/bc${AP_VLAN_5} ]; then
+            echo -e "bridge ${AP_BRNAME_5}" >> /tmp/topology.conf
+            echo -e "{" >> /tmp/topology.conf
+            echo -e "\tinterface eth0.${AP_VLAN_5}" >> /tmp/topology.conf
+            echo -e "\tinterface eth1.${AP_VLAN_5}" >> /tmp/topology.conf
+            cat /tmp/bc${AP_VLAN_5} >> /tmp/topology.conf
+            echo -e "}" >> /tmp/topology.conf
+            mv /tmp/bc${AP_VLAN_5} /tmp/bc${AP_VLAN_5}.done
+        fi
+
+        if [ -f /tmp/bc${AP_VLAN_6} ]; then
+            echo -e "bridge ${AP_BRNAME_6}" >> /tmp/topology.conf
+            echo -e "{" >> /tmp/topology.conf
+            echo -e "\tinterface eth0.${AP_VLAN_6}" >> /tmp/topology.conf
+            echo -e "\tinterface eth1.${AP_VLAN_6}" >> /tmp/topology.conf
+            cat /tmp/bc${AP_VLAN_6} >> /tmp/topology.conf
+            echo -e "}" >> /tmp/topology.conf
+            mv /tmp/bc${AP_VLAN_6} /tmp/bc${AP_VLAN_6}.done
+        fi
+
+        if [ -f /tmp/bc${AP_VLAN_7} ]; then
+            echo -e "bridge ${AP_BRNAME_7}" >> /tmp/topology.conf
+            echo -e "{" >> /tmp/topology.conf
+            echo -e "\tinterface eth0.${AP_VLAN_7}" >> /tmp/topology.conf
+            echo -e "\tinterface eth1.${AP_VLAN_7}" >> /tmp/topology.conf
+            cat /tmp/bc${AP_VLAN_7} >> /tmp/topology.conf
+            echo -e "}" >> /tmp/topology.conf
+            mv /tmp/bc${AP_VLAN_7} /tmp/bc${AP_VLAN_7}.done
+        fi
+
+        if [ -f /tmp/bc${AP_VLAN_8} ]; then
+            echo -e "bridge ${AP_BRNAME_8}" >> /tmp/topology.conf
+            echo -e "{" >> /tmp/topology.conf
+            echo -e "\tinterface eth0.${AP_VLAN_8}" >> /tmp/topology.conf
+            echo -e "\tinterface eth1.${AP_VLAN_8}" >> /tmp/topology.conf
+            cat /tmp/bc${AP_VLAN_8} >> /tmp/topology.conf
+            echo -e "}" >> /tmp/topology.conf
+            mv /tmp/bc${AP_VLAN_8} /tmp/bc${AP_VLAN_8}.done
+        fi
+    
+        if [ -f /tmp/bc${AP_VLAN_9} ]; then
+            echo -e "bridge ${AP_BRNAME_9}" >> /tmp/topology.conf
+            echo -e "{" >> /tmp/topology.conf
+            echo -e "\tinterface eth0.${AP_VLAN_9}" >> /tmp/topology.conf
+            echo -e "\tinterface eth1.${AP_VLAN_9}" >> /tmp/topology.conf
+            cat /tmp/bc${AP_VLAN_9} >> /tmp/topology.conf
+            echo -e "}" >> /tmp/topology.conf
+            mv /tmp/bc${AP_VLAN_9} /tmp/bc${AP_VLAN_9}.done
+        fi
+    
+        if [ -f /tmp/bc${AP_VLAN_10} ]; then
+            echo -e "bridge ${AP_BRNAME_10}" >> /tmp/topology.conf
+            echo -e "{" >> /tmp/topology.conf
+            echo -e "\tinterface eth0.${AP_VLAN_10}" >> /tmp/topology.conf
+            echo -e "\tinterface eth1.${AP_VLAN_10}" >> /tmp/topology.conf
+            cat /tmp/bc${AP_VLAN_10} >> /tmp/topology.conf
+            echo -e "}" >> /tmp/topology.conf
+            mv /tmp/bc${AP_VLAN_10} /tmp/bc${AP_VLAN_10}.done
+        fi
+    
+        if [ -f /tmp/bc${AP_VLAN_11} ]; then
+            echo -e "bridge ${AP_BRNAME_11}" >> /tmp/topology.conf
+            echo -e "{" >> /tmp/topology.conf
+            echo -e "\tinterface eth0.${AP_VLAN_11}" >> /tmp/topology.conf
+            echo -e "\tinterface eth1.${AP_VLAN_11}" >> /tmp/topology.conf
+            cat /tmp/bc${AP_VLAN_11} >> /tmp/topology.conf
+            echo -e "}" >> /tmp/topology.conf
+            mv /tmp/bc${AP_VLAN_11} /tmp/bc${AP_VLAN_11}.done
+        fi
+
+        if [ -f /tmp/bc${AP_VLAN_12} ]; then
+            echo -e "bridge ${AP_BRNAME_12}" >> /tmp/topology.conf
+            echo -e "{" >> /tmp/topology.conf
+            echo -e "\tinterface eth0.${AP_VLAN_12}" >> /tmp/topology.conf
+            echo -e "\tinterface eth1.${AP_VLAN_12}" >> /tmp/topology.conf
+            cat /tmp/bc${AP_VLAN_12} >> /tmp/topology.conf
+            echo -e "}" >> /tmp/topology.conf
+            mv /tmp/bc${AP_VLAN_12} /tmp/bc${AP_VLAN_12}.done
+        fi
+
+        if [ -f /tmp/bc${AP_VLAN_13} ]; then
+            echo -e "bridge ${AP_BRNAME_13}" >> /tmp/topology.conf
+            echo -e "{" >> /tmp/topology.conf
+            echo -e "\tinterface eth0.${AP_VLAN_13}" >> /tmp/topology.conf
+            echo -e "\tinterface eth1.${AP_VLAN_13}" >> /tmp/topology.conf
+            cat /tmp/bc${AP_VLAN_13} >> /tmp/topology.conf
+            echo -e "}" >> /tmp/topology.conf
+            mv /tmp/bc${AP_VLAN_13} /tmp/bc${AP_VLAN_13}.done
+        fi
+
+        if [ -f /tmp/bc${AP_VLAN_14} ]; then
+            echo -e "bridge ${AP_BRNAME_14}" >> /tmp/topology.conf
+            echo -e "{" >> /tmp/topology.conf
+            echo -e "\tinterface eth0.${AP_VLAN_14}" >> /tmp/topology.conf
+            echo -e "\tinterface eth1.${AP_VLAN_14}" >> /tmp/topology.conf
+            cat /tmp/bc${AP_VLAN_14} >> /tmp/topology.conf
+            echo -e "}" >> /tmp/topology.conf
+            mv /tmp/bc${AP_VLAN_14} /tmp/bc${AP_VLAN_14}.done
+        fi
+
+        if [ -f /tmp/bc${AP_VLAN_15} ]; then
+            echo -e "bridge ${AP_BRNAME_15}" >> /tmp/topology.conf
+            echo -e "{" >> /tmp/topology.conf
+            echo -e "\tinterface eth0.${AP_VLAN_15}" >> /tmp/topology.conf
+            echo -e "\tinterface eth1.${AP_VLAN_15}" >> /tmp/topology.conf
+            cat /tmp/bc${AP_VLAN_15} >> /tmp/topology.conf
+            echo -e "}" >> /tmp/topology.conf
+            mv /tmp/bc${AP_VLAN_15} /tmp/bc${AP_VLAN_15}.done
+        fi
+
+        if [ -f /tmp/bc${AP_VLAN_16} ]; then
+            echo -e "bridge ${AP_BRNAME_16}" >> /tmp/topology.conf
+            echo -e "{" >> /tmp/topology.conf
+            echo -e "\tinterface eth0.${AP_VLAN_16}" >> /tmp/topology.conf
+            echo -e "\tinterface eth1.${AP_VLAN_16}" >> /tmp/topology.conf
+            cat /tmp/bc${AP_VLAN_16} >> /tmp/topology.conf
+            echo -e "}" >> /tmp/topology.conf
+            mv /tmp/bc${AP_VLAN_16} /tmp/bc${AP_VLAN_16}.done
+        fi
+
+        if [ -f /tmp/aplist0 -o -f /tmp/stalist0 ]; then
+            echo "radio wifi0" >> /tmp/topology.conf
+            echo "{" >> /tmp/topology.conf
+
+            if [ -f /tmp/aplist0 ]; then
+                echo -e "\tap" >> /tmp/topology.conf
+                echo -e "\t{" >> /tmp/topology.conf
+                cat /tmp/aplist0 >> /tmp/topology.conf
+                echo -e "\t}" >> /tmp/topology.conf
+            fi
+
+            if [ -f /tmp/stalist0 ]; then
+                cat /tmp/stalist0 >> /tmp/topology.conf
+            fi
+
+            echo "}" >> /tmp/topology.conf
+        fi
+
+        #
+        # Start hostapd & wsc_supplicant.  Check for the
+        # appropriate file lists to determine if they need
+        # to be started . . .
+        #
+        # Note that /var/run is statically linked to /tmp . . .
+        #
+
+        sleep 4
+        if [ -f /tmp/aplist0 ]; then
+            hostapd /tmp/topology.conf &
+        fi
+        if [ -f /tmp/stalist0 ]; then
+            if [ -f /tmp/aplist0 ]; then
+                #Sleep for 2 second till hostapd run
+                sleep 2
+            fi
+            wpa_supplicant /var/run/topology.conf &
+        fi
+    else
+        if [ "${AP_STARTMODE}" = "adhoc" ]; then
+            sleep 10
+            wpa_supplicant -c/tmp/supath0 -iath0 -dd
+        else
+            #athr hostap config
+    	    if [ -f /tmp/conf_filename ]; then
+                hostapd  -B `cat /tmp/conf_filename` -e /etc/wpa2/entropy
+	        fi
+            if [ -f /tmp/sta_conf_filename ]; then
+                wpa_supplicant  -B `cat /tmp/sta_conf_filename`
+            fi
+        fi
+    fi
+fi
+
+#check if VOW need to be enabled
+if [ "${VOW_ENABLE}" -eq "1" ]; then
+    iwpriv wifi0 setVowExt 31
+fi

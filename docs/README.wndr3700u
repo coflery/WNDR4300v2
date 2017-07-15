@@ -1,0 +1,25 @@
+How to upgrade:
+
+Upload the file to the target throuhg Ymodem
+
+1, Running minicom to monitor the serial console of WNDR3700U
+2, entering into u-boot
+3, ar7100> loady 80800000 115200
+4, Select Transfer->Send File 
+5, Select the file and Protocol as Ymodem
+6, Then upload the file through Ymodem.
+
+ar7100> loady 80800000 115200
+ar7100> crc32 80800000 ${filesize}
+ar7100> erase bf070000 +730000;cp.b 80800080 bf070000 730000
+
+Upgrade linux kernel and file system in u-boot through tftp
+
+ar7100> tftp 80800000 WNDR3700U-1.0.0.0.img
+ar7100> erase bf070000 +730000;cp.b 80800080 bf070000 730000
+
+Set the boot arguments in u-boot
+
+ag7100> set bootcmd 'fsload 80800000 image/uImage;bootm 80800000'
+ag7100> saveenv
+ag7100> reset

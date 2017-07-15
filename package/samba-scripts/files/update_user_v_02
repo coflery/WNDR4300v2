@@ -1,0 +1,29 @@
+#!bin/sh
+
+config=/bin/config
+
+SMB_CONF_DIR=/tmp/config
+SMB_PASSWD_DIR=/etc/samba/smbpasswd
+
+# unset
+rm -f $SMB_CONF_DIR/passwd+
+rm -f $SMB_CONF_DIR/gshadow
+rm -f $SMB_CONF_DIR/shadow
+
+# user setting
+echo "root:!:0:0:root:/tmp:/bin/ash"			> $SMB_CONF_DIR/passwd
+echo "guest:*:65534:65534:guest:/tmp/ftpguest:/bin/ash"        >> $SMB_CONF_DIR/passwd
+
+# group setting
+echo "root:x:0:"	> $SMB_CONF_DIR/group
+echo "admin:x:1:"	>>$SMB_CONF_DIR/group
+echo "guest:x:65534:"	>>$SMB_CONF_DIR/group
+
+(sleep 1; echo "$($config get http_passwd)"; sleep 1; echo "$($config get http_passwd)") | /bin/adduser -G admin admin -H -h /tmp/ftpadmin -s /bin/ash
+echo "guest::10957:0:99999:7:::"                       >> $SMB_CONF_DIR/shadow
+
+# clear smbpasswd file
+echo -n ""	> $SMB_PASSWD_DIR
+
+/usr/bin/smbpasswd admin "$($config get http_passwd)"
+/usr/bin/smbpasswd guest ""

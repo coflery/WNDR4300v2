@@ -1,0 +1,198 @@
+<!doctype linuxdoc system>
+
+<!-- Here's an SGML example file. Format it and print out the source, and
+     use it as a model for your own SGML files. As you can see this is a
+     comment. 
+ -->
+
+<article>
+
+<!-- Title information -->
+
+<title> AR5416 MIMO developer's guide
+<author> Linux team
+<!-- XYZPPCGEFXDJDL -->
+<date> Wed Jul 16 13:19:31 CST 2003
+<!--
+v1.0, 31 October 2000
+-->
+<abstract>
+This is the abstract.
+</abstract>
+
+<!-- Table of contents -->
+<toc>
+
+<!-- Begin the document -->
+
+<sect> Prerequisite
+
+<p>
+A desktop computer with Intel Pentium level CPU, and GNU/Linux
+operation system. Debian GNU/Linux is recommended.
+
+<p> Also, add the following line into your <tt>/etc/hosts</tt>.
+<tscreen><verb>
+172.17.144.8    dniserver.sh.deltagroup.com    dniserver
+</verb></tscreen>
+<sect> Checkout the source from CVS server
+
+<p>
+<enum>
+<item> The first command you need to run for CVS access is:
+<tscreen><verb>
+cvs -d :pserver:yourname@dniserver:/usr/local/dnicvs login
+</verb></tscreen>
+where yourname is your account on itgserver.
+CVS will prompt you for a password.
+<item> Once the login is complete, you can then check out the source
+code by running the following command:
+<tscreen><verb>
+cvs -d :pserver:yourname@dniserver:/usr/local/dnicvs co -r dni_ar5008_1023_atheros_br ar5008-buildroot
+</verb></tscreen>
+This will create a directory called <tt>ar5008-buildroot</tt> in the current directory. 
+</enum>
+
+<sect> Build the firmware
+
+<sect1> Building Firmware Image
+
+<p>
+<enum>
+<item>Change directory into ar5008-buildroot
+<item>Build all in 3 steps
+<tscreen<verb>
+	$ cp defconfig-atheros-ap71 .config
+	$ make oldconfig
+	$ make 
+</verb></tscreen> 
+<item> Finally you can find the kernel image and the filesystem image:
+<tscreen<verb>
+Kernel image "zImage" in ar5008-buildroot/build_armeb/linux/arch/arm/boot;
+Filesystem image "root.jffs2-64k" in ar5008-buildroot/build_armeb/linux-2.6-xscale
+</verb></tscreen>
+</enum>
+
+<sect> RedBoot : Initiation
+<sect1> Initiating flash partition
+<p>
+Using 
+<tscreen><verb>
+RedBoot> fis list
+</verb></tscreen>
+to check the partition number in flash. If there is only one partition in the output list, use
+<tscreen><verb>
+RedBoot> fis init
+</verb></tscreen>
+(answer 'y') to initialize flash. Then, it should show three partitions in output list of <tt>fis list</tt>
+<tscreen><verb>
+ RedBoot> fis list   
+ Name              FLASH addr  Mem addr    Length      Entry point 
+ RedBoot           0x50000000  0x50000000  0x00040000  0x00000000
+ RedBoot config    0x507C0000  0x507C0000  0x00001000  0x00000000
+ FIS directory     0x507E0000  0x507E0000  0x00020000  0x00000000
+</verb></tscreen>
+
+<sect1> Setup Tftp Server for Transfering Image Files onto Target Boards
+<p>
+<enum>
+<item> Install tftp server package (eg. the atftpd package ) on host PC.
+<item> Check where is the root directory (eg. /tftpboot ) of tftp server.
+</enum>
+
+<sect> RedBoot: Configuring
+<p>
+Using <tt>fconfig</tt> to configure the redboot.
+<tscreen><verb>
+ RedBoot> fconfig
+ Run script at boot: false
+ Boot script timeout (1000ms resolution): 2
+ Use BOOTP for network configuration: false 
+ Gateway IP address: 
+ Local IP address: 192.168.1.1 
+ Local IP address mask: 255.255.255.0
+ Default server IP address: 192.168.1.100
+ Console baud rate: 115200
+ GDB connection port: 9000 
+ Force console for special debug messages: false 
+ Network debug at boot time: false
+ Update RedBoot non-volatile configuration - continue (y/n)? y
+</verb></tscreen>
+where <tt>192.168.1.100</tt> is the IP address of the tftp server mentioned
+in last section.
+<tt>Run script at boot</tt> is to tell Redboot what should do at booting. 
+Hence, this item will be set to true for booting kernel image from flash or tftp server.
+
+<p>
+
+<sect> RedBoot: Put Compressed Kernel Image onto Target Boards
+
+<p>
+<enum>
+<item> Load kernel image<tt>zImage</tt> onto
+the target board
+<tscreen><verb>
+RedBoot> load -r -b load -r -v -b 0x400000 zImage
+</verb></tscreen>
+<item> Commit the new zImage image to flash
+<tscreen><verb>
+RedBoot> fis create -b 0x400000 -l 0x200000 -e 0x0 -r 0x100000 zImage
+</verb></tscreen>
+<item> Reboot the target board.
+<item> Update the non-volatile RedBoot configuration<p>
+We have to update the RedBoot script so that it passes the root device as
+a command-line argument to Linux.  Use RedBoot's <tt>fconfig</tt> command again, and set <tt>Run script at boot</tt> to true and write the script as:
+<tscreen><verb>
+RedBoot> fconfig
+Run script at boot: true   
+Enter script, terminate with empty line  
+>> fis load zImage
+>> exec
+>> 
+...
+...
+</verb></tscreen>
+</enum>
+
+<sect> RedBoot : Writing FilsSystem Partition Images onto Target Boards
+
+<p>
+<enum>
+<item> Load filesystem image<tt>root.jffs2-64k</tt> onto the target board
+<tscreen><verb>
+RedBoot> load -r -v -b 0x400000 rootfs.jffs2
+</verb></tscreen>
+<item> Commit the filesystem image to flash
+<tscreen><verb>
+RedBoot> fis create -b 0x400000 -l 0x250000 -e 0x0 -r 0x300000 rootfs
+</verb></tscreen>
+</enum>
+
+<sect> RedBoot: Creating an Empty Config Partition
+<p>
+<enum>
+<item>Create a blank file first on your PC.
+<tscreen><verb>
+# dd if=/dev/zero of=/tmp/zeroconfig bs=64k count=1
+</verb></tscreen>
+<item>Load the configuration file to your target board.
+<tscreen><verb>
+RedBoot> load -r -v -b 0x400000 zeroconfig
+</verb></tscreen>
+<item> Commit the configuration partition file
+<tscreen><verb>
+RedBoot> fis create -b 0x400000 -l 0x40000 -e 0x0 -r 0x550000 config
+</verb></tscreen>
+
+<tscreen><verb>
+RedBoot> fis list
+Name              FLASH addr  Mem addr    Length      Entry point
+RedBoot           0x50000000  0x50000000  0x00040000  0x00000000
+RedBoot config    0x507C0000  0x507C0000  0x00001000  0x00000000
+FIS directory     0x507E0000  0x507E0000  0x00020000  0x00000000
+zImage            0x50040000  0x00100000  0x00200000  0x00000000
+rootfs            0x50240000  0x00300000  0x00260000  0x00000000
+config            0x504A0000  0x00550000  0x00040000  0x00000000
+</verb></tscreen>
+</enum>
+</article>

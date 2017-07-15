@@ -1,0 +1,21 @@
+config NTPCLIENT_GIT_TREEISH
+	string
+	prompt "treeish of dni-ntpclient git repository"
+	default "ntpclient_2003_194-dni33"
+	help
+           Input the treeish of dni-ntpclient git repository which you want to build
+
+config NTPCLIENT_GIT_REPOSITORY
+	string
+	prompt "name of dni-ntpclient git repository"
+	default "ntpclient.git"
+	help
+	   Input the name of dni-ntpclient git repository which you want to build
+
+config NTPCLIENT_GIT_URL
+	string
+	prompt "url of dni-ntpclient git repository"
+	default "dniserver/scm/dnigit/common/apps/ntpclient.git"
+	help
+	   Input the url of dni-ntpclient git repository which you want to build
+

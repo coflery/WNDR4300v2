@@ -1,0 +1,77 @@
+#
+# Copyright (C) 2006-2008 OpenWrt.org
+#
+# This is free software, licensed under the GNU General Public License v2.
+# See /LICENSE for more information.
+#
+# $Id$
+
+include $(TOPDIR)/rules.mk
+
+PKG_NAME:=libusb
+PKG_VERSION:=0.1.12
+PKG_RELEASE:=2
+
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=@SF/libusb
+PKG_MD5SUM:=caf182cbc7565dac0fd72155919672e6
+PKG_FIXUP:=libtool
+#PKG_INSTALL_DIR=/home/sw02/git-home/WNDR3700U-buildroot/build_mips/root
+
+include $(INCLUDE_DIR)/package.mk
+
+PKG_INSTALL=1
+
+define Package/libusb
+  SECTION:=libs
+  CATEGORY:=Libraries
+  TITLE:=A library for accessing Linux USB devices
+  URL:=http://libusb.sourceforge.net/
+endef
+
+define Build/Configure
+	$(call Build/Configure/Default, \
+		--enable-shared \
+		--enable-static \
+	)
+endef
+
+TARGET_CFLAGS += $(FPIC)
+
+define Build/InstallDev
+	$(INSTALL_DIR) $(STAGING_DIR)/bin
+	$(INSTALL_BIN) \
+		$(PKG_INSTALL_DIR)/usr/bin/libusb-config \
+		$(STAGING_DIR)/bin/
+	$(SED) \
+		's,^\(prefix\|exec_prefix\)=.*,\1=$(STAGING_DIR)/usr,g' \
+		$(STAGING_DIR)/bin/libusb-config
+
+	$(INSTALL_DIR) $(STAGING_DIR)/usr/include
+	$(INSTALL_DATA) \
+		$(PKG_INSTALL_DIR)/usr/include/usb.h \
+		$(STAGING_DIR)/usr/include/
+
+	$(INSTALL_DIR) $(STAGING_DIR)/usr/lib
+	$(CP) \
+		$(PKG_INSTALL_DIR)/usr/lib/libusb*.{la,so*,a} \
+		$(STAGING_DIR)/usr/lib/
+
+	$(INSTALL_DIR) $(STAGING_DIR)/usr/lib/pkgconfig
+	$(INSTALL_DATA) \
+		$(PKG_INSTALL_DIR)/usr/lib/pkgconfig/libusb.pc \
+		$(STAGING_DIR)/usr/lib/pkgconfig/
+endef
+
+define Package/libusb/install
+	echo $(PKG_INSTALL_DIR)
+	echo XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+	#echo "$(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_INSTALL_FLAGS) install"
+	#$(MAKE) -C $(PKG_BUILD_DIR) $(MAKE_INSTALL_FLAGS) install
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(CP) \
+		/home/sw02/git-home/WNDR3700U-buildroot/build_mips/libusb-0.1.12/.libs/libusb*.so* \
+		/home/sw02/git-home/WNDR3700U-buildroot/build_mips/root/lib
+endef
+
+$(eval $(call BuildPackage,libusb))

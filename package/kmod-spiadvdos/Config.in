@@ -1,0 +1,21 @@
+# kmod-spiadvdos configuration
+config SPIADVDOS_GIT_TREEISH
+	string
+	prompt "treeish of spiadvdos git repository"
+	default "kmod-spiadvdos-v2.6.31-dni2"
+	help
+           Input the treeish of kmod-spiadvdos git repository which you want to build
+
+config SPIADVDOS_GIT_REPOSITORY
+	string
+	prompt "name of spiadvdos git repository"
+	default "kmod-spiadvdos.git"
+	help
+	   Input the name of kmod-spiadvdos git repository which you want to build
+
+config SPIADVDOS_GIT_URL
+	string
+	prompt "url of spiadvdos git repository"
+	default "ssh://dniserver/scm/dnigit/common/kmods/kmod-spiadvdos.git"
+	help
+	   Input the url of kmod-spiadvdos git repository which you want to build

@@ -1,0 +1,24 @@
+#!/bin/sh /etc/rc.common
+#START=70
+boot() {
+    # prepare anything needed by load balance system.
+#	IPROUTE2_RT=/etc/iproute2/rt_tables
+#	IPROUTE2_TMP=/tmp/iproute2
+#	IPROUTE2_ORI=/etc/iproute2.orig
+
+#	[ -d $IPROUTE2_TMP ] || mkdir -p $IPROUTE2_TMP && cp -a $IPROUTE2_ORI/* $IPROUTE2_TMP;
+#	echo 200 rt_failover >> $IPROUTE2_RT
+	echo "failover.init is done." > /tmp/failover_init_done
+
+	multi_wan_type="$(/bin/config get multi_wan_type)"
+	wan_proto="$(/bin/config get wan_proto)"
+
+	if [ "$wan_proto" = "3g" ] && [ "x$($CONFIG get wan_cdma_conn_start)" = "x1" ] && [ "$multi_wan_type" != "failover" ]; then
+		mobilectl connect  
+	fi
+
+	if [ "$multi_wan_type" == "failover" ]; then
+		/bin/config unset failover_link_detect
+		/usr/sbin/failover
+	fi
+}

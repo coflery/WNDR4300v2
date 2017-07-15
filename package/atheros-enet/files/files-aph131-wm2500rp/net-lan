@@ -1,0 +1,161 @@
+#!/bin/sh /etc/rc.common
+START=20
+
+print_dhcpd_conf(){
+    cat <<EOF
+pidfile /var/run/udhcpd.pid
+start $2
+end $3
+interface $1
+remaining yes
+auto_time 5
+lease_file /tmp/udhcpd.leases
+option subnet $4
+option router $5
+option dns $5
+option lease $6
+EOF
+}
+ 
+start_dhcpd() {
+    [ ! -f /tmp/udhcpd.leases ] && touch /tmp/udhcpd.leases
+    print_dhcpd_conf "$BR_IF" "$($CONFIG get dhcp_start)" "$($CONFIG get dhcp_end)" "$($CONFIG get lan_netmask)" "$($CONFIG get lan_ipaddr)" "$($CONFIG get lan_lease)" > /tmp/udhcpd.conf
+
+    count=1
+    while :
+    do
+	lease="$($CONFIG get reservation$count)"
+	if [ "x$lease" = "x" ]; then
+	    break;
+	fi
+	count=`expr $count + 1`
+	echo "static_lease $lease" >> /tmp/udhcpd.conf
+    done
+
+    udhcpd /tmp/udhcpd.conf
+}
+
+setup_bridge_interface() {
+	lan_ip=$($CONFIG get lan_ipaddr)
+	lan_mask=$($CONFIG get lan_netmask)
+	killall -SIGUSR2 udhcpc
+	killall udhcpc
+
+    local tr069=""
+    if [ $($CONFIG get cwmp_tr069_enable) = "1" ]; then
+		tr069="-V dslforum.org"
+    fi
+
+	if [ "$($CONFIG get lan_dhcp)" = "1" ]; then
+		cp /etc/wm2500rp.script /tmp/wm2500rp.script && chmod +x /tmp/wm2500rp.script
+		udhcpc -b -a -i $BR_IF -s /tmp/wm2500rp.script -h "$($CONFIG get wan_hostname)" -r $($CONFIG get lan_ipaddr) -N $($CONFIG get old_lan_ipaddr) ${tr069}
+		#save lan_ipaddr and old_lan_ipaddr
+		local lan_log="[LAN gets dynamic IP] IP address: "$($CONFIG get lan_ipaddr)","
+	else
+		ifconfig $BR_IF ${lan_ip:-192.168.1.250} netmask ${lan_mask:-255.255.255.0}
+		local lan_log="[LAN gets static IP] IP address: "$($CONFIG get lan_ipaddr)","
+		#dns for resolv.conf
+		/bin/echo "nameserver $($CONFIG get lan_ether_dns1)" > /tmp/resolv.conf
+		#default gateway route
+		/sbin/route del default gw 0.0.0.0
+    	/sbin/route add default gw $($CONFIG get lan_gateway)
+	fi
+
+	# Restart NTP
+	killall ntpclient
+	sleep 1
+	if [ "$($CONFIG get endis_ntp)" = "1" ]; then
+	#ntpclient -h "$($CONFIG get ntpserver1)" -b "second_server=$($CONFIG get ntpserver2)" -i 15 -m 60 -p 123 -s
+	/usr/sbin/ntpclient
+	fi
+
+	# Restart UPnP
+	/sbin/cmdupnp restart
+
+    /usr/bin/logger "$lan_log"
+}
+
+start() {
+	local lan_ip lan_mask
+
+	lan_ip=$($CONFIG get lan_ipaddr)
+	lan_mask=$($CONFIG get lan_netmask)
+
+	# net-scan need BR_IF be set an IP address, otherwise it
+	# will exit.
+	ifconfig $BR_IF ${lan_ip:-192.168.1.250} netmask ${lan_mask:-255.255.255.0}
+
+	#sleep some time before up, otherwise lAN_IF may not work(Serious issue)
+	sleep 3
+	ifconfig $LAN_IF up
+
+	ifconfig $BR_IF down
+	# Enable DAD, and randomly generate anoter link-local address if
+	# MAC-based duplicate link-local address has been found.
+	echo 3 > /proc/sys/net/ipv6/conf/default/accept_dad
+	echo 3 > /proc/sys/net/ipv6/conf/${BR_IF}/accept_dad
+	sleep 2
+	ifconfig $BR_IF up
+
+	setup_bridge_interface
+
+	if [ "$($CONFIG get enable_dhcpd)" = "1" ]; then
+		if [ "$($CONFIG get wds_endis_fun)" = "0" -a "$($CONFIG get wla_wds_endis_fun)" = "0" ]; then
+			start_dhcpd
+		elif [ "$($CONFIG get wds_endis_fun)" = "0" -a "$($CONFIG get wla_wds_endis_fun)" = "1" -a "$($CONFIG get wds_repeater_basic_a)" = "1" ]; then
+			start_dhcpd
+		elif [ "$($CONFIG get wds_endis_fun)" = "1" -a "$($CONFIG get wla_wds_endis_fun)" = "0" -a "$($CONFIG get wds_repeater_basic)" = "1" ]; then
+			start_dhcpd
+		elif [ "$($CONFIG get wds_endis_fun)" = "1" -a "$($CONFIG get wla_wds_endis_fun)" = "1" ]; then
+			if [ "$($CONFIG get wds_repeater_basic_a)" = "1" -a "$($CONFIG get wds_repeater_basic)" = "1" ]; then
+				start_dhcpd
+			fi
+		fi
+	fi
+
+	# Attach Device
+	mkdir -p /tmp/netscan
+	/usr/sbin/net-scan
+
+	# Restart UPnP
+	/sbin/cmdupnp restart
+
+	# Start Router Debugging Mode ...
+	. /lib/network/RtDebug.sh
+	start_RtDebugMode
+
+	# Update the hostname
+	echo "$($CONFIG get netbiosname)" > /proc/sys/kernel/hostname
+
+	#run [dniautoip] if I am dhcp client and not run yet
+	if [ ! -f /tmp/master_log -a "$($CONFIG get enable_dhcpd)" = "2" ]; then
+		dniautoip &
+	fi
+}
+
+stop() {
+	killall udhcpd
+	killall net-scan
+	#do not run [dniautoip] if I am static IP
+	if [ "$($CONFIG get enable_dhcpd)" != "2" ]; then
+		killall dniautoip
+		rm /tmp/master_log
+	fi
+	ifconfig $LAN_IF down
+
+	# PHY link will be pulled low some seconds to force transition to reboot state 
+	# and generating DHCP request and Discovery protocol and address refresh in the 
+	# devices connected to the NETGEAR Local Area Network ports.
+	echo -n 5 > /proc/switch_phy
+	sleep 5
+
+}
+
+restart() {
+	stop
+	start
+}
+
+reload() {
+	setup_bridge_interface
+}

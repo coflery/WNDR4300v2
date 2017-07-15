@@ -1,0 +1,42 @@
+diff -Naur a/e2fsck/util.c b/e2fsck/util.c
+--- a/e2fsck/util.c	2006-04-24 12:18:04.000000000 -0400
++++ b/e2fsck/util.c	2011-10-28 10:06:12.740072757 -0400
+@@ -313,9 +313,9 @@
+ #ifdef HAVE_GETRUSAGE
+ 	struct rusage r;
+ #endif
+-#ifdef HAVE_MALLINFO
+-	struct mallinfo	malloc_info;
+-#endif
++//#ifdef HAVE_MALLINFO
++//	struct mallinfo	malloc_info;
++//#endif
+ 	struct timeval time_end;
+ 
+ 	gettimeofday(&time_end, 0);
+@@ -323,17 +323,17 @@
+ 	if (desc)
+ 		printf("%s: ", desc);
+ 
+-#ifdef HAVE_MALLINFO
+-#define kbytes(x)	(((x) + 1023) / 1024)
++//#ifdef HAVE_MALLINFO
++//#define kbytes(x)	(((x) + 1023) / 1024)
+ 	
+-	malloc_info = mallinfo();
+-	printf(_("Memory used: %dk/%dk (%dk/%dk), "),
+-	       kbytes(malloc_info.arena), kbytes(malloc_info.hblkhd),
+-	       kbytes(malloc_info.uordblks), kbytes(malloc_info.fordblks));
+-#else
++//	malloc_info = mallinfo();
++//	printf(_("Memory used: %dk/%dk (%dk/%dk), "),
++//	       kbytes(malloc_info.arena), kbytes(malloc_info.hblkhd),
++//	       kbytes(malloc_info.uordblks), kbytes(malloc_info.fordblks));
++//#else
+ 	printf(_("Memory used: %d, "),
+ 	       (int) (((char *) sbrk(0)) - ((char *) track->brk_start)));
+-#endif	
++//#endif	
+ #ifdef HAVE_GETRUSAGE
+ 	getrusage(RUSAGE_SELF, &r);
+ 

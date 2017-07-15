@@ -1,0 +1,20 @@
+config NET_SCAN_GIT_TREEISH
+	string
+	prompt "treeish of net-scan git repository"
+	default "net-scan-v1.0-dni25"
+	help
+           Input the treeish of net-scan git repository which you want to build
+
+config NET_SCAN_GIT_REPOSITORY
+        string
+        prompt "name of net-scan git repository"
+        default "net-scan.git"
+        help
+           Input the name of net-scan git repository which you want to build
+
+config NET_SCAN_GIT_URL
+        string
+        prompt "url of net-scan git repository"
+        default "ssh://dniserver/scm/dnigit/common/apps/net-scan.git"
+        help
+           Input the url of net-scan git repository which you want to build

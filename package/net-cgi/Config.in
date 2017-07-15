@@ -1,0 +1,20 @@
+config NET_CGI_GIT_TREEISH
+	string
+	prompt "treeish of net-cgi git repository"
+	default "net-cgi-dni191"
+	help
+           Input the treeish of net-cgi git repository which you want to build
+
+config NET_CGI_GIT_REPOSITORY
+	string
+	prompt "name of net-cgi git repository"
+	default "net-cgi.git"
+	help
+	   Input the name of net-cgi git repository which you want to build
+
+config NET_CGI_GIT_URL
+	string
+	prompt "url of net-cgi git repository"
+	default "ssh://dniserver/scm/dnigit/common/apps/net-cgi.git"
+	help
+	   Input the url of net-cgi git repository which you want to build

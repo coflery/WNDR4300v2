@@ -1,0 +1,242 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+START=10
+
+start() {
+	local commit_flag=0
+
+	[ -f /proc/mounts ] || /sbin/mount_root
+
+	klogd
+	
+	mkdir -p /var/run
+	mkdir -p /var/log
+	mkdir -p /var/lock
+	mkdir -p /var/state
+	touch /var/log/wtmp
+	touch /var/log/lastlog
+	touch /tmp/resolv.conf.auto
+	ln -sf /tmp/resolv.conf.auto /tmp/resolv.conf
+	mkdir -p /tmp/mnt
+
+	killall -q hotplug2
+	[ -x /sbin/hotplug2 ] && /sbin/hotplug2 --override --persistent \
+			--set-worker /lib/hotplug2/worker_fork.so \
+			--set-rules-file /etc/hotplug2.rules \
+			--max-children 1 >/dev/null 2>&1 &
+
+	# the coldplugging of network interfaces needs to happen later, so we do it manually here
+	for iface in $(awk -F: '/:/ {print $1}' /proc/net/dev); do
+		/usr/bin/env -i ACTION=add INTERFACE="$iface" /sbin/hotplug-call net
+	done
+
+	# create /dev/root if it doesn't exist
+	[ -e /dev/root ] || {
+		ln -s 31:08 /dev/root
+	}
+
+	/bin/datalib
+	/bin/mobiled
+
+	# Check the Calibration Data.
+	[ "x$(/bin/config get factory_mode)" = "x1" ] || /sbin/check_board_parameter
+
+	# Clean up the caldata_backup in flash
+	[ "x$(/bin/config get factory_mode)" = "x1" ] && /sbin/mtd erase /dev/mtd2 
+
+	# generate conf for wndr4500v3/wndr4300v2/wndr4520
+	/sbin/generate_board_conf.sh 
+
+	/sbin/printhosts
+
+	# Load LED/GPIO Driver and Initialize the related setting.
+	/sbin/insmod atherosgpio
+	/bin/mknod /dev/atherosgpio c 240 0
+
+	load_modules /etc/modules.d/*
+
+	# process user commands
+	[ -f /etc/rc.local ] && {
+		sh /etc/rc.local
+	}
+
+	# for ipv6 logo test
+	local logo_test=`/bin/config get endis_ipv6_logo_test`
+	local wan6_type=`/bin/config get ipv6_type`
+	echo 1 > /proc/sys/net/ipv6/conf/all/forwarding
+	echo 1 > /proc/sys/dni_netfilter/ipv6_ip6frag_not_check_icmp
+	[ "x$logo_test" = "x1" ] && /bin/config set wan_endis_rspToPing=1
+	if [ "x$logo_test" = "x1" -a "x$wan6_type" = "xfixed" ]; then
+		echo 1 > /proc/sys/net/ipv6/ipv6_ping6_interface
+	fi
+
+	# generate the firewall rule file after loading the configuration data.
+	/usr/sbin/net-wall rule
+
+	# start SIP ALG module
+	/sbin/cmd_sipalg
+
+	# indicate the system first boot for first log
+	$CONFIG set syslog_up_first=0
+
+	# Load Default QoS rules if needed.
+	qos_dft="$($CONFIG get qos_list_default)"
+	if [ "$qos_dft" = "1" ]; then
+		count=1
+		while :
+		do
+			qos_rule="$($CONFIG get qos_dft_list$count)"
+			if [ "x$qos_rule" = "x" ]; then
+				break;
+			fi
+			$CONFIG set qos_list$count="$qos_rule"
+
+			count=`expr $count + 1`
+		done
+
+		count=`expr $count - 1`
+		echo "$count QoS default rules are Loaded!"
+
+		$CONFIG set qos_list_default="0"
+		commit_flag=1
+		fi
+
+	#read serial number from flash to /tmp/Seria_Number
+	/sbin/artmtd -r sn
+	#read wan mac from flash to /tmp/wan_mac
+	/sbin/artmtd -r mac
+	#read hw id from flash to /tmp/hw_id
+	/sbin/artmtd -r board_hw_id | cut -f 2 -d ':' > /tmp/hw_id
+	#read model id from flash to /tmp/model_id
+	/sbin/artmtd -r board_model_id | cut -f 2 -d ":" > /tmp/model_id
+	# read board region from flash to /tmp/firmware_region
+	/sbin/artmtd -r region
+	# Check the Board Data region and reset Time Zone & Wirless Region & GUI Region.
+	if [ "x$($CONFIG get board_region_default)" = "x1" ]; then
+		region=`cat /tmp/firmware_region`
+		case "$region" in
+			RU)
+				$CONFIG set wla_country="19"
+				$CONFIG set wl_country="19"
+				$CONFIG set ntp_server="GMT-4"
+				$CONFIG set ntpserver_select="GMT-4"
+				$CONFIG set ntp_hidden_select="26"
+				$CONFIG set time_zone="GMT-4"
+				$CONFIG set email_ntpserver="GMT-4"
+				$CONFIG set region_flag="DISABLED"
+				;;
+			GR)
+				$CONFIG set wla_country="4"
+				$CONFIG set wl_country="4"
+				$CONFIG set ntp_server="GMT-1"
+				$CONFIG set ntpserver_select="GMT-1"
+				$CONFIG set ntp_hidden_select="18"
+				$CONFIG set time_zone="GMT-1"
+				$CONFIG set email_ntpserver="GMT-1"
+				;;
+			PR)
+				$CONFIG set wla_country="11"
+				$CONFIG set wl_country="11"
+				$CONFIG set ntp_server="GMT-8"
+				$CONFIG set ntpserver_select="GMT-8"
+				$CONFIG set ntp_hidden_select="32"
+				$CONFIG set time_zone="GMT-8"
+				$CONFIG set email_ntpserver="GMT-8"
+				$CONFIG set wla_hidden_channel="149"
+				;;
+			BZ)
+				$CONFIG set wla_country="9"
+				$CONFIG set wl_country="9"
+				$CONFIG set ntp_server="GMT+3"
+				$CONFIG set ntpserver_select="GMT+3"
+				$CONFIG set ntp_hidden_select="13"
+				$CONFIG set time_zone="GMT+3"
+				$CONFIG set email_ntpserver="GMT+3"
+				;;
+			IN)
+				$CONFIG set wla_country="12"
+				$CONFIG set wl_country="12"
+				$CONFIG set ntp_server="GMT-5:30"
+				$CONFIG set ntpserver_select="GMT-5:30"
+				$CONFIG set ntp_hidden_select="29"
+				$CONFIG set time_zone="GMT-5:30"
+				$CONFIG set email_ntpserver="GMT-5:30"
+				;;
+			KO)
+				$CONFIG set wla_country="7"
+				$CONFIG set wl_country="7"
+				$CONFIG set ntp_server="GMT-9"
+				$CONFIG set ntpserver_select="GMT-9"
+				$CONFIG set ntp_hidden_select="34"
+				$CONFIG set time_zone="GMT-9"
+				$CONFIG set email_ntpserver="GMT-9"
+				;;
+			JP)
+				$CONFIG set wla_country="6"
+				$CONFIG set wl_country="6"
+				$CONFIG set ntp_server="GMT-9"
+				$CONFIG set ntpserver_select="GMT-9"
+				$CONFIG set ntp_hidden_select="34"
+				$CONFIG set time_zone="GMT-9"
+				$CONFIG set email_ntpserver="GMT-9"
+				$CONFIG set region_flag="DISABLED"
+				;;
+			NA)
+				$CONFIG set wla_country="10"
+				$CONFIG set wl_country="10"
+				$CONFIG set region_flag="DISABLED"
+				$CONFIG set ntp_server="GMT+8"
+				$CONFIG set ntpserver_select="GMT+8"
+				$CONFIG set ntp_hidden_select="4"
+				$CONFIG set time_zone="GMT+8"
+				$CONFIG set email_ntpserver="GMT+8"
+				$CONFIG set wla_hidden_channel="153"
+				;;
+			AU)
+				$CONFIG set wla_country="2"
+				$CONFIG set wl_country="2"
+				$CONFIG set ntp_server="GMT-10"
+				$CONFIG set ntpserver_select="GMT-10"
+				$CONFIG set ntp_hidden_select="35"
+				$CONFIG set time_zone="GMT-10"
+				$CONFIG set email_ntpserver="GMT-10"
+				;;
+		esac
+
+		$CONFIG set board_region_default="0"
+		commit_flag=1
+	fi
+
+	# Wireless security pre-set
+	id_dft="$($CONFIG get default_ssphrase)"
+	if [ "$id_dft" = "1" ]; then
+		/sbin/artmtd -r ssid
+		/sbin/artmtd -r passphrase
+
+		if [ -s /tmp/ssid-setted ] && [ -s /tmp/passphrase-setted ]; then
+			id_set=$(awk '{print $1}' /tmp/ssid-setted)
+			ps_set=$(awk '{print $1}' /tmp/passphrase-setted)
+
+			$CONFIG set wl_ssid="$id_set"
+			$CONFIG set wla_ssid="$id_set-5G"
+			$CONFIG set wl_wpa2_psk="$ps_set"
+			$CONFIG set wla_wpa2_psk="$ps_set"
+			$CONFIG set wl_sectype="4"
+			$CONFIG set wla_sectype="4"
+			$CONFIG set wps_status="5"
+			$CONFIG set wla_wps_status="5"
+
+			# set SSID of guest netwroks according to Home Router GUI Redesign Specification Rev10 section 6.3
+			$CONFIG set wlg1_ssid="NETGEAR-Guest"
+			$CONFIG set wla1_ssid="NETGEAR-5G-Guest"
+		fi
+
+		$CONFIG set default_ssphrase="0"
+		commit_flag=1
+	fi
+
+	[ "$commit_flag" = "1" ] && $CONFIG commit
+
+	[ "x$(/bin/config get factory_mode)" = "x1" ] && touch /tmp/factory_test
+}

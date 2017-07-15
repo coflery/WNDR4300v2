@@ -1,0 +1,431 @@
+# Set the toolchain path
+export TOOLCHAIN=buildroot-2009.08
+export TOOLPREFIX=mips-linux-uclibc-
+export TOOLARCH=build_mips/staging_dir/usr
+export UBOOT_GCC_4_3_3_EXTRA_CFLAGS=-fPIC
+
+export VOIPDIR=$(TOPDIR)/apps/gateway/services/phone
+
+export KERNEL=mips-linux-2.6.31
+export KERNELVER=2.6.31
+export KERNELTARGET=vmlinux.bin
+export COMPRESSKERNEL=y
+export KERNELARCH=mips
+#Enabling the pktlog by default
+export REMOVE_PKT_LOG=0
+export WDI_EVENT_ENABLE=1
+#export TARGETFSSIZE=6488064
+#export ATH_DUAL_FLASH=1
+ifeq ($(BOOT_FROM_NAND),1) #{
+# should be multiple of 128k
+export TARGETFSSIZE=4194304
+export ATH_CAL_NAND_FLASH=1
+export ATH_CAL_NAND_PARTITION="caldata"
+else #}{
+ifeq ($(ATH_DUAL_FLASH),1) #{
+export TARGETFSSIZE=5242880
+export ATH_CAL_NAND_FLASH=1
+export ATH_CAL_NAND_PARTITION="caldata"
+else #}{
+export TARGETFSSIZE=2818048
+endif #}
+endif #}
+
+export CONFIG_MIPS_74K_KERNEL_OPTIMIZATION=1
+#export CONFIG_EMULATION=1
+
+ifeq ($(BUILD_CONFIG),_mi124)
+export COMPRESSED_UBOOT=1
+export FLASH_SIZE=4
+export TARGETFSSIZE=3080192
+endif
+
+ifeq ($(BUILD_CONFIG),_ap123)
+export COMPRESSED_UBOOT=1
+export FLASH_SIZE=4
+export TARGETFSSIZE=3080192
+export BUILD_OPTIMIZED=y
+endif
+
+ifeq ($(BUILD_CONFIG),_ap123_hwaccel)
+export COMPRESSED_UBOOT=1
+export FLASH_SIZE=4
+export TARGETFSSIZE=3080192
+export BUILD_OPTIMIZED=y
+export REMOVE_PKT_LOG=1
+endif
+
+ifeq ($(BUILD_CONFIG),_powercloud)
+export TARGETFSSIZE=3014656
+endif
+
+export BUSYBOX=busybox-1.01
+export WIRELESSTOOLS=wireless_tools.29
+export WIRELESSTOOLSLIB=libiw.so.29
+
+export BUILD_WPA2=y
+
+#To build hostapd 0.8.0 version
+export BUILD_ATHR_HOSTAP=1
+
+ifeq ($(USE_GCC_4_5_1), y)
+export TOOLCHAIN=gcc-4.5.1
+export ENABLE_DSP_ASE=y
+endif
+
+ifeq ($(BUILD_WLAN_PBO_DATA),y)
+export GCOV_KERNEL_ENABLE=y
+endif
+
+#DEFINE AH_CAL_IN_FLASH_PCI to indicate CALDATA is read from flash thr' PCI bus.
+#DEFINE AH_CAL_IN_FLASH_AHB to indicate CALDATA is read from flash thr' AHB bus
+#DO NOT DEFINE AH_CAL_IN_FLASH if bus type is dual.
+
+ifeq ($(BUILD_CONFIG),_ap123)
+export BUS=AHB
+export AH_CAL_IN_FLASH=1
+export AH_CAL_LOCATIONS=0xbfff0000
+export AH_CAL_RADIOS=1
+export AP_TYPE=single
+export JUMPSTART_GPIO=21
+export ATH_SUPPORT_DFS=1
+export AP_USB_LED_GPIO=11
+export AH_SUPPORT_KITE_ANY=0
+export AH_SUPPORT_KITE_10=0
+export AH_SUPPORT_KITE_12=0
+export AH_SUPPORT_KIWI_10=0
+export AH_SUPPORT_KIWI_ANY=0
+export AH_SUPPORT_KIWI_11=0
+export ATH_NO_5G_SUPPORT=1
+export ATH_SUPPORT_DFS=0
+export ATH_GMAC_TXQUEUELEN=500
+else
+export AH_SUPPORT_KITE_ANY=1
+export AH_SUPPORT_KITE_10=1
+export AH_SUPPORT_KITE_12=1
+export AH_SUPPORT_KIWI_10=1
+export AH_SUPPORT_KIWI_ANY=1
+export AH_SUPPORT_KIWI_11=1
+export ATH_SUPPORT_DFS=1
+export BUS=dual
+#export BUS=AHB
+export AP_TYPE=dual
+#export AP_TYPE=single
+#export AH_CAL_IN_FLASH_PCI=1
+export AH_CAL_RADIOS_PCI=1
+
+ifeq ($(BOOT_FROM_NAND),1) #{
+export AH_CAL_LOCATIONS_PCI=0x4000
+else #}{
+export AH_CAL_LOCATIONS_PCI=0xbfff4000
+endif
+export AH_CAL_IN_FLASH_AHB=1
+export AH_CAL_RADIOS_AHB=1
+ifeq ($(BOOT_FROM_NAND),1) #{
+export AH_CAL_LOCATIONS_AHB=0x0
+else #}{
+export AH_CAL_LOCATIONS_AHB=0xbfff0000
+endif
+export ATH_SUPPORT_DFS=1
+export JUMPSTART_GPIO=16
+export AP_USB_LED_GPIO=11
+endif
+export MADWIFITARGET=mipsisa32-be-elf
+export FUSIONTARGET=mipsisa32-be-elf
+export TARGETARCH=mipsisa32-be-elf
+
+ifeq ($(CONFIG_I2S),1)
+export ATH_WASP_I2S=1
+export ATH_SUPPORT_LED=0
+else
+export ATH_SUPPORT_LED=1
+# To differentiate Customer specific GPIO mappings.
+# lmac/ath_dev/ath_led.h
+export ATH_LED_CUSTOMER=CUSTOMER_ATHEROS_WASP
+export AP_READY_LED_GPIO=14
+export WPS_LED_GPIO_PIN=15
+endif
+export GPIO_PIN_FUNC_0=0
+export GPIO_PIN_FUNC_1=0
+export GPIO_PIN_FUNC_2=0
+
+# Ethernet defines
+
+export ATH_GMAC_AR934x=1
+
+ifeq ($(BUILD_CONFIG),_ap123)
+export ATH_PHY_SWAP=1
+else
+#To build hostapd 0.8.0 version for db12x and mi124
+export BUILD_ATHR_HOSTAP=1
+endif
+
+export ATH_GMAC_RX_TASKLET=1
+ifeq ($(ETH_CONFIG),_s27)
+export ATH_GMAC_RX_PKT_CNT=16
+else
+export ATH_GMAC_RX_PKT_CNT=100
+endif
+export ATH_GMAC_DESC_SRAM=0
+
+export ATH_GMAC1_RXFCTL=1
+export ATH_GMAC1_TXFCTL=1
+
+export ATH_GMAC0_RXFCTL=1
+export ATH_GMAC0_TXFCTL=1
+
+ifeq ($(BUILD_CONFIG),_ap123)
+export ATH_GMAC0_TX_CNT=40
+export ATH_GMAC1_TX_CNT=40
+else
+export ATH_GMAC0_TX_CNT=128
+export ATH_GMAC1_TX_CNT=128
+endif
+
+export ATH_GMAC0_RX_CNT=128
+export ATH_GMAC1_RX_CNT=128
+
+export ATH_GMAC_HW_QOS=0
+
+export ATH_GMAC_GE0_IS_CONNECTED=1
+export ATH_GMAC_GE1_IS_CONNECTED=1
+
+export ATH_GMAC_LEN_PER_TX_DS=1536
+export ATH_GMAC_LOCATION=0xbfff0000
+
+export ATH_GMAC0_RGMII=0
+export ATH_GMAC0_GMII=0
+export ATH_GMAC0_MII=0
+
+export ATH_GMAC1_RGMII=0
+export ATH_GMAC1_GMII=0
+export ATH_GMAC1_MII=0
+
+export ATH_SWITCH_ONLY_MODE=0
+export ETH_CONFIG=_s27
+
+ifeq ($(ETH_CONFIG2),_s17)
+export ATH_GMAC_SUPPORT_DUAL_PHY=1
+export ETH_CONFIG2=_s17
+endif
+
+ifndef 11AC_OFFLOAD
+export 11AC_OFFLOAD=0
+endif
+
+ifneq ($(ETH_CONFIG),_s27)
+ifneq ($(11AC_OFFLOAD), 1) 
+export BUILD_EXT=$(ETH_CONFIG)$(ETH_CONFIG2)
+else
+export BUILD_EXT=_11ac_offload$(ETH_CONFIG)$(ETH_CONFIG2)
+endif
+endif
+
+# For S17 H/W Accelerator
+ifeq ($(ETH_CONFIG),_s17_hwaccel)
+export BUILD_CONFIG=_routing
+endif
+
+# For db12x S27 H/W Accelerator
+ifeq ($(BUILD_CONFIG),_hwaccel)
+export ATH_GMAC_HW_ACL=1
+export ATH_GMAC_HW_NAT=1
+endif
+
+ifeq ($(ETH_CONFIG),_s27)
+export ATH_GMAC_RX_PKT_CNT=16
+else
+export ATH_GMAC_RX_PKT_CNT=100
+endif
+
+# For ap123 S27 H/W Accelerator
+ifeq ($(BUILD_CONFIG),_ap123_hwaccel)
+export ATH_GMAC_HW_ACL=1
+export ATH_GMAC_HW_NAT=1
+endif
+
+export BUILD_UMAC=1
+
+# Set Phy Err Diagnostics (Radar detection) to be enabled for AP builds
+export ATH_CAP_PHYERR_DIAG=1
+
+export AR5416_G_MODE=1
+export AR9100=0
+export AR7240_EMU=1
+export AH_DEBUG=0
+
+export AH_SUPPORT_AR5210=0
+export AH_SUPPORT_AR5212=0
+export AH_SUPPORT_5111=0
+export AH_SUPPORT_5112=0
+export AH_SUPPORT_2413=0
+export AH_SUPPORT_5111=0
+export AH_SUPPORT_5112=0
+export AH_SUPPORT_2413=0
+export AH_SUPPORT_5413=0
+export AH_SUPPORT_2316=0
+export AH_SUPPORT_2317=0
+export AH_SUPPORT_2425=0
+export AH_SUPPORT_SOWL=0
+export AH_SUPPORT_AR5416=1
+#export AR9300_EMULATION=1
+#export AR9300_EMULATION_BB=1
+export AH_SUPPORT_K2=0
+export AH_SUPPORT_EEPROM_AR9287=1
+export ATH_SUPPORT_VLAN=1
+
+export ATH_CHAINMASK_SELECT=0
+ifeq ($(BUILD_CONFIG),_ap123)
+export ATH_RXBUF=128
+export ATH_TXBUF=256
+else
+export ATH_RXBUF=512
+export ATH_TXBUF=512
+endif
+export ATH_CAP_AMSDU=1
+export IEEE80211_MCAST_ENHANCEMENT=1
+export ATH_RB=0
+export AR5416_G_MODE=1
+export AH_SUPPORT_HOWL=0
+export AH_SUPPORT_OWL=1
+export AR5416_INT_MITIGATION=1
+export ATH_SUPPORT_IQUE=1
+export ATH_SUPPORT_MCAST2UCAST=1
+export ATH_SUPPORT_GREEN_AP=1
+export ATH_SUPPORT_DYN_TX_CHAINMASK=1
+export AH_DESC_NOPACK=1
+export ATH_SUPPORT_PAPRD=1
+export ATH_TRAFFIC_FAST_RECOVER=1
+export ATH_SUPPORT_VOW_DCS=1
+ifeq ($(BUILD_CONFIG),_ap123)
+export ATH_GPIOPIN_ANTCHAIN0=0
+export ATH_GPIOPIN_ANTCHAIN1=1
+export ATH_GPIOPIN_ANTCHAIN2=0
+
+export ATH_GPIOFUNC_ANTCHAIN0=0x4b
+export ATH_GPIOFUNC_ANTCHAIN1=0x4c
+export ATH_GPIOFUNC_ANTCHAIN2=0
+export UMAC_SUPPORT_SMARTANTENNA=1
+export ATH_SMARTANTENNA_DISABLE_JTAG=1
+export SA_DEFAULT_ANTENNA=1
+endif
+
+ifeq ($(BUILD_WPA2),y)
+export ATH_WPS_IE=1
+else
+export ATH_WPS_IE=0
+endif
+
+ifeq ($(BUILD_SAMBA),y)
+
+export SAMBA_MIPS_74K_CFLAGS=-funit-at-a-time -Os -pipe -march=74kc -mtune=74kc
+
+#Populate the utilities to be removed
+
+sbin_list1=sbin/802* sbin/apst* sbin/ath* sbin/ifr* sbin/iwe*
+sbin_list2=sbin/iwsp* sbin/iwli* sbin/radar* sbin/iwge* sbin/pktl*
+samba_list=usr/local/bin/* usr/local/sbin/nmb* usr/local/sbin/smb*nt
+
+export INSTALL_BLACKLIST="usr/bin/gdb* $(sbin_list1) $(sbin_list2) $(samba_list)"
+
+endif
+
+
+#export ATH_SST_FLASH=y
+#export EXTRAVERSION=-9.2.0.39.3
+#export ATH_SINGLE_CFG=1
+export ATH_EXT_AP=1
+
+export ATH_SUPPORT_QUICK_KICKOUT=1
+export ATH_SUPPORT_TxBF=0
+
+#export ATH_LOW_POWER_ENABLE=1
+
+#export CONFIG_I2S=1
+export KBUILD_MODPOST_WARN=y
+
+#Remove the example files in apps/wpa2 directory
+export BUILD_WPA2_NO_EXAMPLES=y
+
+export JUMPSTART_GPIO=16
+export ATH_SUPPORT_DESC_CACHABLE=1
+export ATH_TXQ_BH_LOCK=1
+#turn on ap-only code
+export UMAC_SUPPORT_APONLY=1
+export ATH_VAP_PAUSE_SUPPORT=0
+export UMAC_SUPPORT_VAP_PAUSE=0
+export ATH_WDS_SUPPORT_APONLY=1
+
+# Measure channel utilization
+# Enabling this option can affect peak performance slightly.
+export UMAC_SUPPORT_CHANUTIL_MEASUREMENT=1
+#enable BSS load support
+export UMAC_SUPPORT_BSSLOAD=1
+#enable radio measurement support for voice enterprise
+export UMAC_SUPPORT_RRM=1
+#enable WMM admission control support for voice enterprise
+export UMAC_SUPPORT_ADMCTL=1
+#enable quiet period support
+export UMAC_SUPPORT_QUIET=1
+#enabe WNM support
+export UMAC_SUPPORT_WNM=0
+#WifiPositoning support
+export ATH_SUPPORT_WIFIPOS=0
+export UMAC_SUPPORT_STA_MODE=0
+export ATH_HW_TXQ_STUCK_WAR=1
+
+#Disable increment of some node level stats in the Tx data path
+#to gain a (small) improvement in CPU utilization.
+export UMAC_SUPPORT_TXDATAPATH_NODESTATS=0
+
+#Enable profiling
+#Generic profiling code
+export QCA_PERF_PROFILING=0
+#Profiling for MIP74K architecture
+export QCA_MIPS74K_PERF_PROFILING=0
+# Include performance_power offload support for 11ac
+ifeq ($(11AC_OFFLOAD), 1)
+export ATH_11AC_TXCOMPACT=1
+export UMAC_SUPPORT_VAP_PAUSE=1
+export ATH_VAP_PAUSE_SUPPORT=1
+export ATH_PERF_PWR_OFFLOAD=1
+export ATH_TGT_TYPE=AR9888
+export ATH_HIF_TYPE=pci
+export FORCE_LEGACY_PCI_INTERRUPTS=1
+export LOAD_ARRAY_FW=1
+# if Peregrine's cal data is in NAND/NOR flash instead of OTP,AH_CAL_IN_FLASH_PCI flag needs to enable.   
+#export AH_CAL_IN_FLASH_PCI=1
+else
+export AH_CAL_IN_FLASH_PCI=1    
+endif
+export BIG_ENDIAN_HOST=1
+export ATH_SUPPORT_WAPI=0
+
+# 0: 128B - default, 1: 256B, 2: 64B
+#export ATH_OL_11AC_DMA_BURST=0
+#export ATH_OL_11AC_MAC_AGGR_DELIM=0
+
+# For building oprofile
+ifeq ($(BUILD_PROFILING),y)
+export BUILD_OPROFILE_74K=y
+export OPROFILE_ROOT=$(TOPDIR)/apps/profiling/oprofile-74k
+export OPROFILE_LIBS=$(OPROFILE_ROOT)/libs
+export OPROFILE_UTILS=$(OPROFILE_ROOT)/utils
+export OPROFILE_INCLUDES=$(OPROFILE_ROOT)/includes
+else
+export BUILD_OPROFILE_74k=n
+endif
+
+# For enable adf_os_assert
+export ADF_OS_DEBUG=1
+
+ifeq ($(BUILD_PROFILING),y)
+BUILD_LIBRARYOPT := n
+endif
+export ATH_DEBUG=0
+export UMAC_SUPPORT_TX_FRAG=1
+export ATH_TX_COMPACT=1
+export ATH_INT_TX_MITIGATION=0
+
+# Spectral Analysis support
+export ATH_SUPPORT_SPECTRAL=1

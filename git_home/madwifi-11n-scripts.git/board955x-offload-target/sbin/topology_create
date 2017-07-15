@@ -1,0 +1,60 @@
+#!/bin/sh
+        IF=`iwconfig | grep ath | cut -b 1-8`
+        
+        echo 
+        echo "bridge none" > /tmp/topology.conf
+        echo "{" >> /tmp/topology.conf
+        
+        for intf in ${IF}
+        do
+            echo -e "\tinterface ${intf}\n" >> /tmp/topology.conf
+            if [ -f /tmp/sup${intf} ]; then
+                radioid=`cat /tmp/sup${intf} | grep radio | cut -f 2 -d '='`
+                if [ "${radioid}" = "1" ]; then
+                RADIO_1="${RADIO_1} ${intf}" 
+                fi
+                if [ "${radioid}" = "0" ]; then
+                RADIO_0="${RADIO_0} ${intf}"
+                fi
+            fi
+        done
+        echo "}" >> /tmp/topology.conf
+            
+        if [ "${RADIO_0}" != "" ]; then 
+            echo "radio wifi0" >> /tmp/topology.conf
+            echo "{" >> /tmp/topology.conf
+                     
+            echo -e "\tap" >> /tmp/topology.conf
+            echo -e "\t{" >> /tmp/topology.conf
+            #BSS Section : only write security enabled BSS
+            for radio0intf in ${RADIO_0}
+            do
+	            echo  /tmp/sup${radio0intf}
+		        echo -e "\t\tbss ${radio0intf}\n" >> /tmp/topology.conf
+		        echo -e "\t\t{" >> /tmp/topology.conf
+		        echo -e "\t\tconfig /tmp/sup${radio0intf}\n" >> /tmp/topology.conf
+		        echo -e "\t\t}" >> /tmp/topology.conf
+            done
+            echo -e "\t}" >> /tmp/topology.conf
+            echo "}" >> /tmp/topology.conf 
+        fi
+            
+        if [ "${RADIO_1}" != "" ]; then       
+            echo "radio wifi1" >> /tmp/topology.conf
+            echo "{" >> /tmp/topology.conf
+                     
+            echo -e "\tap" >> /tmp/topology.conf
+            echo -e "\t{" >> /tmp/topology.conf
+            #BSS Section : only write security enabled BSS
+            for radio1intf in ${RADIO_1}
+            do
+		        echo  /tmp/sup${radio1intf}
+		        echo -e "\t\tbss ${radio1intf}\n" >> /tmp/topology.conf
+		        echo -e "\t\t{" >> /tmp/topology.conf
+		        echo -e "\t\tconfig /tmp/sup${radio1intf}\n" >> /tmp/topology.conf
+		        echo -e "\t\t}" >> /tmp/topology.conf
+            done
+            echo -e "\t}" >> /tmp/topology.conf
+            echo "}" >> /tmp/topology.conf 
+        fi
+            

@@ -1,0 +1,23 @@
+# radvd configurations 
+
+config RADVD_GIT_TREEISH
+	string
+	prompt "treeish of radvd git repository"
+	default "radvd-1.5-dni11"
+	help
+           Input the treeish of radvd git repository which you want to build
+
+config RADVD_GIT_REPOSITORY
+	string
+	prompt "name of radvd git repository"
+	default "radvd.git"
+	help
+	   Input the name of radvd git repository which you want to build
+
+config RADVD_GIT_URL
+	string
+	prompt "url of radvd git repository"
+	default "ssh://dniserver/scm/dnigit/common/apps/radvd.git"
+	help
+           Input the url of radvd git repository which you want to build
+

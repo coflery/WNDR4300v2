@@ -1,0 +1,20 @@
+#!/bin/sh
+# (C) 2008 openwrt.org
+
+. /etc/functions.sh
+
+local CONFIG=/bin/config
+local traffic_meter=$($CONFIG get endis_traffic)
+local qos=$($CONFIG get qos_endis_on)
+local proto=$($CONFIG get wan_proto)
+
+#FOr HNAT function, we now only enable with dhcp & static
+if [ "$proto" = "dhcp" -o "$proto" = "static" ]; then
+	if [ "$qos" = "1" -o "$traffic_meter" = "1" ]; then
+        	/sbin/hnat.sh disable
+    	else
+        	/sbin/hnat.sh enable
+    	fi
+else
+	/sbin/hnat.sh disable
+fi

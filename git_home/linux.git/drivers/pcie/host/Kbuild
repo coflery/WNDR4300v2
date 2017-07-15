@@ -1,0 +1,47 @@
+ifeq ($(obj),)
+obj := .
+endif
+
+DEPTH := ../..
+
+#include $(obj)/$(DEPTH)/linux/Makefile-linux.common
+
+WLAN_TOP=$(TOPDIR)/drivers/wlan
+
+#INCS = -I$(COMINC) -I$(WLAN_TOP)/os/linux/include -I$(WLAN_TOP)/os/linux/src -I$(KERNELPATH)/include
+INCS = -I$(COMINC) 
+
+INCS += -I$(WLAN_TOP)/asf/include
+INCS +=                            \
+    -I$(WLAN_TOP)/adf/include/os   \
+    -I$(WLAN_TOP)/adf/include/net  \
+    -I$(WLAN_TOP)/adf/include/nbuf \
+    -I$(WLAN_TOP)/adf/os/linux \
+    -I$(WLAN_TOP)/adf/nbuf/linux \
+    -I$(WLAN_TOP)/adf/os/linux \
+    -I$(WLAN_TOP)/adf/net/linux
+
+INCS += -Iinclude/nbuf -Iinclude/net -Iinclude/os
+INCS += -Inbuf/linux -Inet/linux -Ios/linux
+INCS += -include $(WLAN_TOP)/include/compat.h
+INCS += -I$(WLAN_TOP)/htc/inc
+INCS += -I$(WLAN_TOP)/adf/include/os
+INCS += -I$(WLAN_TOP)/os/linux/include
+INCS += -I$(WLAN_TOP)/os/linux/src
+INCS += -I$(KERNELPATH)/include
+INCS += -I$(WLAN_TOP)/include
+INCS += -I$(WLAN_TOP)/umac/include
+INCS += -I$(WLAN_TOP)/asf/include
+INCS += -I$(WLAN_TOP)/hal
+
+EXTRA_CFLAGS+= $(INCS) $(COPTS) 
+
+ifneq ($(strip $(ATH_PCIE_LOW_POWER_ENABLE)), 0)
+EXTRA_CFLAGS+= -DATH_PCIE_LOW_POWER_ENABLE=1
+endif
+
+obj-m += pcie_host.o
+obj-m += pci_loop.o
+
+pcie_host-objs := hif_pcie_dma.o hif_pcie.o
+pci_loop-objs := hif_pci_loop.o

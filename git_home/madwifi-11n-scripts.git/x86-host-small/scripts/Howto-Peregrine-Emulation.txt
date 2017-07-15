@@ -1,0 +1,215 @@
+
+
+MAC to MAC Emulation Setup  
+---------------------------
+
+FPGA has 2 Peregrine targets ( one for AP and one for Sta)
+Peregrien IP - 3.x ( use the latest adviced one )
+Currently used only AP Mac to Sta Mac emulation available ( without baseband emulation)
+
+2 Linux machines will be connected to emulation setup via PCI express interface
+
+But we use 4 linux machines for following purpose
+
+1-Linux machines for AP host console 
+1-Linux machines for AP target (for debug and running the Tensilica xt-ocd server and xt-gdb client as well as for building host and target binaries for both sta and AP)
+1-Linux machines for Sta host console 
+1-Linux machines for Sta target (for debug and running the Tensilica xt-ocd server and xt-gdb client )
+
+
+
+Host Linux machine Used for Emulation setup :
+---------------------------------------------
+
+Software :
+1.	Ubuntu  11.04
+2.	Kernel - 2.6.38-8 -generic #52  Ubuntu SMP i686 i686 i386 GNU/Linux
+3.	GCC 4.5.2 ( Ubuntu / Linaro 4.5.2-8ubuntu4 )
+
+Hardware : 
+
+1.	Laptop Dell Latitude E5520
+2.	Intel Core i3-2330M CPU @ 2.20 GHz
+3.	RAM  2 GB
+4.	OS  32 bit
+5.	HDD drive -  320 GB
+6.	USB Ports  4 ( 2 Onboard + 2 from Dock )
+7.	I394  1 ( one )
+8.	Serial Port  1 from Dock
+This is the Hardware setup used in current setup - But any other laptop could be used also.
+
+Host-Newma_11ac_dev Client Spec
+--------------------------
+        //depot/sw/branches/newma_11ac_dev/... //kris_host_dev/...
+        //depot/sw/branches/newma_11ac_dev/drivers/adf/... //kris_host_dev/drivers/wlan_modules/adf/...
+        //depot/sw/branches/newma_11ac_dev/drivers/asf/... //kris_host_dev/drivers/wlan_modules/asf/...
+        //depot/sw/branches/toba/include/... //kris_host_dev/perf_pwr_offload/drivers/include/...
+        //depot/sw/branches/toba/host/support/... //kris_host_dev/perf_pwr_offload/drivers/host/support/...
+        //depot/chips/peregrine/dev/fpga/releases/IP3_4_112611/current_headers/... //kris_host_dev/perf_pwr_offload/drivers/include/AR9888/hw/...
+        //depot/chips/mckinley/1.0/fpga/releases/IP4_0_02182011/headers/... //kris_host_dev/perf_pwr_offload/drivers/include/AR6004/hw/...
+        -//depot/sw/branches/newma_11ac_dev/apps/gateway/... //kris_host_dev/apps/gateway/...
+        -//depot/sw/branches/newma_11ac_dev/apps/hostap-0.7.1/... //kris_host_dev/apps/hostap-0.7.1/...
+        -//depot/sw/branches/newma_11ac_dev/apps/hostap-0.7.0/... //kris_host_dev/apps/hostap-0.7.0/...
+        -//depot/sw/branches/newma_11ac_dev/netbsd/... //kris_host_dev/netbsd/...
+        -//depot/sw/branches/newma_11ac_dev/VxWorks/... //kris_host_dev/VxWorks/...
+        -//depot/sw/branches/newma_11ac_dev/ecos/... //kris_host_dev/ecos/...
+        -//depot/sw/branches/newma_11ac_dev/linux/kernels/linux-2.6.21.5/... //kris_host_dev/linux/kernels/linux-2.6.21.5/...
+        -//depot/sw/branches/newma_11ac_dev/linux/kernels/Eee-PC-2.6.21.4/... //kris_host_dev/linux/kernels/Eee-PC-2.6.21.4/...
+        -//depot/sw/branches/newma_11ac_dev/linux/kernels/linux-2.6.13.2/... //kris_host_dev/linux/kernels/linux-2.6.13.2/...
+        -//depot/sw/branches/newma_11ac_dev/linux/kernels/mips-linux-2.6.15_2MB/... //kris_host_dev/linux/kernels/mips-linux-2.6.15_2MB/...
+        -//depot/sw/branches/newma_11ac_dev/images/... //kris_host_dev/images/...
+
+
+
+Target - Toba client spec
+-------------------------
+ 	//depot/sw/branches/toba/... //kris_target_toba/...
+        //depot/chips/peregrine/dev/fpga/releases/IP3_4_112611/current_headers/... //kris_target_toba/include/AR9888/hw/...
+        //depot/chips/mckinley/1.0/fpga/releases/IP4_0_02182011/headers/... //kris_target_toba/include/AR6004/hw/...
+
+
+map the latest headers from //depot/chips/peregrine/dev/fpga/releases/ when you use the latest version of the IP
+
+
+
+===How to setup xt-gdb for source-level debug of Peregrine FPGA
+1) Obtain a Macraigor Systems usb2Demon (or other JTAG controller)
+2) Obtain a system to run Tensilica's ocd daemon.
+   Can be Linux or Windows laptop or desktop.
+   Best if it's not the same machine as your Linux Host.
+3) Install xt-ocd
+   For Linux:
+   You need something like mcgr-hwsupport*i386.rpm from Macraigor Systems,
+   which has the hardware support that Tensilica's xt-ocd needs in order
+   to support Macraigor's JTAG controllers.  Check the Macraigor home page
+   for the latest installation instructions.
+   You can use "rpm -i --force --force-debian --nodeps mcgr-hwsupport*rpm"
+   [Note: ignore some errors with usbfs at the end]
+   You need to load modules windrvr6_usb.ko and windrvr6.ko.
+   You also need Tensilica's xt-ocd package.  Use the Linux
+   installer under /cad/tensilica/incoming/xt-ocd.
+   [Note: I used version 7.1.1 xt-ocd with mcgr-hwsupport-7.9.0-i386.rpm
+   on an Ubuntu 9.10 system]
+   for more info http://www.macraigor.com/ocd_cmd.htm
+
+3) Configure xt-ocd
+   Copy /trees/sw/peregrine/debug/topology.xml to your installation directory
+4) Run xt-ocd
+   Power cycle your FPGA system (OFF then ON)
+   For Linux, AS ROOT run "xt-ocd -dTD".
+   For Windows, start c:\Program Files\Tensilica\xt-ocd\xt-ocd.exe
+5) Try xt-gdb
+   On any system that has access to Tensilica tools, start xt-gdb.
+   Use the command 
+     target remote IP_ADDRESS_OF_OCD_SYSTEM:20000
+   to connect to your xt-ocd daemon.
+   [Note: Peregrine FPGA takes about 30 seconds after power on
+    before it's ready for JTAG connection.]
+   If "x/i $pc" works, then xt-gdb is working properly.
+
+
+
+General Assumptions for Linux machine
+-------------------------------------
+- xt-ocd is installed as described above.
+- assuming attached .bashrc and .xt_gdbinit files are copied to /home/user directory
+- remove your existing wlan devices in your linux machine 
+- do all these changes in any of the linux machine to image it to all other 3 machines 
+- Tensilica toolchanis directories are monunted on all these laptops (refer attached fstab_host and fstab_client files for reference).
+- Target source from P4 is checked-out under targetsrc/ directory
+- Host source from p4 is checked-out under hostsrc/ directory
+- we faced some issues in emulation loading and testing when Kernel version is built with generic-Pae support. So install npn-pae kernel version only.
+
+
+
+Building the Host driver
+------------------------
+
+Go to hostsrc/build directory
+
+sudo make driver_build BUILD_TYPE=x86-host-small
+
+-We will build host and target only in  one machine ( any target machine ). we install nfs server in one of the target machine
+and export the complete host and target source directories,so that all other 3 linux machines will be able to mount and access
+using nfs client services.
+- If you have build the host driver only on one machine,then you need to copy all the .ko from that machine to another
+(station/ap) host /usr/local/lib directory
+
+
+
+Building the Target
+-------------------
+- login as root
+- Go to the Target src directory
+- copy the quickbuild.per.sh in to targetsrc/ directory
+- Edit the quickbuild.per.sh - such that the tensilica tool chains are set correctly for your platform.
+- run "build_target"
+- change directroy to targetsrc/target/
+- make clobber; make
+
+
+Steps to be followed in bringing the Ap
+----------------------------------------
+- First bring the target using following commands (in Target AP machine)
+   - go to /opt/tensilica folder and start the xt-ocd server (In our setup its mounted on /opt/tensilica/xt-ocd -dtD)
+   - open another terminal and go to targetsrc directory and run " build_target"
+   - go to targetsrc/target/.output/AR9888/fpga.1 directoy and start the xt-gdb 
+   - issue target remote ipaddress:20000
+   - at this stage you will be in the target 
+   - issue reset command ( this should be loaded from 0x0097f000)
+   - now load the firware(fw.rom.bin) using loadfw command
+   
+- Second bring up the host ap wlan (in host AP machine)
+   - once go to targetsrc/target/.output/AR9888/fpga.1/bin/athwlan.bin /lib/firmware directory
+   - once go to targetsrc/target/host/support/fakeboarddata_AR6004.bin  to /lib/firmware directory
+   - If you have build the host driver only on one machine,then you need to copy all the .ko from that machine to another (station/ap) host /usr/local/lib directory
+   - remove the existing wlan devices in your linux machine (refer attached unload_mac80211.sh script)
+   - go to host src/scripts directory
+   - check whether target has been loaded via lspci | grep Ath
+   - once the target is loaded via PCI interface issue  echo 1 > /sys/bus/pci/rescan
+   - check whether target has been loaded via lspci | grep Ath
+   - iwconfig should show wifi0 interface
+   - go to host src/scripts directory and run the following scripts
+   - run sudo ./rc.wlan up
+   - should have created wlan0 ath interface
+   - run sudo ./setup.ap_emu  
+   - ap should have created and shoould be up and running
+
+
+Steps to be followed in bringing the Sta
+----------------------------------------
+- First bring the target using following commands (in Target STA machine)
+   - go to /opt/tensilica folder and start the xt-ocd server (In our setup its mounted on /opt/tensilica/xt-ocd -dtD)
+   - open another terminal and go to targetsrc directory and run " build_target"
+   - go to targetsrc/target/.output/AR9888/fpga.1 directoy and start the xt-gdb 
+   - issue target remote ipaddress:20000
+   - at this stage you will be in the target 
+   - issue reset command ( this should be loaded from 0x0097f000)
+   - now load the firware(fw.rom.bin) using loadfw command
+
+- Second bring up the host sta wlan (in host STA machine)
+   - From build machine copy targetsrc/target/.output/AR9888/fpga.1/bin/athwlan.bin file to /lib/firmware directory in to local host sta machine.
+   - copy targetsrc/target/host/support/fakeboarddata_AR6004.bin  file to /lib/firmware directory
+   - If you have build the host driver only on one machine, then you need to copy all the .ko from that machine to another (station/ap) host /usr/local/lib directory
+   - remove the existing wlan devices in your linux machine (refer attached unload_mac80211.sh script)
+   - go to host src/scripts directory
+   - check whether target has been loaded via lspci | grep Ath
+   - once the target is loaded via PCI interface issue  echo 1 > /sys/bus/pci/rescan
+   - check whether target has been loaded via lspci | grep Ath
+   - iwconfig should show wifi0 interface
+   - go to hostsrc/scripts directory and run the following scripts
+   - run sudo ./rc.wlan up
+   - should have created wlan0 ath interface
+   - run sudo ./setup.sta_emu
+   - sta should have created and should have associated to AP
+   
+      
+
+General Tips for emulation debugging
+------------------------------------
+   - you can connect and configure the serial port to target in case of debug messages, in addition to xt-gdb debug
+   - you can configure netconsole debug in case of any host machine gets in to panic
+   - Reset the  emulation setup as well as reboot the the host linux machine if you face any problem in detecting the peregrine pci interface
+   - In target linux machine of both ap and sta, just kill the xt-ocd and xt-gdb client , not necessary to reboot target linux machine often
+   - watch for dmesg
+   

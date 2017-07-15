@@ -1,0 +1,8 @@
+#btnsContainer_div1 { width:35%; float:left; }
+
+#btnsContainer_div2 { width:35%; float:left; }
+
+#allBtns_div { width:35%; }
+
+#center_buttons { width: 100%; height: 50px; text-align: center; }
+.wizard_buttons_div { height:50px; width:90%; line-height:50px; padding:0; margin:50px auto; text-align: left;}

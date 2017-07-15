@@ -1,0 +1,22 @@
+Source-Makefile: package/kmod-pptp/Makefile
+Package: kmod-pptp
+Submenu: Other modules
+Version: <LINUX_VERSION>-1
+Depends: @TARGET_wndr4500v3
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: PPTP linux kernel module for 2.6.31
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: PPTP linux kernel module for 2.6.31
+@@
+Config:
+	menu "Configurations"
+		depends on PACKAGE_kmod-pptp
+		source "package/kmod-pptp/Config.in"
+	endmenu
+@@
+
+

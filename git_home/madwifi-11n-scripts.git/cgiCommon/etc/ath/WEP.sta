@@ -1,0 +1,18 @@
+ap_scan=1
+network={
+ssid=~~AP_SSID#~
+~eAP_SSID#:any~ bssid=~~ROOTAP_MAC#~
+~eAP_SSID#!any~ scan_ssid=1
+ key_mgmt=NONE
+~eAP_SECMODE#:WEP~~hWEPKEY_1#!~wep_key0="~~WEPKEY_1#~"
+~eAP_SECMODE#:WEP~~hWEPKEY_2#!~wep_key1="~~WEPKEY_2#~"
+~eAP_SECMODE#:WEP~~hWEPKEY_3#!~wep_key2="~~WEPKEY_3#~"
+~eAP_SECMODE#:WEP~~hWEPKEY_4#!~wep_key3="~~WEPKEY_4#~"
+~eAP_SECMODE#:WEP~~hWEPKEY_1#~wep_key0=~~WEPKEY_1#~
+~eAP_SECMODE#:WEP~~hWEPKEY_2#~wep_key1=~~WEPKEY_2#~
+~eAP_SECMODE#:WEP~~hWEPKEY_3#~wep_key2=~~WEPKEY_3#~
+~eAP_SECMODE#:WEP~~hWEPKEY_4#~wep_key3=~~WEPKEY_4#~
+~eAP_WEP_MODE#:1~auth_alg=OPEN
+~eAP_WEP_MODE#:3~auth_alg=OPEN SHARED
+   wep_tx_keyidx=~~AP_PRIMARY_KEY#:0~
+}

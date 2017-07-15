@@ -1,0 +1,28 @@
+#!/bin/sh
+# This script should be called when wan interface up or renew ip.
+# And it should be used like: /bin/wan-ipup <new wan IP>
+
+flush_conntracks() {
+	# Disable when wan proto is pppoe/l2tp/pptp
+	/sbin/hnat_status
+	
+	echo "Flush conntrack table"
+	#If HNAT enable, need disable the hant in switch first
+	if [ "$(/bin/cat /proc/qca_switch/nf_athrs17_hnat)" = "1" ]; then
+		echo 0 > /proc/qca_switch/nf_athrs17_hnat
+		sleep 5
+		echo 1 > /proc/sys/dni_netfilter/flush_conntrack_table
+		sleep 1
+		echo 1 > /proc/qca_switch/nf_athrs17_hnat
+	else
+		sleep 5
+		echo 1 > /proc/sys/dni_netfilter/flush_conntrack_table
+	fi
+}
+
+show_new_wan_ip() {
+	echo "WAN new IP:" $1
+}
+
+flush_conntracks
+show_new_wan_ip $1

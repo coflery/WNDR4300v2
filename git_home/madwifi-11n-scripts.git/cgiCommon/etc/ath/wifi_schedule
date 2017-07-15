@@ -1,0 +1,171 @@
+#!/bin/sh
+
+#usage:
+#wifi_schedule 11g[11a] on [off]
+
+[ -f /etc/ath/board.conf ] && . /etc/ath/board.conf
+if [ "$wlg_exist" = "on" -a "$wla_exist" = "on" ]; then
+    NUM_RADIO=2
+else
+    NUM_RADIO=1
+fi
+MAX_VAP=8
+
+if [ "$1" = "11g" ];then
+    # for 802.11g
+    if [ "$wlg_exist" != "on" ];then
+        exit;
+    fi
+    sched_status=wlg_onoff_sched
+    hw_wifi=wifi0
+    search_mode="IEEE 802.11ng|IEEE 802.11g|IEEE 802.11b"
+    wifi_uptime_file=/tmp/WLAN_uptime
+    log_message="2.4G"
+else
+    # for 802.11a
+    if [ "$wla_exist" != "on" ];then
+        exit  
+    fi
+    sched_status=wla_onoff_sched
+    if [ $NUM_RADIO -eq 2 ];then
+        hw_wifi=wifi1
+    else
+        hw_wifi=wifi0
+    fi
+    search_mode="IEEE 802.11na|IEEE 802.11a"
+    wifi_uptime_file=/tmp/WLAN_uptime5G
+    log_message="5G"
+fi
+
+WIFI_SCHED_LOCK_FILE=/tmp/.wifi_sched_lock_$1
+if [ -f $WIFI_SCHED_LOCK_FILE ]; then
+    # Just exit 
+    exit
+fi
+touch $WIFI_SCHED_LOCK_FILE
+
+#when NTP is off, wireless schedule run its default setting
+#(No schedule to turn off the wireless signal)
+if [ -f /tmp/ntp_updated ];then
+    ntp_success=1
+else
+    ntp_success=0
+fi
+
+if [ $NUM_RADIO -eq 1 ]; then
+    WPS_LED_OFF='echo 1 > /proc/simple_config/simple_config_led'
+    WPS_LED_ON='/sbin/ledcontrol -n wps -c green -s on; echo 2 > /proc/simple_config/simple_config_led'
+else
+    # wps led should be turn on if security is not none and wireless is switch on
+    WPS_LED_OFF='echo 0 > /proc/simple_config/tricolor_led'
+    #sometimes we will call /sbin/ledcontrol -n wps -c green -s off, at this time if we want to turn on wps led,
+    #we should first call ledcontrol to turn on wps led first
+    WPS_LED_ON='/sbin/ledcontrol -n wps -c green -s on; echo 1 > /proc/simple_config/tricolor_led'
+fi
+
+[ "$wlg_exist" = "on" ] && G_SECURITY_TYPE=`/bin/config get wl_sectype`
+[ "$wla_exist" = "on" ] && A_SECURITY_TYPE=`/bin/config get wla_sectype`
+
+radio_status=`ifconfig | grep $hw_wifi`
+
+if [ "$2" = "on" ]; then
+    if [ "x$radio_status"  != "x" ];then
+        rm $WIFI_SCHED_LOCK_FILE
+        exit
+    fi
+    # if NTP fail, just turn on do not check the overlop time
+    if [ $ntp_success -eq 1 ];then
+        # It will check whether the now time should turn on wireless.
+        # if no, it will set wlg_onoff_sched to 1, or it will set to 0.
+        # Then we will check wlg_onoff_sched value, to decide whether to
+        # turn on wireles or just exit
+        /sbin/cmdsched_wlan_status $1
+        wl_off=`/bin/config get ${sched_status}`
+        if [ $wl_off = 1 ];then
+            rm $WIFI_SCHED_LOCK_FILE
+	    exit
+        fi
+    fi
+    ifconfig $hw_wifi up 2>&1 > /dev/null
+    num=0
+    while [ $num -lt $MAX_VAP ]; do
+        vap_status=`ifconfig -a | grep ath$num`
+        if [ "x$vap_status" != "x" ]; then
+	    wlg_mode=`iwconfig ath$num |grep -E "$search_mode"`
+	    if [ "x$wlg_mode" != "x" ];then
+                ifconfig ath$num up 2>&1 > /dev/null
+            fi
+        fi
+        num=`expr $num + 1`
+    done
+
+    if [ $NUM_RADIO -eq 2 ];then
+        #if one of the radio with security is up,we should turn on WPS LED
+        [ "${G_SECURITY_TYPE}" -gt "1" -a "x`ifconfig | grep wifi0`" != "x" -o "${A_SECURITY_TYPE}" -gt "1" -a "x`ifconfig | grep wifi1`" != "x" ] && eval ${WPS_LED_ON} || eval ${WPS_LED_OFF}
+        logger "[wireless signal schedule] The $log_message wireless signal is ON,"
+    else
+        [ "${G_SECURITY_TYPE}" -gt "1" -o "${A_SECURITY_TYPE}" -gt "1" ] && eval ${WPS_LED_ON} || eval ${WPS_LED_OFF}
+        if [ -f /tmp/aplist0 ]; then
+            # remove masked interface
+            sed -i 's/^#//g' /tmp/topology.conf
+            hostapd /var/run/topology.conf &
+        fi
+        logger "[wireless signal schedule] The wireless signal is ON,"
+    fi
+
+    cat /proc/uptime | sed 's/ .*//' > $wifi_uptime_file
+else
+    if [ $ntp_success = 0 -o "x$radio_status" = "x" ];then
+        rm $WIFI_SCHED_LOCK_FILE
+        exit
+    fi
+    num=0
+    while [ $num -lt $MAX_VAP ]; do
+        vap_status=`ifconfig | grep ath$num`
+        if [ "x$vap_status" != "x" ]; then
+	    wlg_mode=`iwconfig ath$num | grep -E "$search_mode"`
+            if [ "x$wlg_mode" != "x" ];then
+                ifconfig ath$num down 2>&1 > /dev/null
+            fi
+        fi
+        num=`expr $num + 1`
+    done
+    ifconfig $hw_wifi down 2>&1 > /dev/null
+
+    if [ $NUM_RADIO -eq 2 ];then
+        # If none of the radio with security is up,we should turn off WPS led.
+        # For wps_led.pid modification,it still has some issues, eg,2.4G radio
+        # is with WPA security, 5G radio is in wps process,
+        # we now is schedule 5G to off state,expected result we should stop
+        # blink the wps led and keep wps led on.
+        # Since we now can not check whether the WPS is for 2.4G or 5G, we will
+        # just leave it blinking. This should be fixed in the future.
+
+        if ! [ "${G_SECURITY_TYPE}" -gt "1" -a "x`ifconfig | grep wifi0`" != "x" -o "${A_SECURITY_TYPE}" -gt "1" -a "x`ifconfig | grep wifi1`" != "x" ];then
+            eval ${WPS_LED_OFF}
+            test -f /var/run/wps_led.pid && {
+            kill $(cat /var/run/wps_led.pid)
+                /sbin/ledcontrol -n wps -c green -s off
+                rm -f /var/run/wps_led.pid
+            }
+        fi
+        logger "[wireless signal schedule] The $log_message wireless signal is OFF," 
+    else
+        [ "${G_SECURITY_TYPE}" -gt "1" -o "${A_SECURITY_TYPE}" -gt "1" ] && eval ${WPS_LED_OFF}
+        test -f /var/run/wps_led.pid && {
+            kill $(cat /var/run/wps_led.pid)
+            /sbin/ledcontrol -n wps -c green -s off
+            rm -f /var/run/wps_led.pid
+        }
+        pidlist=`ps | grep 'hostapd' | cut -b1-5`
+        for j in $pidlist
+        do
+            kill -9 $j
+        done
+        logger "[wireless signal schedule] The wireless signal is OFF,"
+    fi
+
+    rm -f $wifi_uptime_file
+fi
+
+rm $WIFI_SCHED_LOCK_FILE

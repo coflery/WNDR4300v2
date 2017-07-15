@@ -1,0 +1,34 @@
+--- iproute2-3.3.0.org/ip/ipnetns.c	2014-09-04 15:58:22.000000000 +0800
++++ iproute2-3.3.0/ip/ipnetns.c	2014-09-04 16:01:28.000000000 +0800
+@@ -148,10 +148,10 @@
+ 		return -1;
+ 	}
+ 
+-	if (unshare(CLONE_NEWNS) < 0) {
+-		fprintf(stderr, "unshare failed: %s\n", strerror(errno));
+-		return -1;
+-	}
++//	if (unshare(CLONE_NEWNS) < 0) {
++//		fprintf(stderr, "unshare failed: %s\n", strerror(errno));
++//		return -1;
++//	}
+ 	/* Mount a version of /sys that describes the network namespace */
+ 	if (umount2("/sys", MNT_DETACH) < 0) {
+ 		fprintf(stderr, "umount of /sys failed: %s\n", strerror(errno));
+@@ -225,11 +225,11 @@
+ 		return -1;
+ 	}
+ 	close(fd);
+-	if (unshare(CLONE_NEWNET) < 0) {
+-		fprintf(stderr, "Failed to create a new network namespace: %s\n",
+-			strerror(errno));
+-		goto out_delete;
+-	}
++//	if (unshare(CLONE_NEWNET) < 0) {
++//		fprintf(stderr, "Failed to create a new network namespace: %s\n",
++//			strerror(errno));
++//		goto out_delete;
++//	}
+ 
+ 	/* Bind the netns last so I can watch for it */
+ 	if (mount("/proc/self/ns/net", netns_path, "none", MS_BIND, NULL) < 0) {

@@ -1,0 +1,16 @@
+Source-Makefile: package/libjpeg/Makefile
+Package: libjpeg
+Version: v6b-1
+Depends: 
+Provides: 
+Section: libs
+Category: Libraries
+Title: JPEG image compression
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: jpegsrc.v6b.tar.gz
+Type: ipkg
+Description: JPEG image compression
+http://www.ijg.org/files/
+@@
+
+

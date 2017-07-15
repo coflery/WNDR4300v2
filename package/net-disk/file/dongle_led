@@ -1,0 +1,36 @@
+#! /bin/sh
+
+INDEX="$1"
+INDEX2=$((INDEX+2))
+count=0
+
+PS="/bin/ps"
+GREP="/bin/grep"
+CAT="/bin/cat"
+AWK="/usr/bin/awk"
+KILL="bin/kill"
+
+while [ 1 ]; do
+	[ "X$($PS | $GREP "usb_led $INDEX2" | $GREP -v grep)" != "X" ] && exit
+
+	if [ $count -le 120 ]; then
+		if [ "X$($PS | $GREP "usb_led $INDEX" | $GREP -v grep)" != "X" ]; then
+			ID=`$PS | $GREP "usb_led $INDEX" | $GREP -v grep | $AWK '{print $1}'`
+			for i in $ID; do
+				$KILL -9 $i
+			done
+		fi
+		count=$((count+1))
+	fi
+
+	if [ "X$($CAT /proc/bus/usb/devices | $GREP usbserial | $GREP -v grep)" = "X" ] && \
+		[ "X$($CAT /proc/bus/usb/devices | $GREP cdc_ether | $GREP -v grep)" = "X" ]; then
+
+		continue
+	fi
+
+	/sbin/ledcontrol -n usb"$INDEX" -c green -s on
+
+	/bin/sleep 1
+
+done

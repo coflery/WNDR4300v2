@@ -1,0 +1,20 @@
+config TRAFFICMETER_GIT_TREEISH
+	string
+	prompt "treeish of trafficmeter git repository"
+	default "trafficmeter-v2.0.0-dni41"
+	help
+           Input the treeish of trafficmeter git repository which you want to build
+
+config TRAFFICMETER_GIT_REPOSITORY
+	string
+	prompt "name of trafficmeter git repository"
+	default "trafficmeter.git"
+	help
+	   Input the name of trafficmeter git repository which you want to build
+
+config TRAFFICMETER_GIT_URL
+	string
+	prompt "url of trafficmeter git repository"
+	default "ssh://dniserver/scm/dnigit/common/apps/trafficmeter.git"
+	help
+	   Input the url of trafficmeter git repository which you want to build

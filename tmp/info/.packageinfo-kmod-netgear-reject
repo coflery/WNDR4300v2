@@ -1,0 +1,22 @@
+Source-Makefile: package/kmod-netgear-reject/Makefile
+Package: kmod-netgear-reject
+Submenu: Other modules
+Version: <LINUX_VERSION>--1
+Depends: @TARGET_dniwndr3700u2631||TARGET_wndr4500v3
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: REJECT target module designed for Netgear
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: REJECT target module designed for Netgear
+@@
+Config:
+	menu "Configurations"
+		depends on PACKAGE_kmod-netgear-reject
+		source "package/kmod-netgear-reject/Config.in"
+	endmenu
+@@
+
+

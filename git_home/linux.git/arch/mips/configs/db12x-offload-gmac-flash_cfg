@@ -1,0 +1,8 @@
+
+
+#
+# Offload specific configs
+# 
+
+CONFIG_IPV6=y
+

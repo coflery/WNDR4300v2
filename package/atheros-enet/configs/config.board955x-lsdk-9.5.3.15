@@ -1,0 +1,550 @@
+# Set the toolchain path
+export TOOLCHAIN=gcc-4.3.3
+export TOOLPREFIX=mips-linux-uclibc-
+export TOOLARCH=build_mips/staging_dir/usr
+export UBOOT_GCC_4_3_3_EXTRA_CFLAGS=-fPIC
+
+export KERNEL=mips-linux-2.6.31
+export KERNELVER=2.6.31
+export KERNELTARGET=vmlinux.bin
+export COMPRESSKERNEL=y
+export KERNELARCH=mips
+#export TARGETFSSIZE=6488064
+ifeq ($(BOOT_FROM_NAND),1) #{
+# should be multiple of 128k
+export TARGETFSSIZE=4194304
+export ATH_CAL_NAND_FLASH=1
+export ATH_CAL_NAND_PARTITION="caldata"
+else #}{
+ifeq ($(ATH_DUAL_FLASH),1) #{
+export TARGETFSSIZE=4194304
+export ATH_CAL_NAND_FLASH=1
+export ATH_CAL_NAND_PARTITION="caldata"
+else #}{
+export TARGETFSSIZE=2818048
+endif #}
+endif #}
+export CONFIG_MIPS_74K_KERNEL_OPTIMIZATION=1
+#export CONFIG_EMULATION=1
+#export BOOT_FROM_NAND=1
+export ATH_SUPPORT_CWM=1
+export ATH_CAP_CWM=1
+
+
+
+ifeq ($(BUILD_CONFIG),_powercloud) #{
+export TARGETFSSIZE=3014656
+endif #}
+
+export BUSYBOX=busybox-1.01
+export WIRELESSTOOLS=wireless_tools.29
+export WIRELESSTOOLSLIB=libiw.so.29
+
+export BUILD_WPA2=y
+
+ifeq ($(USE_GCC_4_5_1), y) #{
+export TOOLCHAIN=gcc-4.5.1
+export ENABLE_DSP_ASE=y
+endif #}
+
+ifeq ($(BUILD_WLAN_PBO_DATA),y) #{
+export GCOV_KERNEL_ENABLE=y
+export WLAN_PBO_DATA_PATH=$(TOPDIR)/build/scripts/$(CFG_BOARD_TYPE)/pbo_data/wlan
+endif #}
+
+ifeq ($(USE_WLAN_PBO_DATA),y) #{
+export GCOV_KERNEL_ENABLE=y
+export WLAN_PBO_DATA_PATH=$(TOPDIR)/build/scripts/$(CFG_BOARD_TYPE)/pbo_data/wlan
+endif #}
+
+export BUS=dual
+#export BUS=AHB
+export AP_TYPE=dual
+#export AP_TYPE=single
+
+export AH_CAL_RADIOS_PCI=1
+
+ifeq ($(BOOT_FROM_NAND),1) #{
+	export AH_CAL_LOCATIONS_PCI=0x4000
+else #}{
+	export AH_CAL_LOCATIONS_PCI=0xbfff4000
+endif #}
+export AH_CAL_IN_FLASH_AHB=1
+export AH_CAL_RADIOS_AHB=1
+ifeq ($(BOOT_FROM_NAND),1) #{
+	export AH_CAL_LOCATIONS_AHB=0x0
+else #}{
+	export AH_CAL_LOCATIONS_AHB=0xbfff0000
+endif #}
+export ATH_SUPPORT_DFS=1
+export AP_USB_LED_GPIO=4
+
+export MADWIFITARGET=mipsisa32-be-elf
+export FUSIONTARGET=mipsisa32-be-elf
+export TARGETARCH=mipsisa32-be-elf
+export AP_TYPE=dual
+#export AP_TYPE=single
+
+# Ethernet defines
+export GMAC_QCA955x=1
+
+export ATH_GMAC_DRIVER=1
+
+ifeq ($(CFG_BOARD_TYPE),tb614) #{
+export ATH_DEBUG=0
+export ETH_CONFIG2=_ar8033
+export ETH_CONFIG=_s17
+export ATH_GMAC_GE0_IS_CONNECTED=1
+export ATH_GMAC_GE1_IS_CONNECTED=1
+export ATH_GMAC0_MII=ATHR_RGMII
+export ATH_GMAC1_MII=ATHR_SGMII
+#sgmii defines
+export ATH_CFG_SGMII=1
+export ATH_CONFIG_SWAP_SGMII=0
+export ATH_GMAC_SUPPORT_DUAL_PHY=1
+export ATH_RGMII_CAL=1
+# export AH_CAL_IN_FLASH_PCI=1
+endif #}
+
+ifeq ($(CFG_BOARD_TYPE),aph131) #{
+export ATH_DEBUG=0
+export ETH_CONFIG2=_ar8033
+export ETH_CONFIG=_vir
+export ATH_GMAC_GE0_IS_CONNECTED=1
+export ATH_GMAC_GE1_IS_CONNECTED=1
+export ATH_GMAC0_MII=ATHR_MII
+export ATH_GMAC1_MII=ATHR_SGMII
+#sgmii defines
+export ATH_CFG_SGMII=1
+export ATH_CONFIG_SWAP_SGMII=0
+export ATH_GMAC_SUPPORT_DUAL_PHY=1
+export ATH_MDC_GPIO=1
+#export ATH_SWITCH_ONLY_MODE=1
+
+# export AH_CAL_IN_FLASH_PCI=1
+endif #}
+
+
+ifeq ($(CFG_BOARD_TYPE),tb627_slave) #{
+export ATH_DEBUG=0
+export ETH_CONFIG=_vir
+export ETH_CONFIG2=_vir
+export ATH_SGMII_FORCED=1
+export ATH_GMAC_GE0_IS_CONNECTED=1
+export ATH_GMAC_GE1_IS_CONNECTED=1
+export ATH_GMAC0_MII=ATHR_RGMII
+export ATH_GMAC1_MII=ATHR_SGMII
+export ATH_SLAVE_CONNECTED=1
+#sgmii defines
+export ATH_CFG_SGMII=1
+# export AH_CAL_IN_FLASH_PCI=1
+endif #}
+
+ifeq ($(CFG_BOARD_TYPE),tb627) #{
+export ATH_DEBUG=0
+export ETH_CONFIG=_s17
+export ETH_CONFIG2=_vir
+export ATH_GMAC_GE0_IS_CONNECTED=1
+export ATH_GMAC_GE1_IS_CONNECTED=1
+export ATH_GMAC0_MII=ATHR_RGMII
+export ATH_GMAC1_MII=ATHR_SGMII
+export S17_SWMAC6_CONNECTED=1
+export ATH_SGMII_FORCED=1
+export ATH_GMAC_SUPPORT_DUAL_PHY=1
+export ATH_SGMII_LINK_INTR=1
+#sgmii defines
+export ATH_CFG_SGMII=1
+# export AH_CAL_IN_FLASH_PCI=1
+export FLASH_SIZE=16
+export ATH_S17_PHY0_WAN=1
+export ATH_RGMII_CAL=1
+
+endif #}
+
+ifeq ($(CFG_BOARD_TYPE),tb627-master) #{
+export ATH_DEBUG=0
+export ETH_CONFIG=_s17
+export ETH_CONFIG2=_vir
+export ATH_GMAC_GE0_IS_CONNECTED=1
+export ATH_GMAC_GE1_IS_CONNECTED=1
+export ATH_GMAC0_MII=ATHR_RGMII
+export ATH_GMAC1_MII=ATHR_SGMII
+export S17_SWMAC6_CONNECTED=1
+export ATH_SGMII_FORCED=1
+export ATH_GMAC_SUPPORT_DUAL_PHY=1
+export ATH_SGMII_LINK_INTR=1
+#sgmii defines
+export ATH_CFG_SGMII=1
+# export AH_CAL_IN_FLASH_PCI=1
+export FLASH_SIZE=16
+export ATH_S17_PHY0_WAN=1
+export ATH_RGMII_CAL=1
+endif #}
+
+ifeq ($(CFG_BOARD_TYPE),tb627-offld-slave) #{
+export ATH_DEBUG=0
+export ETH_CONFIG=_vir
+export ETH_CONFIG2=_vir
+export ATH_SGMII_FORCED=1
+export ATH_GMAC_GE0_IS_CONNECTED=1
+export ATH_GMAC_GE1_IS_CONNECTED=1
+export ATH_GMAC0_MII=ATHR_RGMII
+export ATH_GMAC1_MII=ATHR_SGMII
+export ATH_SLAVE_CONNECTED=1
+#sgmii defines
+export ATH_CFG_SGMII=1
+# export AH_CAL_IN_FLASH_PCI=1
+export ATH_GMAC_SUPPORT_DUAL_PHY=0
+endif #}
+
+ifeq ($(CFG_BOARD_TYPE),ap132) #{
+export ATH_DEBUG=1
+export ETH_CONFIG=_s17
+export ATH_GMAC_GE0_IS_CONNECTED=1
+export ATH_GMAC_GE1_IS_CONNECTED=1
+export ATH_GMAC1_MII=ATHR_SGMII
+export ATH_GMAC0_MII=ATHR_RGMII
+export ATH_CFG_SGMII=1
+export ATH_SWITCH_ONLY_MODE=1
+export ATH_SGMII_FORCED=1
+export ATH_SUPPORT_LED=1
+export GPIO_PIN_FUNC_0=23
+export GPIO_PIN_FUNC_1=23
+export GPIO_PIN_FUNC_2=23
+export ATH_LED_CUSTOMER=CUSTOMER_ATHEROS_SCORPION
+export WPS_LED_GPIO_PIN=15
+#Smart Antenna System Configurations
+ifeq ($(UMAC_SUPPORT_SMARTANTENNA),1) #{
+export ATH_GPIOPIN_ROUTE_SWCOM3=0
+export ATH_GPIOPIN_ANTCHAIN0=1
+export ATH_GPIOPIN_ANTCHAIN1=2
+export ATH_GPIOPIN_ANTCHAIN2=3
+
+export ATH_GPIOFUNC_ROUTE_SWCOM3=0x26
+export ATH_GPIOFUNC_ANTCHAIN0=0x47
+export ATH_GPIOFUNC_ANTCHAIN1=0x48
+export ATH_GPIOFUNC_ANTCHAIN2=0x28
+
+export UMAC_SUPPORT_INTERNALANTENNA=1
+export ATH_SMARTANTENNA_DISABLE_JTAG=1
+export ATH_SMARTANTENNA_ROUTE_SWCOM_TO_GPIO=1
+export NUM_TX_CHAINS=3
+export SA_NUMANT_PERCHAIN=2
+export SA_11N_SUPPORT=1
+endif #}
+endif #}
+
+ifeq ($(CFG_BOARD_TYPE),ap135) #{
+export ATH_DEBUG=0
+export ETH_CONFIG=_s17
+export ATH_GMAC_GE0_IS_CONNECTED=1
+export ATH_GMAC_GE1_IS_CONNECTED=1
+export ATH_GMAC0_MII=ATHR_RGMII
+export ATH_GMAC1_MII=ATHR_SGMII
+#sgmii defines
+export ATH_CFG_SGMII=1
+export ATH_CONFIG_SWAP_SGMII=0
+export AH_CAL_IN_FLASH_PCI=1
+export ATH_S17_PHY0_WAN=1
+export ATH_SGMII_FORCED=1
+export ATH_S17_MAC0_SGMII=1
+export FLASH_SIZE=16
+export ATH_RGMII_CAL=1
+endif #}
+
+
+ifeq ($(CFG_BOARD_TYPE),ap136) #{
+export ATH_DEBUG=0
+export ATH_S17_MAC0_SGMII=1
+ifeq ($(BOARD_VER),010) #{
+export ATH_S17_MAC0_SGMII=0
+endif #}
+export ETH_CONFIG=_s17
+export ATH_GMAC_GE0_IS_CONNECTED=1
+export ATH_GMAC_GE1_IS_CONNECTED=1
+export ATH_GMAC0_MII=ATHR_RGMII
+export ATH_GMAC1_MII=ATHR_SGMII
+#sgmii defines
+export ATH_CFG_SGMII=1
+export ATH_CONFIG_SWAP_SGMII=0
+export AH_CAL_IN_FLASH_PCI=1
+export ATH_S17_PHY0_WAN=1
+export ATH_SGMII_FORCED=1
+export ATH_RGMII_CAL=1
+#LED defines
+export ATH_SUPPORT_LED=1
+export GPIO_PIN_FUNC_0=7
+export GPIO_PIN_FUNC_1=7
+export GPIO_PIN_FUNC_2=7
+export ATH_LED_CUSTOMER=CUSTOMER_ATHEROS_SCORPION
+export UMAC_SUPPORT_TX_FRAG=0
+endif #}
+
+export ATH_WDS_SUPPORT_APONLY=1
+export ATH_TX_COMPACT=1
+export ATH_INT_TX_MITIGATION=0
+export BUILD_ATHR_HOSTAP=1
+
+export ATH_GMAC_RX_TASKLET=1
+export ATH_GMAC_RX_PKT_CNT=100
+
+export ATH_GMAC1_RXFCTL=1
+export ATH_GMAC1_TXFCTL=1
+
+export ATH_GMAC0_RXFCTL=1
+export ATH_GMAC0_TXFCTL=1
+
+export ATH_GMAC0_TX_CNT=128
+export ATH_GMAC0_RX_CNT=128
+
+export ATH_GMAC1_TX_CNT=128
+export ATH_GMAC1_RX_CNT=128
+
+export ATH_GMAC_HW_QOS=0
+
+
+export ATH_GMAC_LEN_PER_TX_DS=1536
+export ATH_GMAC_LOCATION=0xbfff0000
+
+
+
+
+#ifneq ($(ETH_CONFIG),_s27)
+#export BUILD_EXT=$(ETH_CONFIG)$(ETH_CONFIG2)
+#endif
+
+# For S17 H/W Accelerator
+ifeq ($(ETH_CONFIG),_s17_hwaccel) #{
+export BUILD_CONFIG=_routing
+endif #}
+
+# For db12x S27 H/W Accelerator
+ifeq ($(BUILD_CONFIG),_hwaccel) #{
+export ATH_GMAC_SOC_HW_ACL=1
+export ATH_GMAC_SOC_HW_NAT=1
+endif #}
+
+# For ap123 S27 H/W Accelerator
+ifeq ($(BUILD_CONFIG),_ap123_hwaccel) #{
+export ATH_GMAC_HW_ACL=1
+export ATH_GMAC_HW_NAT=1
+endif #}
+
+export BUILD_UMAC=1
+
+# Set Phy Err Diagnostics (Radar detection) to be enabled for AP builds
+export ATH_CAP_PHYERR_DIAG=1
+
+export AR5416_G_MODE=1
+export AR9100=0
+export AR7240_EMU=1
+ifeq ($(BUILD_WMACEMU),1) #{
+export AH_DEBUG=1
+else #}{
+export AH_DEBUG=0
+endif #}
+
+export AH_SUPPORT_AR5210=0
+export AH_SUPPORT_AR5212=0
+export AH_SUPPORT_5111=0
+export AH_SUPPORT_5112=0
+export AH_SUPPORT_2413=0
+export AH_SUPPORT_5111=0
+export AH_SUPPORT_5112=0
+export AH_SUPPORT_2413=0
+export AH_SUPPORT_5413=0
+export AH_SUPPORT_2316=0
+export AH_SUPPORT_2317=0
+export AH_SUPPORT_2425=0
+export AH_SUPPORT_SOWL=0
+export AH_SUPPORT_AR5416=1
+ifeq ($(BUILD_WMACEMU),1) #{
+export AR9340_EMULATION=1
+export AR9550_EMULATION=1
+export AR9300_EMULATION=1
+export AR9300_EMULATION_BB=1
+endif #}
+export AH_SUPPORT_KITE_ANY=1
+export AH_SUPPORT_KITE_10=1
+export AH_SUPPORT_KITE_12=1
+export AH_SUPPORT_KIWI_10=1
+export AH_SUPPORT_KIWI_ANY=1
+export AH_SUPPORT_KIWI_11=1
+export AH_SUPPORT_K2=0
+export AH_SUPPORT_EEPROM_AR9287=1
+export ATH_SUPPORT_VLAN=1
+
+
+export ATH_CHAINMASK_SELECT=0
+export ATH_RXBUF=512
+export ATH_TXBUF=512
+export ATH_CAP_AMSDU=1
+export IEEE80211_MCAST_ENHANCEMENT=1
+export ATH_RB=0
+export AR5416_G_MODE=1
+export AH_SUPPORT_HOWL=0
+export AH_SUPPORT_OWL=1
+export AR5416_INT_MITIGATION=1
+export ATH_SUPPORT_IQUE=1
+export ATH_SUPPORT_GREEN_AP=1
+export ATH_SUPPORT_DYN_TX_CHAINMASK=1
+export AH_DESC_NOPACK=1
+export ATH_SUPPORT_PAPRD=1
+# export ATH_TRAFFIC_FAST_RECOVER=1
+
+export AH_SUPPORT_SCORPION=1
+export AH_SUPPORT_WASP=0
+
+ifeq ($(BUILD_WPA2),y) #{
+export ATH_WPS_IE=1
+else #}{
+export ATH_WPS_IE=0
+endif #}
+
+ifeq ($(BUILD_SAMBA),y) #{
+
+export SAMBA_MIPS_74K_CFLAGS=-funit-at-a-time -Os -pipe -march=74kc -mtune=74kc
+
+#Populate the utilities to be removed
+
+sbin_list1=sbin/802* sbin/apst* sbin/ath* sbin/ifr* sbin/iwe*
+sbin_list2=sbin/iwsp* sbin/iwli* sbin/radar* sbin/iwge* sbin/pktl*
+samba_list=usr/local/bin/* usr/local/sbin/nmb* usr/local/sbin/smb*nt
+
+export INSTALL_BLACKLIST="usr/bin/gdb* $(sbin_list1) $(sbin_list2) $(samba_list)"
+
+endif #}
+
+
+#export ATH_SST_FLASH=y
+#export ATH_DUAL_FLASH=1
+#export EXTRAVERSION=-9.2.0.39.3
+#export ATH_SINGLE_CFG=1
+export ATH_EXT_AP=1
+
+export ATH_SUPPORT_QUICK_KICKOUT=1
+export ATH_SUPPORT_TxBF=1
+
+
+
+#export ATH_LOW_POWER_ENABLE=1
+
+export CONFIG_I2S=1
+export KBUILD_MODPOST_WARN=y
+ifeq ($(CONFIG_I2S),1) #{
+export ATH_WASP_I2S=1
+endif #}
+
+#Remove the example files in apps/wpa2 directory
+export BUILD_WPA2_NO_EXAMPLES=y
+
+export JUMPSTART_GPIO=16
+
+export ATH_SUPPORT_DESC_CACHABLE=1
+export ATH_TXQ_BH_LOCK=1
+
+#turn on ap-only code
+export UMAC_SUPPORT_APONLY=1
+
+export ATH_SUPPORT_WIFIPOS=0
+export ATH_SUPPORT_RX_PROC_QUOTA=0
+
+export ATH_SUPPORT_DESC_CACHABLE=1
+export ATH_TXQ_BH_LOCK=1
+
+ifneq ($(strip $(CONFIG_BASIC)),1) #{
+
+export ATH_SUPPORT_VOWEXT=1
+export ATH_VOW_EXT_STATS=1
+export ATH_SUPPORT_VOW_DCS=1
+
+#Increasing Tx Buffers for VOW - So, please make sure that ATH_SUPPORT_VOWEXT is enabled before this
+ifeq ($(ATH_SUPPORT_VOWEXT), 1)
+export ATH_TXBUF=1536
+endif
+
+export DIRECT_ATTACH=1
+#export UMAC_SUPPORT_VI_DBG=1
+export ATH_SUPPORT_SPECTRAL=1
+
+# Periodically measure performance stats such as throughput, PER
+# But enabling this option can affect peak performance slightly.
+export UMAC_SUPPORT_PERIODIC_PERFSTATS=0
+
+# Measure channel utilization
+# Enabling this option can affect peak performance slightly.
+export UMAC_SUPPORT_CHANUTIL_MEASUREMENT=0
+
+#enable BSS load support
+export UMAC_SUPPORT_BSSLOAD=1
+#enable radio measurement support for voice enterprise
+export UMAC_SUPPORT_RRM=1
+#enable wireless network management support for voice enterprise
+export UMAC_SUPPORT_WNM=1
+#enable WMM admission control support for voice enterprise
+export UMAC_SUPPORT_ADMCTL=1
+#enable quiet period support
+export UMAC_SUPPORT_QUIET=1
+#enable UAPSD RATECTL
+export ATH_SUPPORT_UAPSD_RATE_CONTROL=1
+# Randomness generation support from hardware
+export ATH_GEN_RANDOMNESS=1
+
+# IEEE 802.11v Proxy ARP
+export UMAC_SUPPORT_PROXY_ARP=1
+
+# Hotspot 2.0 DGAF Disable support
+export UMAC_SUPPORT_DGAF_DISABLE=1
+
+# Hotspot 2.0 L2 Traffic Inspection and Filtering support
+export UMAC_SUPPORT_HS20_L2TIF=1
+export ATH_SUPPORT_HS20=1
+
+# Disable STA mode support to gain some CPU cycles
+export UMAC_SUPPORT_STA_MODE=0
+export ATH_HW_TXQ_STUCK_WAR=1
+# Enable UMAC TX Fragmention Support
+export UMAC_SUPPORT_TX_FRAG=1
+endif #}
+
+#ap136-p2p
+ifeq ($(CFG_BOARD_TYPE),ap136-p2p) #{
+export ATH_DEBUG=0
+export ETH_CONFIG=_s17
+export ATH_GMAC_GE0_IS_CONNECTED=1
+export ATH_GMAC_GE1_IS_CONNECTED=1
+export ATH_GMAC0_MII=ATHR_RGMII
+export ATH_GMAC1_MII=ATHR_SGMII
+#sgmii defines
+export ATH_CFG_SGMII=1
+export ATH_CONFIG_SWAP_SGMII=0
+export AH_CAL_IN_FLASH_PCI=1
+export ATH_S17_PHY0_WAN=1
+export ATH_SGMII_FORCED=1
+export ATH_RGMII_CAL=1
+#LED defines
+export ATH_SUPPORT_LED=1
+export GPIO_PIN_FUNC_0=7
+export GPIO_PIN_FUNC_1=7
+export GPIO_PIN_FUNC_2=7
+export ATH_LED_CUSTOMER=CUSTOMER_ATHEROS_SCORPION
+export UMAC_SUPPORT_TX_FRAG=0
+export UMAC_SUPPORT_APONLY=0
+export UMAC_SUPPORT_STA_MODE=1
+export ATH_EXT_AP=1
+export ATHEROS_LINUX_P2P_DRIVER=1
+export ATH_GEN_TIMER=1
+export ATH_SUPPORT_P2P=1
+export UMAC_SUPPORT_P2P_GO_POWERSAVE=1
+export UMAC_SUPPORT_STA_POWERSAVE=1
+export UMAC_SUPPORT_P2P=1
+export UMAC_SUPPORT_VAP_PAUSE=1
+export UMAC_SUPPORT_IE_UTILS=1
+export UMAC_SUPPORT_TSF_TIMER=1
+export UMAC_SUPPORT_RESMGR_SM=1
+export UMAC_SUPPORT_RESMGR=1
+export UMAC_SUPPORT_RESMGR_OC_SCHED=1
+export ATH_VAP_PAUSE_SUPPORT=1
+export ATH_SUPPORT_ATHVAP_INFO=1
+endif #}
+export LMAC_SUPPORT_POWERSAVE_QUEUE=1

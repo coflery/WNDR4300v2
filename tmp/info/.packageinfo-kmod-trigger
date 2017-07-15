@@ -1,0 +1,22 @@
+Source-Makefile: package/kmod-trigger/Makefile
+Package: kmod-trigger
+Submenu: Other modules
+Version: <LINUX_VERSION>--1
+Depends: @TARGET_dniwndr3700u2631||TARGET_wndr4500v3
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: DNI Port Triggerring module
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: DNI Port Triggerring module
+@@
+Config:
+	menu "Configurations"
+		depends on PACKAGE_kmod-trigger
+		source "package/kmod-trigger/Config.in"
+	endmenu
+@@
+
+

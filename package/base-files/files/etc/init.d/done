@@ -1,0 +1,10 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+START=95
+boot() {
+	#Enable kernel configure for Igmp Snooping
+	echo 1 > /proc/igmpsnoop
+
+	# mm 0xb8070000 0x00000001
+}

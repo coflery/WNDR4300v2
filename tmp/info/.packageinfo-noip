@@ -1,0 +1,21 @@
+Source-Makefile: package/noip/Makefile
+Package: noip
+Version: 1
+Depends: 
+Provides: 
+Section: utils
+Category: Network
+Title: no-ip DDNS utility.
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: no-ip DDNS utility.
+@@
+Config:
+	menu "Configurations"
+		depends on PACKAGE_noip
+		source "package/noip/Config.in"
+	endmenu
+@@
+
+

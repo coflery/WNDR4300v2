@@ -1,0 +1,6 @@
+config TELNETENABLE_GIT_TREEISH
+	string
+	prompt "treeish of telnetenable git repository"
+	default "HEAD"
+	help
+	  input the treeish of telnetenable git repository which you want to build

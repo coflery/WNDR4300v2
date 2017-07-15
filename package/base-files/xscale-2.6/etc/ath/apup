@@ -1,0 +1,33 @@
+#!/bin/sh
+
+. /etc/ath/apcfg
+#APIP=192.168.1.10
+
+#athload
+. /etc/ath/athstart
+
+#
+# configure bridge
+#
+
+if [ $WDS_MODE = repeater ]; then
+	ifconfig ath1 up
+	brctl addif br0 ath1
+fi
+
+ifconfig ath0 up
+brctl addif br0 ath0
+brctl setfd br0 0
+#brctl stp br0 off
+
+ifconfig br0 $AP_IPADDR netmask $AP_NETMASK up
+
+#
+# configure lo for hostapd
+#
+#ifconfig lo 127.0.0.1 up
+#hostapd -B /etc/ath/wpa2-psk.conf &
+#hostapd -B /etc/ath/wpa2EAP.conf &
+
+# configure wpa_supplicant for client mode
+# wpa_supplicant -i ath0 -b br0 -c /etc/ath/wpa-psk.conf -Dmadwifi -B

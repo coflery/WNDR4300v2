@@ -1,0 +1,5 @@
+#!/bin/sh
+. /lib/switch.sh
+
+iptv_port_mask=$(($1 & 0xf)) 
+sw_config_vlan $iptv_port_mask

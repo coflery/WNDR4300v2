@@ -1,0 +1,40 @@
+<% http_header("style/basic_home.css", "funcs.js", "basic.js") %>
+
+<% func_header("_Wizard_setup", "BRS_03A_detcInetType.html", "wizard_detwan") %>
+<script language="javascript" type="text/javascript">
+var portstatus = "<% cat_file("/tmp/port_status")  %>";
+var enable_action=1;
+var enabled_wds=<% wds_enable() %>;
+var enabled_wps=<% wps_menu() %>;
+var enable_ap_flag="<% cfg_get("ap_mode") %>";
+var gui_region="<% cfg_get("GUI_Region") %>";
+var parental_ctrl_flag = parent.parental_ctrl_flag;
+parent.ParentalControl = "<% cfg_get("ParentalControl") %>";
+ParentalControl = parent.ParentalControl;
+
+var select_basic="<% cfg_get("internet_type") %>";
+var select_type="<% cfg_get("internet_ppp_type") %>";
+var endis_wl_radio='<% enable_ap_orNot("bgn") %>';
+var endis_wla_radio='<% enable_ap_orNot("an") %>';
+</script>
+
+<div id="form">
+<div id="form_content">
+	<% basic_internet() %>
+	<% basic_wireless() %>
+	<div id="attached" class="basic_icon" onclick="click_action('attached');">
+		<div class="icon_name">$attach_device</div>
+		<div id="attached_stat" class="icon_status"><span>$num_devs:<b><% basic_device_num() %></b></span></div>
+	</div>
+	<div id="parental" class="basic_icon" onclick="click_action('parental');">
+		<div class="icon_name">$parental_control</div>
+		<div id="parant_control_stat" class="icon_status"><span>$status_mark <b><% basic_parental_state() %></b></span></div>
+	</div>
+	<% basic_readyshare() %>
+	<% basic_guest() %>
+<script>setIconClass("internet_stat","wlan_stat","attached_stat","parant_control_stat","readyshare_stat","guestNetwork_stat");</script>
+</div><!-- form_content -->
+</div><!-- form -->
+</form>
+</body>
+</html>

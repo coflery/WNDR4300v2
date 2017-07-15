@@ -1,0 +1,22 @@
+Source-Makefile: package/dnidnsmasq/Makefile
+Package: dnidnsmasq
+Version: 2.39-1
+Depends: @TARGET_dniwndr3700u2631||TARGET_wndr4500v3
+Provides: 
+Section: net
+Category: Base system
+Title: A lightweight DNS and DHCP server
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  It is intended to provide coupled DNS and DHCP service to a LAN.
+http://www.thekelleys.org.uk/dnsmasq/
+@@
+Config:
+	menu "Configuration"
+		depends on PACKAGE_dnidnsmasq
+		source "package/dnidnsmasq/Config.in"
+	endmenu
+@@
+
+

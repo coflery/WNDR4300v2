@@ -1,0 +1,20 @@
+config PROFTPD_GIT_TREEISH
+	string
+	prompt "treeish of proftpd git repository"
+	default "proftpd-1.3.3-dni-09"
+	help
+           Input the treeish of proftpd git repository which you want to build
+
+config PROFTPD_GIT_REPOSITORY
+	string
+	prompt "name of proftpd git repository"
+	default "proftpd.git"
+	help
+	   Input the name of proftpd git repository which you want to build
+
+config PROFTPD_GIT_URL
+	string
+	prompt "url of proftpd git repository"
+	default "ssh://dniserver/scm/dnigit/common/apps/proftpd.git"
+	help
+	   Input the url of proftpd git repository which you want to build

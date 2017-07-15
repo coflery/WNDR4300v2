@@ -1,0 +1,95 @@
+#!/bin/sh
+KVER=`uname -r | cut -f 1 -d '-'`
+MODULE_PATH=/lib/modules/$KVER/offload
+BUS=`cat ${MODULE_PATH}/hif_type`
+
+###################################################################
+## The input parameter is either up or down.  We assume that
+## if no argument is provided, UP is intended
+###################################################################
+
+echo "Args: $#"
+
+if [ $1 != down ]; then
+
+#
+# insert the modules
+#
+    insmod $MODULE_PATH/adf.ko
+    if [ "${BUS}" = "usb" ]; then
+        insmod $MODULE_PATH/hif_${BUS}.ko
+    else
+        insmod $MODULE_PATH/hif_${BUS}.ko tgt_if="eth0.2"
+    fi
+    insmod $MODULE_PATH/fwd.ko
+    insmod $MODULE_PATH/atd.ko
+
+    # Wait for radio interfaces to be created
+    if [ "$ATH_countrycode" != "" ]; then
+    	WIFI=`ifconfig -a | grep wifi`
+    	COUNT=11
+		
+	while [ 1 ]
+	do 
+        
+        if [ "$WIFI" != "" ]; then 
+                break
+        else
+                COUNT=`expr $COUNT - 1`
+                if [ $COUNT = 0 ]; then
+                echo "Timeout waiting for radio interfaces to be created" 
+                exit 255
+                fi
+
+        sleep 1
+        WIFI=`ifconfig -a | grep wifi`
+
+        fi
+        done
+
+    fi
+    sleep 1
+
+#
+# If Country Code has been specified, it needs to be set here using
+# the iwpriv command.  This will be common for all VAPs
+#
+
+    if [ "$ATH_countrycode" != "" ]; then
+        iwpriv wifi0 setCountryID $ATH_countrycode
+
+        ##
+        ## Check the result of this command.  If the country code
+        ## is invalid, it will return a non-zero result.  We should
+        ## die a horrible death in this case
+        ##
+
+        if [ $? != 0 ]; then
+                exit 255
+        fi
+
+        iwpriv wifi1 setCountryID $ATH_countrycode
+
+        ##
+        ## Don't check this one.  If the second module is not installed, we will
+        ## get an error code.  If the country code is invalid, it was invalid for
+        ## the previous call, so we won't get here anyway
+        ##
+
+        exit 0
+    fi
+
+
+else
+#
+# First, check to see if all of the VAPs have been eliminated
+# If not, kill them all.  Don't continue, since this script
+# will be called by killVAP all
+#
+
+    rmmod atd.ko
+    rmmod fwd.ko
+    rmmod hif_${BUS}.ko
+    rmmod adf.ko
+
+fi

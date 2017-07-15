@@ -1,0 +1,13 @@
+config DNI_NTGRDDNS_GIT_TREEISH
+	string
+	prompt "treeish of dni ntgrddns git repository"
+	default "ntgrddns-dni7"
+	help
+           Input the treeish of dni ntgrddns git repository which you want to build
+
+config DNI_NTGRDDNS_GIT_REPOSITORY
+	string
+	prompt "name of dni ntgrddns git repository"
+	default "ntgrddns.git"
+	help
+	   Input the name of dni ntgrddns git repository which you want to build

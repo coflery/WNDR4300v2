@@ -1,0 +1,15 @@
+Source-Makefile: package/dnimobile/Makefile
+Package: dnimobile
+Version: 0.01-1
+Depends: 
+Provides: 
+Section: utils
+Category: Network
+Title: dnimobile
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: dnimobile
+@@
+
+

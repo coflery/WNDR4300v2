@@ -1,0 +1,5 @@
+#!/bin/sh /etc/rc.common
+START=10
+boot() {
+	insmod dni-dmapool pool_num=2,2,2,2,0,2 mempool_num=14,2,2,4,0,4
+}

@@ -1,0 +1,142 @@
+#!/bin/sh /etc/rc.common
+START=20
+
+print_dhcpd_conf(){
+    cat <<EOF
+pidfile /var/run/udhcpd.pid
+start $2
+end $3
+interface $1
+remaining yes
+auto_time 5
+lease_file /tmp/udhcpd.leases
+option subnet $4
+option router $5
+option dns $5
+option lease $6
+EOF
+}
+ 
+start_dhcpd() {
+    [ ! -f /tmp/udhcpd.leases ] && touch /tmp/udhcpd.leases
+    print_dhcpd_conf "$BR_IF" "$($CONFIG get dhcp_start)" "$($CONFIG get dhcp_end)" "$($CONFIG get lan_netmask)" "$($CONFIG get lan_ipaddr)" "$($CONFIG get lan_lease)" > /tmp/udhcpd.conf
+
+    count=1
+    while :
+    do
+	lease="$($CONFIG get reservation$count)"
+	if [ "x$lease" = "x" ]; then
+	    break;
+	fi
+	count=`expr $count + 1`
+	echo "static_lease $lease" >> /tmp/udhcpd.conf
+    done
+
+    udhcpd /tmp/udhcpd.conf
+}
+
+start() {
+	local lan_ip lan_mask
+
+	lan_ip=$($CONFIG get lan_ipaddr)
+	lan_mask=$($CONFIG get lan_netmask)
+	wan6_type=`$CONFIG get ipv6_type`
+	logo_test=`$CONFIG get endis_ipv6_logo_test`
+
+	ifconfig $BR_IF ${lan_ip:-192.168.1.1} netmask ${lan_mask:-255.255.255.0}
+	
+	ifconfig $LAN_IF up
+
+	ifconfig $BR_IF down
+	# Enable DAD, and randomly generate anoter link-local address if
+	# MAC-based duplicate link-local address has been found.
+	if [ "x$logo_test" = "x1" -a "x$wan6_type" = "xfixed" ]; then
+		echo 2 > /proc/sys/net/ipv6/conf/default/accept_dad
+		echo 2 > /proc/sys/net/ipv6/conf/${BR_IF}/accept_dad
+		echo "1" > /proc/sys/net/ipv6/neigh/${BR_IF}/not_send_neighbor_solicitation
+		echo "1" > /proc/sys/net/ipv6/neigh/${LAN_IF}/not_send_neighbor_solicitation
+	else
+		echo 3 > /proc/sys/net/ipv6/conf/default/accept_dad
+		echo 3 > /proc/sys/net/ipv6/conf/${BR_IF}/accept_dad
+	fi
+
+	sleep 2
+	ifconfig $BR_IF up
+
+	if [ "x$logo_test" = "x1" -a "x$wan6_type" = "xfixed" ]; then
+		echo "1" > /proc/sys/net/ipv6/neigh/${LAN_IF}/not_send_neighbor_solicitation
+		echo "1" > /proc/sys/net/ipv6/neigh/${BR_IF}/not_send_neighbor_solicitation
+	fi
+
+	if [ "$($CONFIG get lan_dhcp)" = "1" ]; then
+		if [ "$($CONFIG get wds_endis_fun)" = "0" -a "$($CONFIG get wla_wds_endis_fun)" = "0" ]; then
+			start_dhcpd
+		elif [ "$($CONFIG get wds_endis_fun)" = "0" -a "$($CONFIG get wla_wds_endis_fun)" = "1" -a "$($CONFIG get wds_repeater_basic_a)" = "1" ]; then
+			start_dhcpd
+		elif [ "$($CONFIG get wds_endis_fun)" = "1" -a "$($CONFIG get wla_wds_endis_fun)" = "0" -a "$($CONFIG get wds_repeater_basic)" = "1" ]; then
+			start_dhcpd
+		elif [ "$($CONFIG get wds_endis_fun)" = "1" -a "$($CONFIG get wla_wds_endis_fun)" = "1" ]; then
+			if [ "$($CONFIG get wds_repeater_basic_a)" = "1" -a "$($CONFIG get wds_repeater_basic)" = "1" ]; then
+				start_dhcpd
+			fi
+		fi
+	fi
+
+	# PHY link will be pulled low some seconds to force transition to reboot state 
+	# and generating DHCP request and Discovery protocol and address refresh in the 
+	# devices connected to the NETGEAR Local Area Network ports.
+	#
+	# After echo 9 into /proc/switch_phy, LAN physical signal will bring down 9 seconds,
+	# should wait for LAN physical signal bring up, and then execute subsequence actions
+	# as below.
+	if [ ! -f /tmp/boot_status ]; then
+		echo -n 9 > /proc/switch_phy && sleep 10
+	fi
+	# Attach Device
+	mkdir -p /tmp/netscan
+	/usr/sbin/net-scan
+
+	if [ ! -f /tmp/boot_status ]; then
+		# Start UPnP
+		/sbin/cmdupnp start
+
+		# Tell smbd that LAN's IP MAY be changed.
+		/usr/bin/killall smbd 2> /dev/null
+		/usr/sbin/update_smb
+	fi
+
+	# Start Router Debugging Mode ...
+	. /lib/network/RtDebug.sh
+	start_RtDebugMode
+
+	# Apply static route	
+	/sbin/cmdroute start
+
+	# Update the hostname
+	echo "$($CONFIG get netbiosname)" > /proc/sys/kernel/hostname
+
+	# Start lld2d
+	/usr/sbin/lld2d $($CONFIG get lan_ifname)
+}
+
+stop() {
+	killall udhcpd
+	killall net-scan
+	killall lld2d
+	# Stop UPnP
+	# Fix Bug 35743 - [Netgear-44][PnP-X]When change the DUT IP from 
+	# the GUI. The device icon change to be gray and IP address of 
+	# the device don't change .
+	# Reason:stop miniupnpd when br0 would stop.Thus,it will send bye-bye
+	# packets to 239.255.255.0 to inform client it would be down.
+	/sbin/cmdupnp stop
+	# Stop Router Debugging Mode ...
+	. /lib/network/RtDebug.sh
+	stop_RtDebugMode
+	ifdown $LAN_IF	
+}
+
+restart() {
+	stop
+	start
+}

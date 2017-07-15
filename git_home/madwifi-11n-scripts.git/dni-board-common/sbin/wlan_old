@@ -1,0 +1,43 @@
+#!/bin/sh
+
+[ -f /etc/ath/board.conf ] && . /etc/ath/board.conf
+
+[ -f /etc/functions.sh ] && {
+    . /etc/functions.sh
+    config_cb() {
+        [ "$2" = "lan" ] && eval "bridge_if=br-$2"
+    }
+    config_load network
+
+    export BRIDGE_IF=$bridge_if
+}
+
+case "$1" in
+	down)
+                # If WPS led is blinking, just stop it.
+                test -f /var/run/wps_led.pid && {
+                    kill $(cat /var/run/wps_led.pid)
+                    /sbin/ledcontrol -n wps -c green -s off
+                    rm -f /var/run/wps_led.pid
+                }
+                BRIDGE_IF=${BRIDGE_IF:-"br0"} PATH="$PATH:/etc/ath" /etc/ath/apdown;
+                [ "on" = "${ebtables_exist}" ] && ebtables -F;
+                rm -f /tmp/WLAN_uptime*
+        ;;
+	*)
+                update-wifi;
+                BRIDGE_IF=${BRIDGE_IF:-"br0"} PATH="$PATH:/etc/ath" /sbin/dni_apup;
+                if [ "$wlg_exist" = "on" ]; then
+                    wlg_radio=`ifconfig wifi0 | grep "UP"`
+                    if [ "x$wlg_radio" != "x" ]; then
+                        cat /proc/uptime | sed 's/ .*//' > /tmp/WLAN_uptime
+                    fi
+                fi
+                if [ "$wla_exist" = "on" ]; then
+                    wla_radio=`ifconfig wifi1 | grep "UP"`
+                    if [ "x$wla_radio" != "x" ]; then
+                        cat /proc/uptime | sed 's/ .*//' > /tmp/WLAN_uptime_5G
+                    fi
+                fi
+        ;;
+esac

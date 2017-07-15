@@ -1,0 +1,21 @@
+Source-Makefile: package/ntgrddns/Makefile
+Package: ntgrddns
+Version: 1
+Depends: 
+Provides: 
+Section: utils
+Category: Network
+Title: Netgear DDNS utility.
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: Netgear DDNS utility.
+@@
+Config:
+	menu "Configurations"
+		depends on PACKAGE_ntgrddns
+		source "package/ntgrddns/Config.in"
+	endmenu
+@@
+
+

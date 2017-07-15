@@ -1,0 +1,63 @@
+
+# the following 4 lines are necessary for activating S27 switch.
+ifconfig eth0 up
+ifconfig eth1 up
+ifconfig eth1 down
+ifconfig eth0 down
+
+get_reg() # $1: reg_addr
+{
+	ethreg $1 | awk '{print $5}'
+}
+
+set_reg() # $1: reg_addr, $2: value, $3: mask
+{
+	if [ $# == 2 ]; then
+		ethreg $1=$2
+		return
+	fi
+
+	local v0=$(get_reg $1)
+	local v_value=$(($2 & $3))
+	local v_clear=$(($3 ^ 0xffffffff))
+	ethreg $1=$(($v0 & $v_clear | $v_value))
+}
+
+# enable igmp snooping
+set_reg 0x002c 0x00007f00 0x00007f00 # IGMP_JOIN_LEAVE_DP : flood IGMP/MLD
+set_reg 0x003c 0x0e480000 0x0f480000 # IGMP_JOIN_STATUS, IGMP_V3_EN, IGMP_JOIN_NEW_EN
+set_reg 0x0104 0x00300000 0x00300000 # port 0: IGMP_JOIN_EN, IGMP_LEAVE_EN
+set_reg 0x0204 0x00300000 0x00300000 # port 1: IGMP_JOIN_EN, IGMP_LEAVE_EN
+set_reg 0x0304 0x00300000 0x00300000 # port 2: IGMP_JOIN_EN, IGMP_LEAVE_EN
+set_reg 0x0404 0x00300000 0x00300000 # port 3: IGMP_JOIN_EN, IGMP_LEAVE_EN
+set_reg 0x0504 0x00300000 0x00300000 # port 4: IGMP_JOIN_EN, IGMP_LEAVE_EN
+
+# enable ACL, add a ACL to flood SSDP packets on LAN ports.
+set_reg 0x003c 0x00200000 0x00200000 # ACL_EN
+
+set_reg 0x58804 0x00000000
+set_reg 0x58808 0x00000000
+set_reg 0x5880c 0x00000000
+set_reg 0x58810 0x00000000
+set_reg 0x58800 0x00000001
+set_reg 0x58818 0x00000006
+
+# set up a MAC ACL rule
+set_reg 0x58400 0x5e7ffffa
+set_reg 0x58404 0x00000100
+set_reg 0x58408 0x00000000
+set_reg 0x5840c 0x00000001
+set_reg 0x58410 0x00000001
+
+set_reg 0x58c00 0xffffffff
+set_reg 0x58c04 0x0000ffff
+set_reg 0x58c08 0x00000000
+set_reg 0x58c0c 0x00000fff
+
+set_reg 0x58814 0x0000001f
+set_reg 0x5881c 0x00000001
+
+set_reg 0x58000 0x00000000
+set_reg 0x58004 0x11f00000
+set_reg 0x58008 0x00000000
+

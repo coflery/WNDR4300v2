@@ -1,0 +1,13 @@
+#!/bin/sh
+
+CONFIG="/bin/config"
+
+if [ ! -f /tmp/boot_status ]; then
+	/sbin/rmmod nf_nat_dnisip.ko > /dev/null
+	/sbin/rmmod nf_conntrack_dnisip.ko > /dev/null
+fi
+
+if [ "$($CONFIG get wan_endis_sipalg)" != "1" ]; then
+	/sbin/insmod /lib/modules/2.6.31/nf_conntrack_dnisip.ko sip_direct_media=0
+	/sbin/insmod /lib/modules/2.6.31/nf_nat_dnisip.ko
+fi

@@ -1,0 +1,22 @@
+Source-Makefile: package/kmod-l2tp/Makefile
+Package: kmod-l2tp
+Submenu: Other modules
+Version: <LINUX_VERSION>-1
+Depends: @TARGET_wndr4500v3
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: PPP over L2TP linux kernel module for 2.6.31
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: PPP over L2TP linux kernel module for 2.6.31
+@@
+Config:
+	menu "Configurations"
+		depends on PACKAGE_kmod-l2tp
+		source "package/kmod-l2tp/Config.in"
+	endmenu
+@@
+
+

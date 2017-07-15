@@ -1,0 +1,21 @@
+# kmod-dnirtsp configuration
+config DNIRTSP_GIT_TREEISH
+	string
+	prompt "treeish of DNIRTSP git repository"
+	default "alg-rtsp-v2.6.31-dni4"
+	help
+           Input the treeish of dnirtsp git repository which you want to build
+
+config DNIRTSP_GIT_REPOSITORY
+	string
+	prompt "name of DNIRTSP git repository"
+	default "kmod-dnirtsp.git"
+	help
+           Input the name of dnirtsp git repository which you want to build
+
+config DNIRTSP_GIT_URL
+	string
+	prompt "url of DNIRTSP git repository"
+	default "ssh://dniserver/scm/dnigit/common/kmods/kmod-dnirtsp.git"
+	help
+           Input the url of dnirtsp git repository which you want to build

@@ -1,0 +1,76 @@
+#!/bin/sh
+##
+## Compatability scripts for older versions
+##
+
+LAN_IF=${LAN_IF:=eth1}
+
+configure_switch_remvlan() {
+    VVLANID=$1
+    DEC_VLAN=$((0x80000003+($VVLANID*65536)))
+
+    ethreg -i eth0 0x610=0x1eaaa0
+    ethreg -i eth0 0x614=$DEC_VLAN
+
+}
+
+. /etc/ath/apcfg
+if [ "${AP_OFFLD_MODE}" = "VLAN" ]; then
+	for APINDEX in 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+	do
+	    if [ "${APINDEX}" != "0" ]; then
+		VLID=`eval echo '$'AP_OFFLD_VLID_${APINDEX}`
+	    else
+		VLID=`eval echo '$'AP_OFFLD_VLID`
+	    fi
+
+	    if [ "${VLID}" != "${AP_OFFLD_LANVLID}" ]; then
+
+#We use ifconfig to check if the VLAN group exists or not.
+#We redirect the error message to null device as it is not really intended 
+#to be an error message:)
+
+		VLEXISTS=1
+		ifconfig ${LAN_IF}.${VLID} 2>/dev/null || VLEXISTS=0
+
+		if [ "${VLEXISTS}" = "1" ]; then
+		    configure_switch_remvlan    $VLID
+		    vconfig rem ${LAN_IF}.${VLID}
+		fi
+
+	    fi
+	done
+fi
+
+WPS_LED_OFF=1
+echo $WPS_LED_OFF  > /proc/simple_config/simple_config_led
+
+#Finally, unload all modules
+
+wsupp=`ps | grep atd_wsupp_bridge | cut -b 1-5`
+for i in $wsupp
+do
+kill $wsupp
+done
+sleep 1
+
+killVAP all
+sleep 3
+
+/etc/rc.d/rc.wlan down
+rm -f /tmp/.apup
+rm /tmp/sec*
+rm /tmp/conf*
+rm -rf /tmp/hostapd
+
+# Configure vlans for pb9x offload.
+# This will revert any switch settings made
+# specifically for multivlan startup mode.
+if [ "${AP_STARTMODE}" = "multivlan" ]; then
+    echo Resetting multivlan mode specific configuration...
+    . /etc/s17_vlan_config.sh
+    ifconfig ${WAN_IF} 0.0.0.0 up
+    ifconfig br0 $AP_IPADDR up
+fi
+
+

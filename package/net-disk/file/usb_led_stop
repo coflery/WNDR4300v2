@@ -1,0 +1,18 @@
+#! /bin/sh
+
+stop_id="$1"
+PS="/bin/ps"
+GREP="/bin/grep"
+AWK="/usr/bin/awk"
+KILL="/bin/kill"
+
+if [ $stop_id -eq 4 -o $stop_id -eq 5 ]; then
+	[ $stop_id -eq 4 ] && stop_id=0 || stop_id=1
+	pid=`$PS | $GREP "dongle_led $stop_id" | $GREP -v grep | $AWK '{print $1}'`
+else
+	pid=`$PS | $GREP "usb_led $stop_id" | $GREP -v grep | $AWK '{print $1}'`
+fi
+
+for i in $pid; do
+	$KILL -9 $i
+done

@@ -1,0 +1,20 @@
+config NET6CONF_GIT_TREEISH
+	string
+	prompt "treeish of net6conf git repository"
+	default "net6conf-dni91"
+	help
+           Input the treeish of net6conf git repository which you want to build
+
+config NET6CONF_GIT_REPOSITORY
+	string
+	prompt "net6conf git repository"
+	default "net6conf.git"
+	help
+	  Input the name of net6conf git repository which you want to build
+
+config NET6CONF_GIT_URL
+	string
+	prompt "net6conf git url"
+	default "ssh://dniserver/scm/dnigit/common/apps/net6conf.git"
+	help
+	  Input the url of net6conf git repository which you want to build

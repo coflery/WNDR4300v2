@@ -1,0 +1,14 @@
+export AP_IPADDR=192.168.1.1
+export AP_NETMASK=255.255.255.0
+# AP_CONTROL_CH could be
+#                a number or
+#                11na (which means auto-scan in 11na mode) or
+#                11ng (which means auto-scan in 11ng mode)
+export AP_CONTROL_CH=6
+#export AP_CONTROL_CH=11ng
+#export AP_CONTROL_CH=11na
+# AP_EXTN_CH_OFFSET may not be negative for channels 1 to 4.
+export AP_EXTN_CH_OFFSET=-1
+export AP_SSID=Atheros_MIMOG
+# WDS_MODE could be none, rootap, client, repeater
+export WDS_MODE=none

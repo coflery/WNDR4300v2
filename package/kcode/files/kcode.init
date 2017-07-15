@@ -1,0 +1,9 @@
+#!/bin/sh /etc/rc.common
+START=99
+
+boot() {
+	load_modules /etc/modules.d/90-kcode
+	load_modules /etc/modules.d/91-kcode
+#	load_modules /lib/modules/2.6.31/GPL_NetUSB.ko
+#	load_modules /lib/modules/2.6.31/NetUSB.ko
+}

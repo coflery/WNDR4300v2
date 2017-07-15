@@ -1,0 +1,20 @@
+#!/bin/sh
+. /lib/switch.sh
+
+# the first time interface up will reset the switch, so up/down the interface once
+ifconfig $rawif up
+ifconfig $rawif down
+
+# config switch
+sw_init
+sw_config_vlan 0
+sw_enable_igmp_snooping
+sw_acl_rule
+
+# create vlan
+ifconfig $rawif up
+vconfig add $rawif 1  # create eth0, vid=1
+vconfig add $rawif 2  # create eth1, vid=2
+ifconfig eth0 up
+ifconfig eth1 up
+

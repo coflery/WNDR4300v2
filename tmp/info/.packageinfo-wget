@@ -1,0 +1,15 @@
+Source-Makefile: package/wget/Makefile
+Package: wget
+Version: 1.13.4-1
+Depends: 
+Provides: 
+Section: utils
+Category: Network
+Title: Green Download ftp http Client
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: wget-1.13.4.tar.bz2
+Type: ipkg
+Description: Green Download ftp http Client
+@@
+
+

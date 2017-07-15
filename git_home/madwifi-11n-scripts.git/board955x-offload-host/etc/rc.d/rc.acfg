@@ -1,0 +1,5 @@
+#!/bin/sh
+
+rm -f /etc/acfg_cur_wifi*.conf
+rm -f /etc/acfg_cur_wlan*.conf
+

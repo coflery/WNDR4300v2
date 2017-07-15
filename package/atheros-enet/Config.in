@@ -1,0 +1,45 @@
+# Atheros ethernet driver configuration
+config ATHEROS_ENET_GIT_URL
+	string
+	prompt "url of atheros-enet git repository"
+	default "ssh://dniserver/scm/dnigit/vendor/atheros/atheros-enet/vincent.yang/atheros-enet.git"
+	help
+	   Input the url of atheros-enet git repository which you want to build
+
+config ATHEROS_ENET_GIT_REPOSITORY
+	string
+	prompt "name of atheros-enet git repository"
+	default "atheros-enet.git"
+	help
+	   Input the name of atheros-enet git repository which you want to build
+
+config ATHEROS_ENET_GIT_TREEISH
+	string
+	prompt "treeish of atheros-enet git repository"
+	default "atheros-enet-v9.2.0.1017-dni37"
+	help
+	   Input the treeish of atheros-enet git repository which you want to build
+
+config ATHEROS_ENET_BOARD
+	string "Board that atheros-enet embedded"
+	default "db120-wndr3700v4"
+
+config ATHEROS_ENET_DNI_SIOCGMIIREG
+	bool "support DNI_SIOCGMIIREG."
+	default n
+
+config ATHEROS_ENET_DNI_DEFAULT_MAC
+	bool "support DNI_DEFAULT_MAC."
+	default n
+
+config ATHEROS_ENET_DNI_SWITCH_PHY
+	bool "support DNI_SWITCH_PHY."
+	default n
+
+config ATHEROS_ENET_DNI_ETH_LED
+	bool "support DNI_ETH_LED."
+	default n
+
+config ATHEROS_ENET_DNI_QOS
+	bool "support DNI_ETH_QOS."
+	default n

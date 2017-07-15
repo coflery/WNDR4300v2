@@ -1,0 +1,22 @@
+#!/bin/sh
+
+FIREWALL="/www/cgi-bin/firewall.sh"
+CONFIG=/bin/config
+
+# static
+if [ "$($CONFIG get bridge_ether_ip_assign)" = "0" ]; then
+	ifconfig br0 $($CONFIG get bridge_ipaddr) netmask $($CONFIG get bridge_netmask)
+	route add default gw $($CONFIG get bridge_gateway)
+	$FIREWALL restart
+	ns_flag=1
+else
+	udhcpc -a -f -i br0 -h "$($CONFIG get bridge_netbiosname)" -r $($CONFIG get ap_dhcp_ipaddr) &
+	[ "$($CONFIG get ap_ether_dns_assign)" = "0" ] && ns_flag=1
+fi
+
+if [ "$ns_flag" = "1" ]; then
+	echo "nameserver $($CONFIG get bridge_ether_dns1)" > /tmp/resolv_ap.conf
+	echo "nameserver $($CONFIG get bridge_ether_dns2)" >> /tmp/resolv_ap.conf
+	echo "nameserver $($CONFIG get bridge_ether_dns1)" > /tmp/resolv.conf
+	echo "nameserver $($CONFIG get bridge_ether_dns2)" >> /tmp/resolv.conf
+fi

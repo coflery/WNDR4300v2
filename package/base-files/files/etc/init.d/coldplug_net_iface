@@ -1,0 +1,11 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+RCDLINKS="2,S04"
+
+start() {
+	# the coldplugging of network interfaces needs to happen later, so we do it manually here
+	for iface in $(awk -F: '/:/ {print $1}' /proc/net/dev); do
+		/usr/bin/env -i ACTION=add INTERFACE="$iface" /sbin/hotplug-call net
+	done
+}

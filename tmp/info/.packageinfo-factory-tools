@@ -1,0 +1,15 @@
+Source-Makefile: package/factory-tools/Makefile
+Package: factory-tools
+Version: 1
+Depends: 
+Provides: 
+Section: utils
+Category: Base system
+Title: Test utility for DNI factory
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description:  This package contains some utility useful for DNI factory to test the product
+@@
+
+

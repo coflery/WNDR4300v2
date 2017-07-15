@@ -1,0 +1,16 @@
+Source-Makefile: package/proccgi/Makefile
+Package: proccgi
+Default: y
+Version: 4
+Depends: 
+Provides: 
+Section: utils
+Category: Base system
+Title: The CGI interface
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: The CGI interface
+@@
+
+

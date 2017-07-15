@@ -1,0 +1,80 @@
+# Choose gcc version.
+
+choice
+	prompt "GCC compiler Version" if TOOLCHAINOPTS
+	default GCC_VERSION_3_4_6 if LINUX_2_4
+	default GCC_VERSION_4_2_4 if TARGET_avr32
+	default GCC_VERSION_4_2_4 if TARGET_ppc40x
+	default GCC_VERSION_4_2_4 if TARGET_ppc44x
+	default GCC_VERSION_4_3_3 if powerpc64
+	default GCC_VERSION_4_3_3 if TARGET_etrax
+	default GCC_VERSION_4_3_3 if TARGET_coldfire
+	default GCC_VERSION_4_4_1 if ubicom32
+	default GCC_VERSION_4_4_1 if TARGET_octeon
+	default GCC_VERSION_4_3_3_CS if mips || mipsel
+	default GCC_VERSION_4_3_3_CS if arm || armeb
+	default GCC_VERSION_4_1_2
+	help
+	  Select the version of gcc you wish to use.
+
+	config GCC_VERSION_3_4_6
+		bool "gcc 3.4.6"
+
+if !LINUX_2_4
+	config GCC_VERSION_4_1_2
+		bool "gcc 4.1.2"
+
+	config GCC_VERSION_4_2_4
+		bool "gcc 4.2.4"
+
+	config GCC_VERSION_4_3_3
+		bool "gcc 4.3.3"
+
+	config GCC_VERSION_4_3_4
+		bool "gcc 4.3.4"
+
+	config GCC_VERSION_4_4_1
+		bool "gcc 4.4.1"
+
+	config GCC_VERSION_4_4_2
+		bool "gcc 4.4.2"
+
+	config GCC_VERSION_LLVM
+		bool "llvm-gcc 4.2"
+		depends BROKEN
+
+	config GCC_VERSION_4_3_3_CS
+		bool "gcc 4.3.3 with CodeSourcery enhancements"
+
+endif
+
+endchoice
+
+config EXTRA_GCC_CONFIG_OPTIONS
+	string
+	prompt "Additional gcc configure options" if TOOLCHAINOPTS
+	default ""
+	help
+	    Any additional gcc options you may want to include....
+
+config SSP_SUPPORT
+	bool
+	depends !GCC_VERSION_3_4_6
+	prompt "Enable Stack-Smashing Protection support" if TOOLCHAINOPTS
+	default n
+	help
+	    Enable Stack-Smashing Protection support
+
+config INSTALL_LIBSTDCPP
+	bool
+	prompt "Build/install c++ compiler and libstdc++?" if TOOLCHAINOPTS
+	default y
+	help
+	    Build/install c++ compiler and libstdc++?
+
+config INSTALL_LIBGCJ
+	bool
+	prompt "Build/install java compiler and GNU classpath ?" if TOOLCHAINOPTS
+	default n
+	help
+	    Build/install java compiler and GNU classpath ?

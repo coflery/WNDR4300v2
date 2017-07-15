@@ -1,0 +1,22 @@
+--- ./ssmtp.bak	2014-08-04 17:57:04.000000000 +0800
++++ ./ssmtp.c	2014-08-04 17:57:41.000000000 +0800
+@@ -65,7 +65,7 @@
+ char *minus_f = (char)NULL;
+ char *minus_F = (char)NULL;
+ char *gecos;
+-char *prog = (char)NULL;
++char *prog = "smtp";
+ char *root = NULL;
+ char *tls_cert = "/etc/ssl/certs/ssmtp.pem";	/* Default Certificate */
+ char *uad = (char)NULL;
+@@ -2066,9 +2066,7 @@
+ 	(void)signal(SIGTTIN, SIG_IGN);
+ 	(void)signal(SIGTTOU, SIG_IGN);
+ 
+-	/* Set the globals */
+-	prog = basename(argv[0]);
+-
++	/* set the globals */
+ 	hostname = xgethostname();
+ 
+ 	if(!hostname) {

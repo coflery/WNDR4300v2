@@ -1,0 +1,73 @@
+#!/bin/sh
+
+IP="/tmp/zcip"
+CONFIG="/bin/config"
+IFCONFIG="/sbin/ifconfig"
+DEFAULT_NETMASK="255.255.0.0"
+
+# only for use as a "zcip" callback script
+if [ "x$interface" = "x" ]
+then
+	exit 1
+fi
+
+# zcip should start on boot/resume and various media changes
+case "$1" in
+init)
+	# for now, zcip requires the link to be already up,
+	# and it drops links when they go down.  that isn't
+	# the most robust model...
+	exit 0
+	;;
+config)
+	if [ "x$ip" = "x" ]
+	then
+		exit 1
+	fi
+	# remember $ip for $interface, to use on restart
+	if [ "x$IP" != "x" -a -w "$IP.$interface" ]
+	then
+		echo $ip > "$IP.$interface"
+	fi
+	#exec ip address add dev $interface \
+	#	scope link local "$ip/16" broadcast +
+	$IFCONFIG $interface $ip netmask $DEFAULT_NETMASK
+	orig_ip=$($CONFIG get lan_ipaddr)
+	if [ "$orig_ip" = "$ip" ]; then
+		echo "IP address do not changed, exit" >/dev/console
+		exit 0
+	fi
+	$CONFIG set tmpap_lan_ipaddr="$($CONFIG get lan_ipaddr)"
+	$CONFIG set tmpap_lan_netmask="$($CONFIG get lan_netmask)"
+	$CONFIG set lan_ipaddr=$ip
+	$CONFIG set lan_netmask=$DEFAULT_NETMASK
+	# To fix bug 22935, when follow the IPv4 Auto IP rule to generate link-local IP address, it should show in router status.
+	if [ "$($CONFIG get ap_mode)" = "1" -o "$($CONFIG get bridge_mode)" = "1" ]; then
+		$CONFIG set ap_dhcp_server="0.0.0.0"
+		$CONFIG set ap_dhcp_gateway="0.0.0.0"
+		echo "" > /tmp/resolv.conf
+		$CONFIG set ap_dhcp_ipaddr=$ip
+		$CONFIG set ap_dhcp_netmask=$DEFAULT_NETMASK
+	fi
+	
+	$CONFIG commit
+	if [ "$($CONFIG get ap_mode)" = "0" -a "$($CONFIG get bridge_mode)" = "0" ]; then
+		/www/cgi-bin/firewall.sh stop
+		/sbin/printhosts
+		/etc/init.d/net-lan restart
+		#/www/cgi-bin/firewall.sh start
+		echo 0 > /proc/sys/net/ipv4/ip_forward
+		/sbin/wlan down
+		/sbin/wlan up
+	fi
+	;;
+deconfig)
+	if [ x$ip = x ]
+	then
+		exit 1
+	fi
+	#exec ip address del dev $interface local $ip
+	echo "#####deconfig: delete $ip to $interface..." >/dev/console
+	;;
+esac
+exit 0

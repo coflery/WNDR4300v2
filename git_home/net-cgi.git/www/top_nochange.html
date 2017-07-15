@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<% http_header("style/top.css", "funcs.js", "top.js") %>
+<% top_body_header("lang_check.html", "select_language") %>
+
+<script>
+var language_oriArray = "<% lang_en() %>".split(" ");
+var language_showArray="<% lang_show() %>".split(" ");
+var gui_region = "<% cfg_get("GUI_Region") %>";
+var lang_select = "<% cfg_get("Language_Selection") %>";
+//var type = parent.type;
+var wan_status = "<% detwan_valid() %>";
+var config_status = <% autoup_status() %>;
+
+function loadvalue()
+{
+	if(lang_select != "Auto")
+		document.forms[0].lang_avi.value = gui_region;
+	else
+		document.forms[0].lang_avi.value = lang_select;
+
+	document.forms[0].lang_avi.disabled = true;
+
+	if(top.formframe.location.href.indexOf("lang_check.html") != -1)
+		top.formframe.location.href = "pls_wait_updateLanguage.html";
+
+	//load_top_value();
+        var upgrade_div = document.getElementById("update_info");
+        var basic_label = document.getElementById("basic_label");
+        var advanced_label = document.getElementById("advanced_label");
+
+	var sUserAgent = navigator.userAgent;
+	upgrade_div.style.display = "none";
+        if(parent.type == "basic")
+        {
+		basic_label.className = "label_click";
+		advanced_label.className = "label_unclick";
+        }
+        else if(parent.type == "advanced")
+        {
+		basic_label.className = "label_unclick";
+		advanced_label.className = "label_click";
+        }
+
+	var basic_width = document.getElementById("basic_mid_label").clientWidth;
+	var adv_width = document.getElementById("advanced_mid_label").clientWidth;
+	if(basic_width > adv_width)
+		document.getElementById("advanced_mid_label").style.width = basic_width + "px";
+	else
+		document.getElementById("basic_mid_label").style.width = adv_width + "px";
+
+}
+
+</script>
+
+<style>
+.label_click .label_left { width: 15px; height: 30px; background: url(../image/tops.gif) no-repeat 0 -23px; float: left; position: relative }
+.label_click .label_middle { width: auto; height: 30px; background: url(../image/tops.gif) no-repeat -5px -23px; float: left; position: relative }
+.label_click .label_right { width: 15px; height: 30px; background: url(../image/tops.gif) no-repeat -210px -23px;  float: left; position: relative }
+.label_unclick .label_left { width: 15px; height: 30px; background: url(../image/tops.gif) no-repeat -225px -23px; float: left; position: relative }
+.label_unclick .label_middle { width: auto; height: 30px; background: url(../image/tops.gif) no-repeat -230px -23px; float: left; position: relative }
+.label_unclick .label_right { width: 15px; height: 30px; background: url(../image/tops.gif) no-repeat -435px -23px;  float: left; position: relative }
+</style>
+<input type=hidden name=hidden_lang_avi>
+<div id="logo"></div>
+<% top_hardware_version() %>
+<div id="labels">
+	<div id="basic_label" class="label_unclick">
+		<div class="label_left"></div>
+		<div class="label_middle" id="basic_mid_label"><b><span>$basic_title</span></b></div>
+		<div class="label_right"></div>
+	</div>
+	<div id="advanced_label" class="label_unclick">
+		<div class="label_left"></div>
+		<div class="label_middle" id="advanced_mid_label"><b><span>$advanced_title</span></b></div>
+		<div class="label_right"></div>
+	</div>
+</div>
+<div id="firm_version">$router_firmware_version<br /><% cat_file("/firmware_version") %></div>
+<div id="update_info" class="update_info_down">
+	<div id="update_info_left"></div>
+	<div id="update_info_middle"><i>$firmware_upgrade_is_available_click_to_get</i></div>
+	<div id="update_info_right"></div>
+</div>
+<div id="select_language" align=right>
+	<select align=right name="lang_avi" id="language" size=1 onChange="change_select();">
+	<script language="javascript" type="text/javascript">
+		languageShowlist();
+	</script>
+	</select>
+</div>
+
+</form>
+</body>
+</html>
+

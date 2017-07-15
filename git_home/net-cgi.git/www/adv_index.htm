@@ -1,0 +1,231 @@
+<% http_header("style/advanced.css", "funcs.js", "advanced.js", "top.js") %>
+<body onload="loadvalue();" onResize="change_size();">
+<!--[if IE 6]>
+<script type="text/javascript">
+document.execCommand("BackgroundImageCache", false, true);
+</script>
+<![endif]-->
+<script>
+var enable_action=1;
+var enabled_wds=<% wds_enable() %>;
+var enabled_wps=<% wps_menu() %>;
+var type="advanced";
+var charcount=0;
+var file_version=0;
+var file_region="";
+var netgear_version=0;
+var netgear_region="<% get_firmware_region() %>"
+<% cfg_set("hijack_language", "0") %>
+var help_info="_index";
+var wps_charcount=0;
+var wps_endis_configured=1;     // 1 for unconfigured, 5 for configured
+var wps_an_endis_configured=1;  // 1 for unconfigured, 5 for configured
+var folder_path="";     //save the browser's folder path, and show in USB creat/edit page
+var qos_check_time=0;
+var pin_refresh_time=0;
+var select_basic="<% cfg_get("internet_type") %>";
+var select_type="<% cfg_get("internet_ppp_type") %>";
+var plc_setting_flag="<% cfg_get("plc_supp_ui")%>";
+var wps_process=0;
+var enable_ap_flag="<% cfg_get("ap_mode") %>";//bug 24666 according to the page 128 of spec 2.0,add AP mode
+var enable_bridge_flag="<% cfg_get("bridge_mode") %>";
+var ParentalControl = "<% cfg_get("ParentalControl") %>";
+
+var gui_region="<% cfg_get("GUI_Region") %>";
+var show_ap_page= "<% cfg_get("show_ap") %>";
+var show_bridge_page= "<% cfg_get("show_bridge") %>";
+var auto_change_lang = 0;
+var region_class;
+var old_div = "";
+var ether_post_flag = 0;
+var ddns_post_flag = 0;
+var ookla_speedtest_flag = 0;
+var open_facebook_page=0;//check whether need to open a new page facebook
+
+var jp_multiPPPoE = "<% cfg_get("jp_multiPPPoE") %>";
+var language_change_status="<% lang_change_status() %>";
+var to_multipppoe = 0;
+
+var run_green_time=0;
+var green_download_items;
+var green_refresh_time=0;
+var green_download_item_num=0;
+var green_downloading_item_num=0
+var green_download_item_queuen_num=0;
+<% plc_devs_detection() %>
+<% web_flag() %>
+<% ru_web_flag() %>
+<% refresh_timestamp("wds") %>
+<% check_fuppes() %>
+<% hijack_success_page() %>
+<% lang_change_status_finish() %>
+var from_nowan = "<% cfg_get("from_nowan_retry") %>";
+var advanced_open=0;
+var broadband_wan_type="<% cfg_get("dango_det_wan_type") %>";
+var download_type = "<% cfg_get("download_type") %>";
+
+//Failover & Loadbalance
+var multi_wan_mode="none";  // none, multi
+var multi_wan_mode_ether="0";//0:unconfigured, 1:configured
+var multi_wan_mode_mobile="0";//0:unconfigured, 1:configured
+
+//usb bug 41187
+var usb_creat_apply_already=0;
+var usb_edit_apply_already=0;
+
+var is_ru_version=(((netgear_region.toUpperCase() == "WW" || netgear_region == "") && gui_region == "Russian" ) || netgear_region.toUpperCase() == "RU") ? 1 : 0;
+var is_pr_version=(((netgear_region.toUpperCase() == "WW" || netgear_region == "") && gui_region == "Chinese" ) || netgear_region.toUpperCase() == "PR") ? 1 : 0;
+var is_jp_version=(((netgear_region.toUpperCase() == "WW" || netgear_region == "") && gui_region == "Japanese" ) || netgear_region.toUpperCase() == "JP") ? 1 : 0;
+var click_lte_sim=0;
+var set_vlan_tag="<% cfg_get("set_vlan_tag") %>";
+
+<% show_devices() %>
+
+function loadvalue()
+{
+	change_size();
+
+	if( show_ap_page == 1 || show_bridge_page ==1)
+	{
+		open_or_close_sub('advanced');
+	}
+	
+	if(jp_multiPPPoE=="1" && language_change_status=="1")/*Change language to JP fail should redirect to multi-pppoepage*/
+	{
+		to_multipppoe = 1;
+		if(document.getElementById("setup_sub").style.display == "none")
+			open_or_close_sub("setup");
+
+		click_adv_action("internet");
+	}
+	else if( auto_change_lang == 0 )/* if auto_change_lang == 0, it will show status page, else it will go to lang_check.html */
+	{
+		if(enable_bridge_flag == "1")
+			formframe.location.href = "RST_bridge_status.htm";
+		else
+			formframe.location.href = "<% adv_main_link() %>";
+	}
+
+	if( from_nowan == "1" && have_lte_flag != 1 )
+		menu_color_change('setup_wizard');
+	else if(to_multipppoe == 0)
+		menu_color_change('home');
+
+	if(set_vlan_tag=="1")
+		click_adv_action("vlan");
+}
+
+</script>
+<div id="top">
+	<iframe name="topframe" id="topframe" src="top.html" allowtransparency="true" height="100%" width="100%" frameborder="0"></iframe>
+</div>
+
+<div id="container" class="container_center">
+<div id="middle">
+<div id="menu" class="menu_common_words">
+	<div id="home" class="advanced_purple_button" onclick="click_adv_action('home');"><b><span>$adv_home</span></b></div>
+	<% advanced_menu_setup_wizard() %>
+	<div id="wps" class="advanced_black_button" onclick="click_adv_action('wps');"><b><span>$wps_wzd_head</span></b></div>
+
+	<div id="setup_bt" class="advanced_white_close_button" onclick="open_or_close_sub('setup');"><b><span>$setup_head</span></b></div>
+	<div id="setup_sub" class="sub_men"  style="display: none">
+	<dl>
+		<% advanced_sub_menu("lte_broadband", "sub_back", "lte_broadband_title") %>
+		<% advanced_sub_menu("mobile_internet", "sub_back", "mobile_setup") %>
+		<dt id="internet" class="sub_back"><a onclick="click_adv_action('internet');"><b><span>$int_setup</span></b></a></dt><!--href="javascript:void(0)"-->
+		<dt id="wireless" class="sub_back"><a  target="formframe" onclick="click_adv_action('wireless');"><b><span>$wls_setup</span></b></a></dt> <!--href="javascript:void(1)"-->
+		<% advanced_sub_menu("guest", "sub_back", "wlan_mark_guest") %>
+		<dt id="wan" class="sub_back"><a  target="formframe" onclick="click_adv_action('wan');"><b><span>$wan_setup_head</span></b></a></dt>
+	       	<dt id="lan" class="sub_back"><a target="formframe" onclick="click_adv_action('lan');"><b><span>$lan_mark_head</span></b></a></dt>
+		<% advanced_sub_menu("qos", "sub_back", "qos_head") %>
+	</dl>
+	</div>
+
+	<% advanced_menu_usb() %>
+
+	<div id="security_bt" class="advanced_white_close_button" onclick="open_or_close_sub('security');"><b><span>$wlan_guest_security</span></b></div>
+	<div id="security_sub" class="sub_men"  style="display: none">
+	<dl>
+		<dt id="parental" class="sub_back"><a  target="formframe" onclick="click_adv_action('parental');"><b><span>$parental_control</span></b></a></dt>
+		<% advanced_sub_menu("access_control", "sub_back", "acc_control") %>
+		<% advanced_sub_menu("block_site", "sub_back", "block_sites_head") %>
+		<dt id="block_services" class="sub_back"><a  target="formframe" onclick="click_adv_action('block_services');"><b><span>$block_serv_head</span></b></a></dt>
+		<dt id="schedule" class="sub_back"><a  target="formframe" onclick="click_adv_action('schedule');"><b><span>$block_schedule_head</span></b></a></dt>
+		<dt id="email" class="sub_back"><a  target="formframe" onclick="click_adv_action('email');"><b><span>$email_head</span></b></a></dt>
+		<% advanced_menu_ipmac() %>
+	</dl>	
+	</div>
+
+	<% advanced_menu_green_download() %>
+	<div id="admin_bt" class="advanced_white_close_button" onclick="open_or_close_sub('admin');"><b><span>$admin</span></b></div>
+	<div id="admin_sub" class="sub_men"  style="display: none">
+	<dl>
+	       	<dt id="status" class="sub_back"><a  target="formframe" onclick="click_adv_action('status');"><b><span>$info_mark_head</span></b></a></dt>
+		<dt id="log" class="sub_back"><a  target="formframe" onclick="click_adv_action('log');"><b><span>$logs_head</span></b></a></dt>
+		<dt id="attached" class="sub_back"><a  target="formframe" onclick="click_adv_action('attached');"><b><span>$attach_device</span></b></a></dt>
+		<dt id="bak_set" class="sub_back"><a  target="formframe" onclick="click_adv_action('bak_set');"><b><span>$backup_head</span></b></a></dt>
+		<dt id="passwd" class="sub_back"><a  target="formframe" onclick="click_adv_action('passwd');"><b><span>$passwd_head</span></b></a></dt>
+		<dt id="upgrade" class="sub_back"><a  target="formframe" onclick="click_adv_action('upgrade');"><b><span>$firm_upgrade</span></b></a></dt>
+		<% advanced_sub_menu("mobile_upg", "sub_back", "mobile_upgrade") %>
+	</dl>	
+	</div>	
+
+	<div id="advanced_bt" class="advanced_white_close_button" onclick="open_or_close_sub('advanced');"><b><span>$adv_setup</span></b></div>
+	<div id="advanced_sub" class="sub_men"  style="display: none">
+	<dl>
+		<% advanced_sub_menu("plc", "sub_back", "plc_head") %>
+		<dt id="wladv" class="sub_back"><a  target="formframe" onclick="click_adv_action('wladv');"><b><span>$wlan_mark</span></b></a></dt>
+		<% advanced_sub_menu("wlap", "sub_back", "wlan_ap") %>
+	<script>
+	if( bridge_flag == 1)
+		document.write('<dt id=\"wl_bridge\" class=\"sub_back\"><a  target=\"formframe\" onclick=\"click_adv_action(\'wl_bridge\');\"><b><span>$bridge_head</span></b></a></dt>');
+	</script>
+		<% advanced_sub_menu("wds", "long_name", "wds_head") %>
+		<dt id="forwarding_triggering" class="long_name"><a  target="formframe" onclick="click_adv_action('forwarding_triggering');"><b><span>$logs_port_forward_trigger</span></b></a></dt>
+		<dt id="dns" class="sub_back"><a  target="formframe" onclick="click_adv_action('dns');"><b><span>$ddns_head</span></b></a></dt>
+		<% advanced_sub_menu("vpn", "sub_back", "vpn_head")%>
+		<dt id="static" class="sub_back"><a  target="formframe" onclick="click_adv_action('static');"><b><span>$static_router_head</span></b></a></dt>
+		<dt id="remote" class="sub_back"><a target="formframe" onclick="click_adv_action('remote');"><b><span>$remote_head</span></b></a></dt>
+		<% advanced_sub_menu("usb", "sub_back", "usb_settings") %>
+		<dt id="upnp" class="sub_back"><a  target="formframe" onclick="click_adv_action('upnp');"><b><span>$upnp_head</span></b></a></dt>
+		<% advanced_sub_menu("ipv6", "sub_back", "ipv6_head") %>
+		<% advanced_sub_menu("sim", "sub_back", "sim_head") %>
+		<% advanced_sub_menu("traffic", "sub_back", "traffic_head") %>
+		<% advanced_sub_menu("vlan", "sub_back", "vlan_head") %>
+		<% advanced_sub_menu("led", "sub_back", "led_head")%>
+		<% advanced_sub_menu("fbwifi", "sub_back", "facebook_head")%>
+	</dl>	
+	</div>	
+</div>
+<div id="formframe_div">
+		<iframe name="formframe" id="formframe" allowtransparency="true" height="100%" width="100%" scrolling="no" frameborder="0">
+		</iframe>
+</div>
+
+<div id="footer" class="footer">
+	<img class="footer_img" src="image/footer.gif">
+<div id="support">
+	<b> $help_and_support</b> &nbsp;
+	<script>
+		if(is_jp_version == 1) {
+			document.write('<a target="_blank" href="http://www.netgear.jp/supportInfo/">$docu_head</a> | ');
+			document.write('<a target="_blank" href="http://www.netgear.jp/supportInfo/">$online_support</a> | ');
+			document.write('<a target="_blank" href="http://www.netgear.jp/supportInfo/">$router_faq</a> | ');
+		} else {
+			document.write('<a target="_blank" href="http://downloadcenter.netgear.com/">$docu_head</a> | ');
+			document.write('<a target="_blank" href="http://support.netgear.com">$online_support</a> | ');
+			document.write('<a target="_blank" href="http://kb.netgear.com/app/answers/detail/a_id/12923">$router_faq</a> | ');
+		}
+		document.write('<a target="_blank" href="license.htm">GNU GPL</a>');
+	</script>
+</div>
+<div id="search" align=right>
+	<b> $search_help </b>
+	<input type="text" name="search" value="$ent_srh_item" onkeypress="detectEnter('num',event);" onFocus="this.select();"  >
+	<input id="search_button" class="search_button" type="button" name="dosearch" value="$go_mark" onClick="do_search();">
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>

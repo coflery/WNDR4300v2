@@ -1,0 +1,28 @@
+#!/bin/sh /etc/rc.common
+START=19
+INSMOD=/sbin/insmod
+MODDIR=/lib/modules/2.6.15
+start()
+{
+	[ -x /etc/init.d/init.enet.0 ] && /etc/init.d/init.enet.0
+
+	# set wan_factory_mac
+	wan_default_mac=$(get_mac_addr wan)
+	$CONFIG set wan_factory_mac="$wan_default_mac"
+	echo "init.enet: Default WAN MAC is : $wan_default_mac"
+
+	# set lan mac
+	lan_default_mac=$(get_mac_addr lan)
+	brctl addif $BR_IF $LAN_IF
+	ifconfig $BR_IF hw ether $lan_default_mac
+	echo "init.enet: Default LAN MAC is : $lan_default_mac"
+
+	[ "$($CONFIG get ath_header_enable)" = "1" ] && /sbin/dni_eth -e on
+
+	local mod_dni_enet=`lsmod | grep dni_enet`
+        if [ "x$mod_dni_enet" = "x" ]; then
+                $INSMOD $MODDIR/dni_enet.ko
+        fi
+	brctl addif $BR_IF pas0
+}
+

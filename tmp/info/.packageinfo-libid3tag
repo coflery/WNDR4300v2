@@ -1,0 +1,17 @@
+Source-Makefile: package/libid3tag/Makefile
+Package: libid3tag
+Version: 0.15.1b-1
+Depends: 
+Provides: 
+Build-Depends: zlib
+Section: libs
+Category: Libraries
+Title: libid3tag
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: libid3tag-0.15.1b.tar.gz
+Type: ipkg
+Description: libid3tag
+http://www.underbit.com/products/mad/
+@@
+
+

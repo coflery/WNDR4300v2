@@ -1,0 +1,85 @@
+DB12x configuration commands:
+
+AP mode - open security:
+
+cfg -x
+cfg -a AP_SSID=db12x
+cfg -a AP_STARTMODE=standard
+cfg -a AP_RADIO_ID=1
+cfg -a AP_PRIMARY_CH_2=44
+cfg -a AP_CHMODE_2=11NAHT20
+cfg -c
+
+
+
+AP mode - WPA2-PSK CCMP (AES) security:
+
+cfg -x
+cfg -a AP_SSID=db12x
+cfg -a AP_STARTMODE=standard
+cfg -a AP_RADIO_ID=1
+cfg -a AP_PRIMARY_CH_2=1
+cfg -a AP_CHMODE_2=11NGHT20
+cfg -a AP_SECMODE=WPA
+cfg -a AP_SECFILE=PSK
+cfg -a AP_WPA=2
+cfg -a AP_CYPHER=CCMP
+cfg -a PSK_KEY=12345678
+cfg -c
+
+
+AP mode - WPA-PSK TKIP security:
+
+cfg -x
+cfg -a AP_SSID=db12x
+cfg -a AP_STARTMODE=standard
+cfg -a AP_RADIO_ID=1
+cfg -a AP_PRIMARY_CH_2=44
+cfg -a AP_CHMODE_2=11NGHT20
+cfg -a AP_SECMODE=WPA
+cfg -a AP_SECFILE=PSK
+cfg -a AP_WPA=1
+cfg -a AP_CYPHER=TKIP
+cfg -a PSK_KEY=12345678
+cfg -c
+
+
+AP mode - MBSSID (2 vaps) open security:
+cfg -x
+cfg -a AP_STARTMODE=multi
+cfg -a AP_SSID=db12x
+cfg -a AP_RADIO_ID=1
+cfg -a AP_RADIO_ID_2=1
+cfg -a AP_PRIMARY_CH_2=44
+cfg -a AP_CHMODE_2=11NAHT20
+cfg -a AP_SSID_2=db12x_2
+cfg -c
+
+
+AP mode - WDS:
+cfg -x
+cfg -a AP_SSID=db12x
+cfg -a AP_STARTMODE=rootap
+cfg -a AP_RADIO_ID=1
+cfg -a AP_PRIMARY_CH_2=44
+cfg -a AP_CHMODE_2=11NAHT20
+cfg -c
+
+After AP is up - Run the following commands to add static entry in RootAP:
+/* Add an entry in the address search table */
+wlanconfig wlan0 wds add <dest-mac> <peer-mac>
+
+
+AP mode - WEP security:
+cfg -x
+cfg -a AP_SSID=db12x
+cfg -a AP_STARTMODE=standard
+cfg -a AP_RADIO_ID=1
+cfg -a AP_PRIMARY_CH_2=44
+cfg -a AP_CHMODE_2=11NGHT20
+cfg -a AP_SECMODE=WEP
+cfg -a AP_SECFILE=NONE
+cfg -a WEP_RADIO_NUM1_KEY_1=1234567890
+cfg -a AP_WEP_MODE_0=1
+cfg -c
+

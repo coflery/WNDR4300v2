@@ -1,0 +1,24 @@
+#!/bin/sh /etc/rc.common
+START=86
+
+INIT6="/etc/init.d/init6"
+
+start() {
+	local wan6_type=`$CONFIG get ipv6_type`
+	local logo_test=`$CONFIG get endis_ipv6_logo_test`
+	echo "ipv6logo init is done." > /tmp/ipv6logo
+
+	if [ "x$logo_test" = "x1" -a "x$wan6_type" = "xfixed" ]; then 
+		${INIT6} start
+	fi
+}
+
+stop() {
+	${INIT6} stop
+}
+
+restart() {
+	stop
+	sleep 3
+	start
+}

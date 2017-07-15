@@ -1,0 +1,15 @@
+Source-Makefile: package/zip/Makefile
+Package: zip
+Version: 3.0-3
+Depends: @TARGET_wndr4500v3
+Provides: 
+Section: utils
+Category: Utilities
+Title: zip utils. 
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: zip-3.0.tar.gz
+Type: ipkg
+Description: zip utils. 
+@@
+
+

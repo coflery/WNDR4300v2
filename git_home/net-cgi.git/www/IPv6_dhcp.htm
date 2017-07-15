@@ -1,0 +1,176 @@
+<% http_header("style/form.css", "/funcs.js", "/ipv6.js", "/ipv6_dhcp.js") %>
+<% body_header("_IPv6_dhcp", "IPv6_index.htm", "ipv6_dhcp") %>
+<div class="page_title">$ipv6_head</div>
+<div class="fix_button">
+<TABLE width=100% border=0 cellpadding=0 cellspacing=2>
+<TR>
+<script>
+var master="<% cfg_get("http_loginname") %>";
+if(master=="admin")
+	document.write('<TD nowrap colspan=2 align=center><input class="common_bt" type="button" name="Refresh" value="$ipv6_refresh" onClick="location.href=\'IPv6_index.htm\';">&nbsp;&nbsp;<input class="cancel_bt" type="button" name="Cancel" value="$cancel_mark" onClick="location.href=\'IPv6_dhcp.htm\';">&nbsp;&nbsp;<input class="apply_bt" type="submit" name="Apply" value="$apply_mark" onClick="return check_ipv6_dhcp(document.forms[0])";></TD>');
+else
+	document.write('<TD nowrap colspan=2 align=center><input class="common1_bt" type="button" name="Refresh" value="$ipv6_refresh" disabled>&nbsp;&nbsp;<input class="cancel1_bt" type="button" name="Cancel" value="$cancel_mark" disabled>&nbsp;&nbsp;<input class="apply1_bt" type="submit" name="Apply" value="$apply_mark" disabled></TD>');
+</script>
+</TR>
+</TABLE>
+
+</div>
+<div id="main" class="main_top_button"> 
+<% table_header() %>
+
+<script>
+var ipv6_ip_assign = "<% cfg_get("ipv6_dhcps_enable") %>";
+var ipv6_interface_type = "<% cfg_get("ipv6_dhcps_interface_id_enable")%>";
+var ipv6_interface_id = "<% cfg_get("ipv6_dhcps_interface_id") %>";
+var ipv6_cone_fitering = "<% cfg_get("wan_ipv6_cone_fitering") %>";
+var enable_vpn = "<% cfg_get("vpn_enable") %>";
+
+var ipv6_wan_ip = "<% ipv6_wan_ip("wan_if") %>";
+var ipv6_lan_ip = "<% ipv6_lan_ip() %>";
+<% ipv6_auto_dns() %>
+
+//bug 28770
+//var wan_ip_split = ipv6_wan_ip_all.split('/');
+//var ipv6_wan_ip = ipv6_wan_ip_all;
+
+/* to fix bug 27954 */
+var ipv6_type = "<% cfg_get("ipv6_type") %>";
+if( ipv6_type != "dhcp" )
+{
+	ipv6_lan_ip = "";
+	ipv6_wan_ip = "";
+}
+
+var get_dns_assign='<% cfg_get("ipv6_dhcp_dns_assign") %>';
+if (get_dns_assign == '0')
+{
+	var ipv6_get_dns1=ipv6_auto_dns1;
+	var ipv6_get_dns2=ipv6_auto_dns2;
+}
+else
+{
+	var ipv6_get_dns1="<% cfg_get("ipv6_dhcp_dns1") %>";
+	var ipv6_get_dns2="<% cfg_get("ipv6_dhcp_dns2") %>";
+}
+
+function loadvalue()
+{
+	var cf = document.forms[0];
+        
+	cf.userClass.value = "<% cfg_get("ipv6_dhcp_userClass") %>";
+	cf.domainName.value = "<% cfg_get("ipv6_dhcp_domainName") %>";
+
+	if(top.ipv6_dns_manual == 1)
+	{
+		load_ipv6_dns(cf);
+	}
+
+	/* load the LAN Setup items' value */
+	ipv6_load_common(cf);
+}
+</script>
+
+<input type="hidden" name="ipv6_hidden_enable_interface" value="">
+<input type="hidden" name="ipv6_hidden_interface_id" value="">
+<input type="hidden" name="ipv6_hidden_filtering" value="">
+<input type="hidden" name="ipv6_hidden_primary_dns" value="<% cfg_get("ipv6_dhcp_dns1") %>" />
+<input type="hidden" name="ipv6_hidden_second_dns" value="<% cfg_get("ipv6_dhcp_dns2") %>" />
+
+
+<TR>
+        <TD nowrap>
+        <A tabindex=-1 href="javascript:loadhelp('_IPv6_dhcp','internet')"><B>$ipv6_internet_con_type</B></A>
+        </TD>
+        <TD nowrap align=right>
+        <select name="con_type" onChange="change_ipv6(document.forms[0].con_type.value)">
+		<option value="disabled">$pppoe2_disable</option>
+                <option value="autoDetect">$ipv6_auto_detect</option>
+		<option value="autoConfig">$ipv6_auto_config</option>
+		<option value="6to4">$ipv6_6to4_tunnel</option>
+		<script>
+		if(top.ipv6_6rd_flag ==1)
+			document.write('<option value="6rd">6rd</option>');
+		</script>
+                <option value="bridge">$ipv6_pass_through</option>
+                <option value="fixed">$ipv6_fixed</option>
+                <option value="dhcp" selected>$router_status_dhcp</option>
+                <option value="pppoe">$basic_intserv_pppoe</option>
+        </select>
+        </TD>
+</TR>
+$bluebar
+<TR>
+	<TD nowrap>
+	<A tabindex=-1 href="javascript:loadhelp('_IPv6_dhcp','user_class')"><B>$ipv6_user_class</B></A>
+	</td>
+	<TD nowrap align=right>
+	<input type="text" name="userClass" maxLength="60" size="16" onKeyPress="return getkey('ssid', event)" value="">
+	</TD>
+</TR>
+<TR>
+	<TD nowrap>
+	<A tabindex=-1 href="javascript:loadhelp('_IPv6_dhcp','domain_name')"><B>$basic_int_doname</B></A>
+	</td>
+	<TD nowrap align=right>
+	<input type="text" name="domainName" maxLength="60" size="16" onKeyPress="return getkey('ssid', event)" value="">
+	</TD>
+</TR>
+<TR>
+	<TD nowrap>
+	<A tabindex=-1 href="javascript:loadhelp('_IPv6_dhcp','wan_ipaddr')"><B>$ipv6_wan_address</B></A>
+	</TD>
+	<TD nowrap align=right><script>ipv6_write_ip(ipv6_wan_ip);</script></TD>
+</TR>
+$bluebar
+
+<% ipv6_display_dns() %>
+
+<TR>
+        <TD nowrap><A tabindex=-1 href="javascript:loadhelp('_IPv6_dhcp','lan_ipaddr')"><B>$lan_mark_head</B></A></TD>
+</TR>
+<TR>
+        <TD nowrap><A tabindex=-1 href="javascript:loadhelp('_IPv6_dhcp','lan_ipaddr')"><B>$ipv6_lan_address</B></A></TD>
+	<TD nowrap align=right><script>ipv6_write_ip(ipv6_lan_ip);</script></TD>
+</TR>
+<TR>
+        <TD nowrap><A tabindex=-1 href="javascript:loadhelp('_IPv6_dhcp','lan_ip_assign')">$ipv6_ip_assign</A></TD>
+</TR>
+<TR>
+        <TD nowrap colspan=2><input type="radio" name="ipv6_lan_ip_assign" value="1">$ipv6_dhcp_server</TD>
+</TR>
+<TR>
+        <TD nowrap colspan=2><input type="radio" name="ipv6_lan_ip_assign" value="0">$ipv6_auto_config</TD>
+</TR>
+<TR>
+        <TD nowrap colspan=2>
+        <BR>
+        <input type="checkbox" name="enable_interface" value="" onClick="set_interface();">
+	<A tabindex=-1 href="javascript:loadhelp('_IPv6_dhcp','interface_id')">$ipv6_interface</A>
+        </TD>
+</TR>
+<TR>
+        <TD nowrap colspan=2><img src=/spacer.gif width=20 height=12 border=0>
+	<input type="text" name="IP_interface" size="3" autocomplete="off" maxlength="4" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkeya(event);" onkeyup="keyup_n(event,this,4);">:
+        <input type="text" name="IP_interface" size="3" autocomplete="off" maxlength="4" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkeya(event);" onkeyup="keyup_n(event,this,4);">:
+        <input type="text" name="IP_interface" size="3" autocomplete="off" maxlength="4" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkeya(event);" onkeyup="keyup_n(event,this,4);">:
+        <input type="text" name="IP_interface" size="3" autocomplete="off" maxlength="4" onFocus="this.select();" onkeydown="keydown(event,this);" onKeyPress="return getkeya(event);" onkeyup="keyup_n(event,this,4);">
+        </TD>
+</TR>
+$bluebar
+<TR>
+        <TD nowrap>
+        <A tabindex=-1 href="javascript:loadhelp('_IPv6_dhcp','nat')"><B>$ipv6_filtering</B></A>
+        </TD>
+        <TD nowrap align=right>
+        <input type="radio" name="IPv6Filtering" value="Secured">$adva_wansetup_nat_secured&nbsp;
+        <input type="radio" name="IPv6Filtering" value="Open">$adva_wansetup_nat_open&nbsp;&nbsp;
+        </TD>
+</TR>
+$bluebar
+</TABLE>
+</div>
+<% help_box("0","_IPv6_dhcp") %>
+</FORM>
+</BODY>
+</HTML>
+

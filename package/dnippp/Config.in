@@ -1,0 +1,20 @@
+config DNI_PPP_GIT_TREEISH
+	string
+	prompt "treeish of dni ppp git repository"
+	default "ppp-v2.4.3-dni29"
+	help
+           Input the treeish of dni ppp git repository which you want to build
+
+config DNI_PPP_GIT_REPOSITORY
+	string
+	prompt "name of dni ppp git repository"
+	default "ppp.git"
+	help
+	   Input the name of dni ppp git repository which you want to build
+
+config DNI_PPP_GIT_URL
+	string
+	prompt "url of dni ppp git repository"
+	default "ssh://dniserver/scm/dnigit/common/apps/ppp.git"
+	help
+	   Input the url of dni ppp git repository which you want to build

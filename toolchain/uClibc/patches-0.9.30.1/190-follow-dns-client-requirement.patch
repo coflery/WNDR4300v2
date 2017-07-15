@@ -1,0 +1,84 @@
+--- uClibc-0.9.30.1.old/libc/inet/resolv.c	2011-01-04 16:03:55.000000000 +0800
++++ uClibc-0.9.30.1/libc/inet/resolv.c	2011-01-04 16:02:24.000000000 +0800
+@@ -223,10 +223,12 @@
+ 
+ 
+ #define MAX_RECURSE 5
+-#define REPLY_TIMEOUT 10
+-#define MAX_RETRIES 3
++#define MAX_RETRIES 2
+ #define MAX_SERVERS 3
+ #define MAX_SEARCH 4
++#define FIR_REPLY_TIMEOUT 1
++#define SEC_REPLY_TIMEOUT 2
++#define RETRY_TIME 2
+ 
+ #define MAX_ALIASES	5
+ 
+@@ -764,8 +766,8 @@
+ 			struct resolv_answer *a)
+ {
+ 	int i, j, len, fd, pos, rc;
+-#ifdef USE_SELECT
+ 	struct timeval tv;
++#ifdef USE_SELECT
+ 	fd_set fds;
+ #else
+ 	struct pollfd fds;
+@@ -805,7 +807,7 @@
+ 	local_id = static_id;
+ 	__UCLIBC_MUTEX_UNLOCK(mylock);
+ 
+-	while (retries < MAX_RETRIES) {
++	while (retries < nscount * MAX_RETRIES) {
+ 		if (fd != -1)
+ 			close(fd);
+ 
+@@ -908,11 +910,14 @@
+ 
+ 		send(fd, packet, len, 0);
+ 
++		if ( retries % RETRY_TIME == 0 )
++                        tv.tv_sec = FIR_REPLY_TIMEOUT;
++                else
++                        tv.tv_sec = SEC_REPLY_TIMEOUT;
++                tv.tv_usec = 0;
+ #ifdef USE_SELECT
+ 		FD_ZERO(&fds);
+ 		FD_SET(fd, &fds);
+-		tv.tv_sec = REPLY_TIMEOUT;
+-		tv.tv_usec = 0;
+ 		if (select(fd + 1, &fds, NULL, NULL, &tv) <= 0) {
+ 			DPRINTF("Timeout\n");
+ 			/* timed out, so retry send and receive,
+@@ -922,7 +927,7 @@
+ #else
+ 		fds.fd = fd;
+ 		fds.events = POLLIN;
+-		if (poll(&fds, 1, REPLY_TIMEOUT * 1000) <= 0) {
++		if (poll(&fds, 1, tv.tv_sec * 1000) <= 0) {
+ 			DPRINTF("Timeout\n");
+ 			/* timed out, so retry send and receive,
+ 			 * to next nameserver on queue */
+@@ -1058,8 +1063,8 @@
+ 		/* if there are other nameservers, give them a go,
+ 		   otherwise return with error */
+ 		variant = -1;
+-		local_ns = (local_ns + 1) % nscount;
+-		if (local_ns == 0)
++		 if (retries % RETRY_TIME !=0)
++			local_ns = (local_ns + 1) % nscount;
+ 			retries++;
+ 
+ 		continue;
+@@ -1078,8 +1083,8 @@
+ 			}
+ 		}
+ 		/* next server, first search */
+-		local_ns = (local_ns + 1) % nscount;
+-		if (local_ns == 0)
++		if (retries % RETRY_TIME !=0)
++			local_ns = (local_ns + 1) % nscount;
+ 			retries++;
+ 		variant = -1;
+ 	}

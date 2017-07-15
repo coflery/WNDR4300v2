@@ -1,0 +1,21 @@
+# kmod-dnisip configuration
+config DNISIP_GIT_TREEISH
+	string
+	prompt "treeish of dnisip git repository"
+	default "alg-sip-v2.6.31-dni4"
+	help
+           Input the treeish of dnisip git repository which you want to build
+
+config DNISIP_GIT_REPOSITORY
+	string
+	prompt "name of dnisip git repository"
+	default "kmod-dnisip.git"
+	help
+	   Input the name of dnisip git repository which you want to build
+
+config DNISIP_GIT_URL
+	string
+	prompt "url of dnisip git repository"
+	default "ssh://dniserver/scm/dnigit/common/kmods/kmod-dnisip.git"
+	help
+	   Input the url of dnisip git repository which you want to build

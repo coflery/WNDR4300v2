@@ -1,0 +1,19 @@
+#echo 1 > /sys/bus/pci/rescan
+#lspci | grep Ath
+
+#./rc.wlan up
+sleep 1
+wlanconfig wlan create wlandev wifi0 wlanmode ap
+sleep 1
+iwconfig wlan0 essid Peregrine
+iwconfig wlan0 channel 1
+sleep 2
+#iwpriv wlan0 dbgLVL 0x80c800000
+sleep 2
+echo ">>>> Bring up Interface ( Press Enter )"
+read
+/usr/local/bin/wapid -c ./WAPI.PSK.ap -d 1 & 
+ifconfig wlan0 up
+#ifconfig wlan0 up 192.168.1.2
+echo "Done"
+

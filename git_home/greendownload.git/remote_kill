@@ -1,0 +1,11 @@
+#! /bin/sh
+
+cmd=`echo "$1" | cut -c 1-25`
+echo "XXX target cmd: $cmd" > /dev/console
+
+pid_list=$(ps | grep "transmission-remote -t" | grep -v grep | awk '{print $1}')
+
+for i in $pid_list; do
+	echo "Kill process $i" > /dev/console
+	kill -9 "$i"
+done

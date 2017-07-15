@@ -1,0 +1,16 @@
+Source-Makefile: package/ffmpeg/Makefile
+Package: ffmpeg
+Version: 0.5-1
+Depends: 
+Provides: 
+Section: libs
+Category: Libraries
+Title: ffmpeg
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: ffmpeg
+http://ffmpeg.org/
+@@
+
+

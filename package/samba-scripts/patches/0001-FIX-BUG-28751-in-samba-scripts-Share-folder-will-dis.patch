@@ -1,0 +1,185 @@
+diff -Nur origin-samba-script/update_smb.c samba-scripts-1.0.0//update_smb.c
+--- origin-samba-script/update_smb.c	2011-09-13 06:32:31.327940378 -0400
++++ samba-scripts-1.0.0//update_smb.c	2011-09-13 06:40:31.447940469 -0400
+@@ -42,6 +42,9 @@
+ 	char vendor[128];  /*device name :SigmaTel MSCN*/
+ 	char vol_name[31]; /* Volume Name */
+ 
++	char serialNumber[32];/* usb id */
++	char partition[8]; /* partition id */
++
+ 	unsigned long long capacity; /* capacity size in MB */
+ };
+ 
+@@ -67,6 +70,60 @@
+ extern void config_set(char *name, char *value);
+ extern int config_match(char *name, char *match);
+ 
++#define SERIAL_PATH "/proc/scsi/usb-storage/"
++#define BLOCK_PATH "/sys/block/"
++
++/* read from the file to get the usb serial number */
++static int get_usb_serialNumber(char * sn,char * dev_name)
++{
++       char usb_block_path[256] = BLOCK_PATH;
++       char usb_serial_path[256] = SERIAL_PATH;
++
++       FILE * fp;
++
++       strcat(usb_block_path,dev_name);
++
++       char full_path[128];
++       if( readlink(usb_block_path,full_path,sizeof(full_path)) < 0)
++       {
++               USB_DEBUGP("error readlink:%s\n",usb_block_path);
++               return -1;
++       }
++       USB_DEBUGP("succeed readlink:%s,full path:%s\n",usb_block_path,full_path);
++
++       char * pos = strstr(full_path,"target");
++       char * pos_b = pos + strlen("target");
++       char * pos_e = strchr(pos,':');
++       *pos_e = '\0';
++
++       strcat(usb_serial_path,pos_b);
++
++       USB_DEBUGP("serial path:%s\n",usb_serial_path);
++
++       if((fp = fopen(usb_serial_path,"r")) == NULL)
++       {
++               USB_DEBUGP("error open usb_serial_path:%s\n",usb_serial_path);
++               return -1;
++       }
++       char line[128];
++       while(fgets(line,sizeof(line),fp)!= NULL)
++       {
++               char * serial_pos;
++               if((serial_pos = strstr(line,"Serial")) != NULL)
++               {
++                       serial_pos = strchr(line,':');
++                       serial_pos += 2;
++
++                       strncpy(sn,serial_pos,strlen(serial_pos)-1);
++                       USB_DEBUGP("serial number:%s\n",sn);
++                       fclose(fp);
++                       return 0;
++               }
++       }
++       fclose(fp);
++       return -1;
++}
++
+ static void reload_services(void)
+ {
+ 	int ret;
+@@ -366,6 +423,9 @@
+ 	char *s, part_name[128], line[256];
+ 	struct disk_partition_info *partinfo;
+ 
++	char serialNumber[32];
++	memset(serialNumber,0x00,sizeof(serialNumber));
++
+ 	fp = fopen("/proc/partitions","r");
+ 	if (fp == NULL )
+ 		return;
+@@ -388,7 +448,9 @@
+ 			;
+ 		if (!isdigit(s[-1])){ 
+ 			vendor = get_device_vendor(part_name);
+-	
++			
++			/* get the serial number of usb device */
++			get_usb_serialNumber(serialNumber,part_name);	
+ 			if(!is_sda(part_name))
+ 				continue;
+ 		}
+@@ -416,6 +478,11 @@
+ 		
+ 		get_disk_volume(partinfo, part_name);
+ 		
++		/* add serial number into the deviceinfo */
++                snprintf(partinfo->serialNumber,sizeof(partinfo->serialNumber),"%s",serialNumber);
++                /* add partition number into the deviceinfo */
++                snprintf(partinfo->partition,sizeof(partinfo->partition),"%c%c",isdigit(s[-2])? s[-2]:s[-1],isdigit(s[-2])? s[-1]:'\0');
++
+ 		list_add_tail(&partinfo->list, head);
+ 		i++;
+ 
+@@ -432,6 +499,58 @@
+ 		turn_usb_led(0);
+ }
+ 
++/* bug 28751 :if users change the volume name ,so when the usb device plugs
++   into the router ,we need to update the volume name in the config */
++static void update_volumeName(struct list_head * disk_lists)
++{
++	struct list_head *pos,*nxt;
++	struct disk_partition_info *diskinfo;
++	list_for_each(pos,disk_lists)
++	{
++		diskinfo = list_entry(pos, struct disk_partition_info, list);
++		if (!diskinfo->mounted)
++			continue;
++		int i;
++		for(i=0; ;i++)
++		{
++			char name[64],*val,oneline[1024];
++			char *volumeName,*deviceName,*deviceSerialNumber;
++			char *sep, *share_name, *folderName, *readAccess, *writeAccess, * partition;
++			sprintf(name,SHARE_FILE_INFO"%d",i);
++			val = config_get(name);
++			if(*val == '\0')
++				break;
++			sep = "*\n";
++			strcpy(oneline,val);
++			share_name = strtok(oneline, sep);/* share name */
++			folderName = strtok(NULL, sep); /* folder name */
++			readAccess = strtok(NULL, sep); /* readAccess*/
++			writeAccess = strtok(NULL, sep);        /* writeAccess */
++			volumeName = strtok(NULL, sep);   /* volumeName*/
++			deviceName = strtok(NULL, sep);    /* deviceName */
++			deviceSerialNumber = strtok(NULL,sep); /* serialNumber */
++			partition = strtok(NULL,sep); /* partition number */
++			if (share_name == NULL ||folderName == NULL ||
++					readAccess == NULL ||writeAccess == NULL ||
++					volumeName == NULL || deviceName == NULL )
++				continue;
++			/* if the config is the same device and the same partition ,
++			   then update the volume name in the config */
++			if(strncmp(deviceSerialNumber,diskinfo->serialNumber,strlen(diskinfo->serialNumber)) == 0
++					&& strncmp(partition,diskinfo->partition,isdigit(diskinfo->partition[1]) ? 2:1) == 0)
++			{
++				if(strcmp(volumeName,diskinfo->vol_name) != 0)
++				{
++					char value[256];
++					snprintf(value,sizeof(value),"%s*%s*%s*%s*%s*%s*%s*%s\n",share_name,folderName,readAccess,
++							writeAccess,diskinfo->vol_name,deviceName,deviceSerialNumber,partition);
++					config_set(name,value);
++				}
++			}
++		}
++	}
++}
++
+ static inline int duplicate_share_name(char *name, struct list_head *head)
+ {
+ 	struct list_head *pos;
+@@ -476,6 +595,9 @@
+ 
+ 	scan_disk_entries(&disk_lists);
+ 
++	/* while user change the volume , we need to update the volume name */
++	update_volumeName(&disk_lists);
++	
+ 	USB_DEBUGP("[USB-SMB]: Loading USB share information ......\n");
+ 	list_for_each(pos, &disk_lists) {
+ 		diskinfo = list_entry(pos, struct disk_partition_info, list);
+@@ -644,7 +766,7 @@
+                         else
+                                 snprintf(share_name, sizeof(share_name),"%c_Drive", diskinfo->label);
+ 
+-			snprintf(value,sizeof(value),"%s*/*0*0*%s*%s",share_name,diskinfo->vol_name,diskinfo->vendor);
++			snprintf(value,sizeof(value),"%s*/*0*0*%s*%s*%s*%s",share_name,diskinfo->vol_name,diskinfo->vendor,diskinfo->serialNumber,diskinfo->partition);
+ 
+ 			for(i=0;i<100 ;i++){
+ 				sprintf(name,SHARE_FILE_INFO"%d", i);

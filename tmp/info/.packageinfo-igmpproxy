@@ -1,0 +1,15 @@
+Source-Makefile: package/igmpproxy/Makefile
+Package: igmpproxy
+Version: 1
+Depends: 
+Provides: 
+Section: utils
+Category: Network
+Title: igmp for Embedded Router.
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: igmp for Embedded Router.
+@@
+
+

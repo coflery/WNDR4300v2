@@ -1,0 +1,20 @@
+config DNS_IPUPDATE_GIT_TREEISH
+	string
+	prompt "treeish of dni dns-ipupdate git repository"
+	default "dns-ipupdate-v1.0.0-dni8"
+	help
+           Input the treeish of dni dns-ipupdate git repository which you want to build
+
+config DNS_IPUPDATE_GIT_REPOSITORY
+	string
+	prompt "name of dni dns-ipupdate git repository"
+	default "dns-ipupdate.git"
+	help
+	   Input the name of dni dns-ipupdate git repository which you want to build
+
+config DNS_IPUPDATE_GIT_URL
+	string
+	prompt "url of dni dns-ipupdate git repository"
+	default "ssh://dniserver/scm/dnigit/common/apps/dns-ipupdate.git"
+	help
+	   Input the url of dni dns-ipupdate git repository which you want to build

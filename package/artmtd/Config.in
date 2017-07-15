@@ -1,0 +1,95 @@
+menu "ART Conofiguration"
+
+config ART_PARTITION_LENGTH
+	int "The size of art partition"
+	default 262144
+
+config MAC_OFFSET
+	string	"MAC offset in art partition"
+	default 0x0
+
+config PIN_OFFSET
+	string "PIN offset in art partition"
+	default 24
+
+config PIN_LENGTH
+	int "The length of WPS PIN"
+	default 8
+
+config SN_OFFSET
+	string  "SN offset in art partition"
+	default 32
+
+config SN_LENGTH
+	int "The length of Serial Number"
+	default 13
+
+config REGION_NUMBER_OFFSET
+	string "RN offset in art partition"
+	default 45
+	
+config REGION_NUMBER_LENGTH
+	int "The length of Region Number"
+	default 2
+
+config REGION_FILE
+	string "The file of firmware region"
+	default "/tmp/firmware_region"
+
+config BOARD_HW_ID_OFFSET
+	string "HW ID offset in art partition"
+	default 47
+
+config BOARD_HW_ID_LENGTH
+	int "The length of board hardware id"
+	default 16
+
+config BOARD_MODEL_ID_OFFSET
+	string "MODEL ID offset in art partition"
+	default 63
+
+config BOARD_MODEL_ID_LENGTH
+	int "The length of board model id"
+	default 10
+
+config MAX_SSID_OFFSET
+	string "SSID offset in art partition"
+	default 73
+
+config MAX_SSID_LEN
+	int "The max length of SSID"
+	default 32
+
+config MAX_PSSPHRS_OFFSET
+	string "PASSPHRASE offset in art partition"
+	default 105
+
+config MAX_PSSPHRS_LEN
+	int "The max length of passphase"
+	default 64
+
+config CAL_OFFSET
+	string "The atheros art data offset in ART partition"
+	default 0x1200
+
+endmenu
+
+menu "Language Configurations"
+
+config LANGUAGE_COUNT
+	int "The number of language table"
+	default 10
+
+config LANGUAGE_SIZE
+	int "The size of language table"
+	default 131072
+
+endmenu
+
+menu "BACKUP Configurations"
+
+config BACKUP_OFFSET
+	int "The data offset in backup partition"
+	default 0
+
+endmenu

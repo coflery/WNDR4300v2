@@ -1,0 +1,98 @@
+#!/bin/sh
+
+MNTLOCK=/var/lock/mntlock
+UDEVDIR=/tmp/dev
+logger "usb device is mass storage"
+#logger "uenv is `env`"
+KERN=${DEVPATH##*/}
+logger "DEVPATH is $DEVPATH"
+logger "KERN is $KERN"
+logger "ready to ls -d /sys$DEVPATH/${KERN}\*"
+[ -n "`ls -d /sys$DEVPATH/$KERN* 2>/dev/null`" ] && exit 0
+logger "$DEVPATH passed ls -d check"
+diskchar="$(echo $DEVPATH|awk -F/ '{print $3}'|sed 's/^sd\([a-z]\)/\1/')"
+logger "diskchar is $diskchar"
+disknum=$(echo -n $diskchar |hexdump -v -x |head -1 |awk '{print $2}')
+logger "hex disknum plus 96 is $disknum"
+disknum=$(( 0x$disknum - 96 ))
+logger "dec disknum is $disknum"
+partnum=$(echo $KERN |sed 's/^sd[a-z]//')
+logger "partnum is $partnum"
+DEVNAME="/dev/disk${disknum}part${partnum}"
+logger "DEVNAME is $DEVNAME"
+DEV=${DEVNAME##*/}
+logger "DEV is $DEV"
+
+PART_NUM=${DEVNAME##*part}
+logger "PART_NUM is $PART_NUM"
+[ "$PART_NUM" != "$DEVNAME" ] && PART=" part $PART_NUM"
+logger "PART is $PART"
+
+if [ -n "$PART" ]; then
+  DEVPATH=${DEVPATH%/*}
+  [ -z "`ls -d /sys$DEVPATH/${KERN%[1-9]}* | grep -v $KERN\$`" ] && PART=
+fi
+logger "DEVPATH is $DEVPATH"
+logger "PART is $PART"
+
+VENDOR=`cat /sys$DEVPATH/device/vendor 2>/dev/null`
+logger "VENDOR is $VENDOR"
+MODEL=`cat /sys$DEVPATH/device/model 2>/dev/null`
+logger "MODEL is $MODEL"
+MNT=`echo $VENDOR$MODEL | sed s/\ *$// | sed 's|/|\\\\|g'`$PART
+logger "MNT is $MNT"
+
+if [ "`cat /sys$DEVPATH/removable`" = 1 \
+     -o -n "`echo $PHYSDEVPATH | grep -e usb -e ieee1394`" ]; then
+  REMOVABLE=true
+fi
+logger "REMOVABLE is $REMOVABLE"
+
+if [ "$REMOVABLE" != true -o "$MNT" = "$PART" ]; then
+  case $DEV in
+    cdrom*)
+      MNT="cdrom ${DEV#cdrom}"
+      ;;
+    disk*)
+      DEV=${DEV%part*}
+      MNT="disk ${DEV#disk}$PART"
+      ;;
+  esac
+fi
+logger "DEV is $DEV"
+logger "MNT is $MNT"
+
+lock $MNTLOCK
+MNT="/mnt/$MNT"
+if [ -d "$MNT" ]; then
+  NUM=2
+  while [ -d "$MNT ($NUM)" ]; do
+    NUM=$(($NUM+1))
+  done
+  MNT="$MNT ($NUM)"
+fi
+mkdir "$MNT"
+logger "MNT is $MNT"
+lock -u $MNTLOCK
+
+case $DEV in
+  cdrom*)
+    mount -o ro $DEVNAME "$MNT" && OK=1
+    if [ "$OK" != 1 ]; then
+        sleep 7
+        mount -o ro $UDEVDIR/$KERN "$MNT"
+        OK=1
+    fi
+    ;;
+  disk*)
+    mount -o ro $UDEVDIR/$KERN "$MNT" && OK=1
+    ;;
+esac
+
+lock $MNTLOCK
+if [ "$OK" = 1 ]; then
+  echo "$UDEVDIR/$KERN	$MNT" >> /var/run/mnts
+else
+  rmdir "$MNT"
+fi
+lock -u $MNTLOCK

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+wlanconfig wlan-sim create wlandev wifi-sim0 wlanmode sta 
+sleep 1
+
+# iwpriv wlan-sim0 dbgLVL 0xd0e81043
+# sleep 1
+
+wpa_supplicant -t -ddd -iwlan-sim0 -cPSK.sta_CCMP > stalog &
+#sudo wpa_supplicant -ddd -iwlan-sim0 -cPSK.sta_TKIP | cat > stalog &
+

@@ -1,0 +1,54 @@
+#!/bin/sh
+
+# This script runs when init it run during the boot process.
+# Mounts everything in the fstab
+
+mount -a
+mount -o remount +w /
+
+#
+# Mount the RAM filesystem to /tmp
+#
+
+mount -t ramfs -n none /tmp
+
+export PATH=$PATH:/etc/ath
+
+insmod /lib/modules/2.6.15/net/ag7240_mod.ko
+
+##
+## Put the names of the interfaces in the environmental variables
+## (They can be board unique)
+##
+
+export ETH0=eth0
+export ETH1=eth1
+
+ifconfig $ETH0 up
+ifconfig $ETH1 up
+/etc/rc.d/rc.network
+/etc/rc.d/rc.bridge
+. /etc/ath/apcfg
+
+if [ "${WLAN_ON_BOOT}" = "y" ]; then
+    /etc/ath/apup
+fi
+
+#
+# Enable USB
+#
+#insmod /lib/modules/2.6.15/usb/usbcore.ko
+#insmod /lib/modules/2.6.15/usb/ohci-hcd.ko
+#insmod /lib/modules/2.6.15/usb/usb-storage.ko
+
+#
+# Untar the debug tools into /tmp/tools
+#
+
+mkdir /tmp/tools
+cd /tmp/tools
+tar -xzvf /sbin/debug.tgz
+
+/usr/sbin/telnetd
+/usr/sbin/httpd -h /usr/www/
+/bin/factoryreset /dev/freset

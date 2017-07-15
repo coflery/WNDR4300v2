@@ -1,0 +1,88 @@
+#!/bin/sh
+
+. /etc/failover/failover.common
+
+# 1.$user 2.$passwd 3.$mtu 4.$ip 5.$dns 6.$gw 7.$WAN_IF
+print_l2tp_options(){
+cat <<EOF
+noauth
+noipdefault
+ipparam l2tp
+refuse-eap
+mtu $3
+mru $3
+persist
+$5
+detectlink
+lcp-echo-interval 10
+lcp-echo-failure 4
+user $1
+password $2
+plugin dni-l2tp.so $4
+$6
+l2tp_iface $7
+EOF
+}
+
+setup_interface_l2tp(){
+	local user passwd mtu dns service route ip gw language staticdns1 staticdns2 l2tp_wan_assign
+
+	insert_modules l2tp
+	setup_generic_ppp
+	user=$($CONFIG get wan_l2tp_username)
+	passwd=$($CONFIG get wan_l2tp_password)
+	mtu=$($CONFIG get wan_l2tp_mtu)
+
+	if [ "$($CONFIG get wan_l2tp_wan_assign)" != "0" ]; then
+	    route=$($CONFIG get l2tp_gw_static_route)
+	    [ "x$route" != "x" ] && gw="l2tp_gateway $route"
+	fi
+
+	if [ "$($CONFIG get wan_l2tp_dns_assign)" != "1" ]; then
+		dns="usepeerdns"
+	else
+		echo "nameserver $($CONFIG get wan_ether_dns1)" > $FAILOVER_RESOLVE
+		echo "nameserver $($CONFIG get wan_ether_dns2)" >> $FAILOVER_RESOLVE
+	fi
+
+	if [ "$($CONFIG get wan_l2tp_dns_assign)" != "0" ]; then
+	    staticdns1="$($CONFIG get wan_ether_dns1)"
+	    staticdns2="$($CONFIG get wan_ether_dns2)"
+	    [ "x$staticdns1" != "x" ] && staticdns1="l2tp_dns1 $staticdns1"
+	    [ "x$staticdns2" != "x" ] && staticdns2="l2tp_dns2 $staticdns2"
+	fi
+
+	ip=$($CONFIG get wan_l2tp_server_ip)
+	l2tp_wan_assign="l2tp_wan_assign $($CONFIG get wan_l2tp_wan_assign)"
+
+	print_l2tp_options "$user" "$passwd" "${mtu:-1428}" "$ip" "$dns" "$gw" "$WAN_IF" > $FAILOVER_PPP_DIAL
+
+	if [ "$($CONFIG get wan_l2tp_wan_assign)" != "0" ]; then
+	    echo "$l2tp_wan_assign" >> $FAILOVER_PPP_DIAL
+	fi
+	if [ "$($CONFIG get wan_l2tp_dns_assign)" != "0" ]; then
+	    echo "$staticdns1" >> $FAILOVER_PPP_DIAL
+	    echo "$staticdns2" >> $FAILOVER_PPP_DIAL
+	fi
+	
+	sed -i '/user/ s/\\/\\\\/g' $FAILOVER_PPP_DIAL
+	sed -i '/user/ s/\#/\\#/g'  $FAILOVER_PPP_DIAL
+	sed -i '/password/ s/\\/\\\\/g' $FAILOVER_PPP_DIAL
+	sed -i '/password/ s/\#/\\#/g'  $FAILOVER_PPP_DIAL
+}
+
+if [ "$($CONFIG get wan_l2tp_wan_assign)" = "0" ]; then
+	# Confiure the PPP parameters firstly, then started PPPD by UDHCPC
+	setup_interface_l2tp
+	udhcpc -b -i $WAN_IF -s $FAILOVER_DHCPC_SCRIPT
+else
+	# Configure the interface address, then started PPPD in `setup_interface_ppp`
+	l2tp_netmask=$($CONFIG get wan_l2tp_eth_mask)
+	if [ "x$l2tp_netmask" != "x" -a "x$l2tp_netmask" != "x0.0.0.0" -a "x$l2tp_netmask" != "x255.255.255.255" ]; then
+		ifconfig $WAN_IF $($CONFIG get wan_l2tp_local_ip) netmask $l2tp_netmask
+	else
+		ifconfig $WAN_IF $($CONFIG get wan_l2tp_local_ip)
+	fi
+	setup_interface_l2tp
+	pppd call dial-provider updetach unit 1
+fi

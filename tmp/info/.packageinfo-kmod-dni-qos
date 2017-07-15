@@ -1,0 +1,22 @@
+Source-Makefile: package/kmod-dni-qos/Makefile
+Package: kmod-dni-qos
+Submenu: Other modules
+Version: <LINUX_VERSION>+--
+Depends: @TARGET_dniwndr3700u2631||TARGET_wndr4500v3
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: Module to support qos for kernel 2.6.31
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: Module to support qos for kernel 2.6.31
+@@
+Config:
+	menu "Configurations"
+		depends on PACKAGE_kmod-dni-qos
+		source "package/kmod-dni-qos/Config.in"
+	endmenu
+@@
+
+

@@ -1,0 +1,11 @@
+nk DWP-156(Variant)
+
+DefaultVendor= 0x2001
+DefaultProduct=0xa403
+
+TargetVendor=  0x2001
+TargetProduct= 0x7d0b
+
+MessageContent="5553424312345678000000000000061b000000020000000000000000000000"
+
+CheckSuccess=20

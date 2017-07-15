@@ -1,0 +1,21 @@
+# kmod-dnshijack configuration
+config DNSHIJACK_GIT_TREEISH
+	string
+	prompt "treeish of dnshijack git repository"
+	default "kmod-dnshijack-v2.6.31-dni2"
+	help
+           Input the treeish of dnshijack git repository which you want to build
+
+config DNSHIJACK_GIT_REPOSITORY
+	string
+	prompt "name of dnshijack git repository"
+	default "kmod-dnshijack.git"
+	help
+	   Input the name of dnshijack git repository which you want to build
+
+config DNSHIJACK_GIT_URL
+	string
+	prompt "url of dnshijack git repository"
+	default "ssh://dniserver/scm/dnigit/common/kmods/kmod-dnshijack.git"
+	help
+	   Input the url of dnshijack git repository which you want to build

@@ -1,0 +1,132 @@
+#!/bin/sh /etc/rc.common
+START=20
+
+print_dhcpd_conf(){
+    cat <<EOF
+pidfile /var/run/udhcpd.pid
+start $2
+end $3
+interface $1
+remaining yes
+auto_time 5
+lease_file /tmp/udhcpd.leases
+option subnet $4
+option router $5
+option dns $5
+option lease $6
+EOF
+}
+ 
+start_dhcpd() {
+    [ ! -f /tmp/udhcpd.leases ] && touch /tmp/udhcpd.leases
+    print_dhcpd_conf "$BR_IF" "$($CONFIG get dhcp_start)" "$($CONFIG get dhcp_end)" "$($CONFIG get lan_netmask)" "$($CONFIG get lan_ipaddr)" "$($CONFIG get lan_lease)" > /tmp/udhcpd.conf
+
+    count=1
+    while :
+    do
+	lease="$($CONFIG get reservation$count)"
+	if [ "x$lease" = "x" ]; then
+	    break;
+	fi
+	count=`expr $count + 1`
+	echo "static_lease $lease" >> /tmp/udhcpd.conf
+    done
+
+    udhcpd /tmp/udhcpd.conf
+}
+
+start() {
+	local lan_ip lan_mask
+
+	wan6_type=`$CONFIG get ipv6_type`
+	lan6_ip=`ifconfig $BR_IF |grep "inet6 addr" |grep -v "Link" |awk '{print $3}'`
+
+	# set iptv interface
+	gui_region=$($CONFIG get GUI_Region)
+	firmware_region=`cat /tmp/firmware_region | awk '{print $1}'`
+	if [ "$firmware_region" = "" ] || [ "$firmware_region" = "WW" ];then
+		if [ "$gui_region" = "Russian" ];then
+			vlan-set $($CONFIG get iptv_mask) 1>/tmp/vlan-set-result
+		else
+			vlan-set 0 1>/tmp/vlan-set-result
+		fi
+	elif [ "$firmware_region" = "RU" ];then
+		vlan-set $($CONFIG get iptv_mask) 1>/tmp/vlan-set-result
+	else
+		vlan-set 0 1>/tmp/vlan-set-result
+	fi
+
+	lan_ip=$($CONFIG get lan_ipaddr)
+	lan_mask=$($CONFIG get lan_netmask)
+
+	ifconfig $BR_IF ${lan_ip:-192.168.1.1} netmask ${lan_mask:-255.255.255.0}
+	
+	ifconfig $LAN_IF up
+
+	ifconfig $BR_IF down
+	# Enable DAD, and randomly generate anoter link-local address if
+	# MAC-based duplicate link-local address has been found.
+	echo 3 > /proc/sys/net/ipv6/conf/default/accept_dad
+	echo 3 > /proc/sys/net/ipv6/conf/${BR_IF}/accept_dad
+	sleep 2
+	ifconfig $BR_IF up
+
+	# start syslogd earlier on boot process
+	[ -f /tmp/boot_status ] && /usr/sbin/dsyslog start
+
+	if [ "$($CONFIG get lan_dhcp)" = "1" ]; then
+		if [ "$($CONFIG get wds_endis_fun)" = "1" -a "$($CONFIG get wds_repeater_basic)" = "0" ]; then
+			echo "Wireless Repeater mode"
+		else
+			start_dhcpd
+		fi
+	fi
+
+	# PHY link will be pulled low some seconds to force transition to reboot state
+ 	# and generating DHCP request and Discovery protocol and address refresh in the
+	# devices connected to the NETGEAR Local Area Network ports.
+	#
+	# After echo 9 into /proc/switch_phy, LAN physical signal will bring down 9 seconds,
+	# should wait for LAN physical signal bring up, and then execute subsequence actions
+	# as below.
+	if [ ! -f /tmp/boot_status ]; then
+		echo -n 9 > /proc/switch_phy && sleep 10
+	fi
+	# Attach Device
+	mkdir -p /tmp/netscan
+	/usr/sbin/net-scan
+
+	# Restart UPnP
+	[ ! -f /tmp/boot_status ] && /sbin/cmdupnp restart
+
+	# Start Router Debugging Mode ...
+	. /lib/network/RtDebug.sh
+	start_RtDebugMode
+
+        # Apply static route    
+        /sbin/cmdroute start
+
+	# Start lld2d
+	echo "$($CONFIG get netbiosname)" > /proc/sys/kernel/hostname
+	/usr/sbin/lld2d $($CONFIG get lan_ifname)
+
+	# reset lan ipv6 adddress
+	if [ ! -f /tmp/boot_status ] && [ "x$wan6_type" != "xdisabled" ]; then
+		[ "x$lan6_ip" != "x" ] && ip -6 addr add $lan6_ip dev $BR_IF
+	fi
+}
+
+stop() {
+	killall udhcpd
+	killall net-scan
+	killall lld2d
+	# Stop Router Debugging Mode ...
+	. /lib/network/RtDebug.sh
+	stop_RtDebugMode
+	ifdown $LAN_IF	
+}
+
+restart() {
+	stop
+	start
+}

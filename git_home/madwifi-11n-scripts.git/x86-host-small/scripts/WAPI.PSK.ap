@@ -1,0 +1,21 @@
+debug=1
+#####
+CERT_NAME=
+#/etc/IWNCOMM/auth/user.cer
+#### CERT_INDEX: 
+####	1: X509; 2:GBW
+CERT_INDEX=
+#### CERT_STATUS:
+####    0: NOT_EXIST; 1:VALID; 2:INVALID
+CERT_STATUS="0"
+
+# ASU authentication server
+#ASU_IP=
+ASU_PORT=3810
+
+#
+#DEV_NANME WAPIMODE PSK_TYPE PSK 
+[WLAN_BEGIN]
+wlan0 7 0 1234567890 #2 86400 1000000 2 86400 1000000
+[WLAN_END]
+

@@ -1,0 +1,16 @@
+echo 1 > /sys/bus/pci/rescan
+lspci | grep Ath
+./rc.wlan up
+sleep 1
+wlanconfig wlan create wlandev wifi0 wlanmode sta 
+sleep 1
+iwconfig wlan0 channel 1
+sleep 2
+iwpriv wlan0 dbgLVL 0x88cf80000
+sleep 2
+#echo ">>>> Bring up Interface ( Press Enter )"
+#read
+wpa_supplicant -ddd -iwlan0 -cWSC.sta.conf | cat > stalog &
+#ifconfig wlan0 192.168.1.2
+echo "Done"
+

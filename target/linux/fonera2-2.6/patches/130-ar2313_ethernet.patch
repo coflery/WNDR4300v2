@@ -1,0 +1,29 @@
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index fd5ec35..782a7e8 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -324,6 +324,12 @@ config MACB
+ 
+ source "drivers/net/arm/Kconfig"
+ 
++config AR2313
++	tristate "AR2313 Ethernet support"
++	depends on NET_ETHERNET && ATHEROS
++	help
++	  Support for the AR231x/531x ethernet controller
++
+ config MACE
+ 	tristate "MACE (Power Mac ethernet) support"
+ 	depends on NET_ETHERNET && PPC_PMAC && PPC32
+diff --git a/drivers/net/Makefile b/drivers/net/Makefile
+index 5390d65..a1f39e0 100644
+--- a/drivers/net/Makefile
++++ b/drivers/net/Makefile
+@@ -172,6 +172,7 @@ obj-$(CONFIG_MVME147_NET) += mvme147.o 7990.o
+ obj-$(CONFIG_EQUALIZER) += eql.o
+ obj-$(CONFIG_MIPS_JAZZ_SONIC) += jazzsonic.o
+ obj-$(CONFIG_MIPS_AU1X00_ENET) += au1000_eth.o
++obj-$(CONFIG_AR2313) += ar2313/
+ obj-$(CONFIG_MIPS_SIM_NET) += mipsnet.o
+ obj-$(CONFIG_SGI_IOC3_ETH) += ioc3-eth.o
+ obj-$(CONFIG_DECLANCE) += declance.o

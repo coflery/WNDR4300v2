@@ -1,0 +1,516 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+
+<head>
+<% hijack_title() %>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="style/hijack_style.css" />
+<link rel="stylesheet" type="text/css" href="style/hijack_success.css" />
+<link rel="stylesheet" type="text/css" href="style/form.css" />
+<script language="javascript" type="text/javascript" src="hdd_is_Mac.js"></script>
+<script language="javascript" type="text/javascript" src="script/funcs.js"></script>
+<script language="javascript" type="text/javascript" src="hdd_sata.js"></script>
+<% hijack_language() %>
+
+</head>
+
+<body onload="loadvalue();">
+<form action="NETGEAR_WNDR3700.cfg" method="post" enctype="multipart/form-data">
+<script language="javascript" type="text/javascript">
+var an_router_flag = "<% get_an_router_flag() %>";
+var wl_sectype="<% cfg_get("wl_sectype") %>";
+var wla_sectype="<% cfg_get("wla_sectype") %>";
+var wl_passphrase="<% passphrase_bg_msg() %>";
+var wla_passphrase="<% passphrase_ag_msg() %>";
+var wl_tooltip1=0;
+var wla_tooltip1=0;
+var click_flag_nu=1;
+var click_usb = 1;
+
+var netgear_region="<% get_firmware_region() %>"
+var gui_region = "<% cfg_get("GUI_Region") %>";
+var browser_lang="<% get_browser_language() %>";
+var is_ru_version = (((netgear_region.toUpperCase() == "WW" || netgear_region == "") && gui_region == "Russian" ) || netgear_region.toUpperCase() == "RU" || browser_lang == "Russian") ? 1 : 0;
+
+var sata_exist="<% cfg_get("sata_diskname") %>";
+//var sata_num="<% cfg_get("sata_partition_count") %>"; //need one var which not ready
+var sata_recognized="<% sata_if_regnizd() %>";
+var is_Mac = detectOS();
+var sata_partition_status="<% cfg_get("sata_partition_status") %>";;
+ function loadvalue()
+ {
+	hdd_info_show(0);
+	/*because USB show part is back, so we back the USB show part for temporary. 3 parts in all, here is for 1.*/
+	USB_info_show(0); 
+ }
+
+ 
+function click_next()
+{
+	 if (sata_exist == "")//not find disk
+		location.href="BRS_hdd_not_find.htm"; // not find sign
+	 else
+	 {
+		 if(sata_partition_status ==0)
+			location.href="BRS_hdd_not_formt.htm"; //detected but not formated, for new hdd
+		 else 
+		 {
+		 if ( sata_recognized == 0) //formated
+			location.href="BRS_hdd_not_recognzd.htm"; //not recognized
+		 else
+			location.href="BRS_hdd_download.htm"; //recognized
+		}
+	}
+}
+
+<% show_usb_fileder_items() %>
+<% check_ftp() %>
+<% show_devices() %>
+
+function hdd_switch()
+{
+	 if (sata_exist == "")//not find disk
+		document.write('<TD nowrap class="case_red_font"><div> </div> $not_find</TD>'); // not find sign
+	 else
+	 {
+		 if(sata_partition_status ==0)
+			document.write('<TD nowrap class="case_red_font"><div> </div> $not_format</TD>'); 
+			//detected but not formated, for new hdd
+		 else if ( sata_recognized == 0) //formated
+			document.write('<TD nowrap class="case_red_font"><div> </div> $not_recognie</TD>'); //not recognized
+		 else // formatted and is recognized 
+			document.write('<TD nowrap class="case_green_font"><div> </div> $detect</TD>'); //recognized
+	}
+}
+
+var space_used =0,used_persent=0,free_persent=100;
+function co_unit(str1, str2)
+{/*have some situations: G, have 2 suffix after dot. M no suffix.
+1.G - G:  1)gt 0,  2)lt 0;
+2.G - M;  1)gt 1024, 2)lt 1024;
+3.M - M;  1)gt 0, 2)lt 0;
+4. the persentage should have 2 suffix after dot. other then it will be ugly when show the pic.
+*/
+	if(( str1.indexOf("G") != -1 && str2.indexOf("G") != -1)|| ( str1.indexOf("M") != -1 && str2.indexOf("M") != -1))
+	{ //the same unit
+		free_persent = ((parseFloat(str2)*100)/(parseFloat(str1))).toFixed(2);
+		used_persent = (100 - free_persent).toFixed(2);
+		if(str1.indexOf("M") != -1)
+			space_used = (parseFloat(str1)-parseFloat(str2)).toFixed(0)+"MB";
+		else
+		{
+			space_used = (parseFloat(str1)-parseFloat(str2))*1024;
+			if(space_used < 1024)
+				space_used = ((parseFloat(str1)-parseFloat(str2))*1024).toFixed(0)+"MB";
+			else
+				space_used = (parseFloat(str1)-parseFloat(str2)).toFixed(2)+"GB";
+		}
+	}
+	else if( str1.indexOf("G") != -1 && str2.indexOf("M") != -1)
+	{
+		free_persent = (parseFloat(str2)*100/(parseFloat(str1)*1024)).toFixed(2);
+		used_persent = (100 - free_persent).toFixed(2);
+		space_used = (parseFloat(str1)*1024) - parseFloat(str2);
+		if (space_used > 1024)
+			space_used = (space_used/1024).toFixed(2)+"GB";
+		else
+			space_used = ((parseFloat(str1)*1024) - (parseFloat(str2))).toFixed(0)+"MB";
+	}
+}
+
+var exist=0; // the next script label gnna use it. so i move it out of the function
+function hdd_show()
+{
+sata_vol();
+//alert("sata partition "+sata_vol_num)
+sata_reserved();
+for( i=(have_reserved==1?1:0); i<sata_vol_num; i++){
+	exist =1;
+	//alert("array value 4444444"+sata_vol_name[i]);
+	for(j=0; j<folder_number; j++)
+	{	
+			var volname_str = eval('usb_sharefolder_volname' + j);
+				//volname_str = volname_str.split(' ');
+				//volname_str=volname_str.replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&#40;/g,"(").replace(/&#41;/g,")").replace(/&#34;/g,'\"').replace(/&#39;/g,"'").replace(/&#35;/g,"#").replace(/&#38;/g,"&");
+			if(sata_vol_name[i] == volname_str)
+			{
+				 var str = eval('usb_sharefolder' + j);
+				each_info = str.split('*');
+		  
+				co_unit(each_info[2], each_info[3]);
+				document.write('<TR id="hdinfo0'+i+'"><TD class="app_con_font">$hdd_name:</TD><TD nowrap align=left class="app_con_dig">'+volname_str+'</TD></TR>');
+				document.write('<TR id="hdinfo1'+i+'"><TD class="app_con_font">$capacity:</TD><TD class="app_con_dig">'+each_info[2]+'</TD></TR>');
+				document.write('<TR id="hdinfo2'+i+'"><TD class="app_con_font">$space_used:</TD><TD class="app_con_dig">'+space_used+' ('+used_persent+'%)</TD></TR>');
+				document.write('<TR id="hdinfo3'+i+'"><TD class="app_con_font">$space_free:</TD><TD class="app_con_dig">'+each_info[3]+' ('+free_persent+'%)</TD></TR>');
+				document.write('<TR id="hdline'+i+'"><TD colspan=2 class="app_con_font">&nbsp;</TD></TR>');
+				
+				break;
+			}					
+	}
+}
+	if(exist == 0)
+	 {
+		document.write('<TR id="hdinfo1"><TD class="app_con_font">$capacity:</TD><TD></TD></TR>');
+		document.write('<TR id="hdinfo2"><TD class="app_con_font">$space_used:</TD><TD></TD></TR>');
+		document.write('<TR id="hdinfo3"><TD class="app_con_font">$space_free:</TD><TD></TD></TR>');
+	 }
+}
+
+function usb_switch()
+{
+var usb_exist=0;
+
+	/*for( i=0; i<list_disk_num; i++){	
+	var str = eval('usb_sharefolder' + i);
+	each_info = str.split('*');
+	
+    var volname_str = eval('usb_sharefolder_volname' + i);
+		volname_str = volname_str.replace( / /g,"_");*/
+ 
+	 if( sata_vol_num != disk_num)
+	 {
+		usb_exist=1;
+		document.write('<TD nowrap class="case_green_font"><div> </div> $detect</TD>'); 
+	 }
+//}
+	if(usb_exist == 0)
+	 {
+		document.write('<TD nowrap class="case_red_font"><div> </div> $not_detect</TD>');
+	 }
+}
+
+var usbinfo_exist=0;
+function usb_show()
+{
+	var k=0;
+for( i=0; i < disk_num; i++)
+ {	
+	var volname = eval('dev' + i);
+	volname_each_info = volname.split('*');
+		
+	if( volname_each_info[0].indexOf(sata_exist) == -1 || sata_exist.length == 0)
+	{	
+		var volname_str_vol = eval('dev_vol' + i);
+				//volname_str_vol = volname_str_vol.replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&#40;/g,"(").replace(/&#41;/g,")").replace(/&#34;/g,'\"').replace(/&#39;/g,"'").replace(/&#35;/g,"#").replace(/&#38;/g,"&");
+
+				 for(j=0; j<folder_number; j++)
+				  {
+					var volname_str = eval('usb_sharefolder_volname' + j);
+					var volname_str_info = volname_str.split(' ');
+					//volname_str = volname_str.replace( / /g,"_");
+					
+					 if( volname_str == volname_str_vol)
+					 {
+						var str = eval('usb_sharefolder' + j);
+						each_info = str.split('*');
+							// alert("enter in usb show");
+						co_unit(each_info[2], each_info[3]);
+						document.write('<TR id="usbinfo0'+k+'"><TD class="app_con_font">$usb_name:</TD><TD nowrap align=left class="app_con_dig">'+volname_str_info[0]+'</TD></TR>');
+						document.write('<TR id="usbinfo1'+k+'"><TD class="app_con_font">$capacity:</TD><TD class="app_con_dig">'+each_info[2]+'</TD></TR>');
+						document.write('<TR id="usbinfo2'+k+'"><TD class="app_con_font">$space_used:</TD><TD class="app_con_dig">'+space_used+' ('+used_persent+'%)</TD></TR>');
+						document.write('<TR id="usbinfo3'+k+'"><TD class="app_con_font">$space_free:</TD><TD class="app_con_dig">'+each_info[3]+' ('+free_persent+'%)</TD></TR>');
+						document.write('<TR id="usbline'+k+'"><TD colspan=2 class="app_con_font">&nbsp;</TD></TR>');
+						
+						k = k+1;
+						usbinfo_exist = usbinfo_exist + 1;
+						break;
+					 }
+				  }
+	}
+}
+	if(usbinfo_exist == 0)
+	 {
+		//alert("22222");
+		document.write('<TR id="usbinfo1"><TD class="app_con_font">$capacity:</TD><TD></TD></TR>');
+		document.write('<TR id="usbinfo2"><TD class="app_con_font">$space_used:</TD><TD></TD></TR>');
+		document.write('<TR id="usbinfo3"><TD class="app_con_font">$space_free:</TD><TD></TD></TR>');
+	 }
+}
+
+function show_pic()
+{
+	var used_persent_use = parseInt(used_persent*66/100);
+	if(used_persent!=0)
+	{
+		if ( used_persent >= 100)
+			document.write('<tr><td bgcolor="#0000FF">&nbsp;</td></tr><tr><td width=20 height=75 bgcolor="#0000FF">&nbsp;</td></tr>');
+		else	
+			document.write('<tr><td bgcolor="#FF0000" height='+(66-parseInt(used_persent_use))+'>&nbsp;</td></tr><tr><td width=20 height='+used_persent_use+' bgcolor="#0000FF">&nbsp;</td></tr>');
+	}
+	else
+		document.write('<tr><td bgcolor="#FF0000">&nbsp;</td></tr><tr><td width=20 bgcolor="#FF0000">&nbsp;</td></tr>');	
+}
+
+function show_mac_sign()
+{
+if(exist == 1 && is_Mac == "Mac")
+	document.write('<TR id="hdinfo4"><TD width=150px;  colspan=2><div id="apple_time"></div><b style="color:#000000; font-family:Times New Roman; font-size:12px;">$apple_time_machine:</b></TD></TR>');
+	else
+	document.write('<TR id="hdinfo4"><TD style="padding-left:18px;"></TD><TD></TD></TR>');
+}
+</script>
+
+<div class="wizard_content_div">
+	<TABLE align=center width="80%"; style="border:0px solid #000000;">
+		<TR>
+			<TD ><div class="confirm_40"></div></TD>
+			<TD><p class="case_green_big">$connect_internet.</p></TD></TR>
+		<TR>
+			<TD></TD>
+			<TD >
+			<TABLE align=left width="710px"; style="border:1px solid #000000; margin:0 40px 0 0;" >
+				<TR ><TD colspan=2 align="left" class="success_font">$wireless_set</TD></TR>
+				<TR><TD width=55% class="success_font_normal">2.4 GHz $wles_net_name: </TD><TD class="success_font"><% cfg_get_ssid_html("wl_ssid") %></TD></TR>
+				<TR><TD class="success_font_normal">5 GHz $wles_net_name: </TD><TD class="success_font"><% cfg_get_ssid_html("wla_ssid") %></TD></TR>
+				<TR><TD class="success_font_normal">$network_key: </TD><TD class="success_font"><% passphrase_bg_msg() %></TD></TR>
+			</TABLE>
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD width=40px;></TD>
+			<TD >
+			<TABLE align=left style="border:1px solid #000000;" width=710px;>
+		<TR><TD width=550px;>
+		<div id="HDinfo" style="float:left;">
+			<TABLE  style="border:0px solid #000000;" >
+			<TR><TD nowrap width=145px; class="app_header_font"><div id="hdd_header" class="header_close" onclick="hdd_info_show(click_flag_nu);click_flag_nu++;"></div> $hdd_internal</TD>
+			<script>
+			hdd_switch();
+			</script>
+			</TR>
+			<TR id="hdlinetop"><TD colspan=2 class="app_con_font"></TD></TR>
+			<script>
+			hdd_show();
+			</script>	
+			</TABLE>
+		</div>
+		</TD>
+		<TD>
+		<!--div id="HDpic" style="float:right;">
+		<TABLE  style="border:0px solid #000000; width:250px;" >
+		<script>
+			if( get_browser() == "IE" || get_browser() == "Opera" )
+				document.write('<tr><td colspan=2 class="thead1"><span class="thead">HDD USED</span></td></tr>');
+			else
+				document.write('<tr><td colspan=2><span class="thead">HDD USED</span></td></tr>');
+		</script>
+		<tr>
+			<td><table width=100%  border="1" cellspacing=0 cellpadding="0" bordercolor="#000000">
+				<tr>
+					<td><table width=100%  border="0" cellspacing=0 cellpadding="0" height=75>
+<script>	
+show_pic();						
+</script>				
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+			<td><script>document.write(used_persent)</script>%Used</td>
+			</tr>
+		
+		</TABLE>
+		</div--></TD>
+		</TR>
+	<script>
+	show_mac_sign();
+	</script>
+		</TABLE>
+			
+			</TD>
+		</TR>
+		<p></p>
+		<TR>
+			<TD width=40px;></TD>
+			<TD >
+			<!--/*because USB show part is back, so we back the USB show part for temporary. 3 parts in all, here is for 2.*/-->
+	
+		<TABLE align=left style="border:1px solid #000000;" width=710px;>
+		<TR><TD width=480px;>
+		<div id="USBinfo" style="float:left;">
+			<TABLE  style="border:0px solid #000000;" >
+			<TR><TD width=90px;><div id=usb_header class="header_close" onclick="USB_info_show(click_usb);click_usb++;"> </div>$usb_drive</TD>
+			<script>
+			usb_switch();
+			</script>
+			</TR>
+			<TR id="usblinetop"><TD colspan=2 class="app_con_font"></TD></TR>
+			<script>
+			usb_show();
+			</script>	
+			</TABLE>
+		</div>
+		</TD>
+		<TD>
+		<!--div id="USBpic" style="float:right;">
+		<TABLE  style="border:0px solid #000000; width:150px;" >
+		<script>
+			if( get_browser() == "IE" || get_browser() == "Opera" )
+				document.write('<tr><td colspan=2 class="thead1"><span class="thead">USB USED</span></td></tr>');
+			else
+				document.write('<tr><td colspan=2><span class="thead">USB USED</span></td></tr>');
+		</script>
+				<tr>
+			<td><table width=100%  border="1" cellspacing=0 cellpadding="0" bordercolor="#000000">
+				<tr>
+					<td><table width=100%  border="0" cellspacing=0 cellpadding="0" height=75>
+<script>	
+show_pic();					
+</script>				
+						</table>
+					</td>
+				</tr>
+				</table>
+			</td>
+			<td><script>document.write(used_persent)</script>%Used</td>
+			</tr>
+		</TABLE>
+		</div--></TD></TR>
+		</TABLE>
+			
+			</TD>
+		</TR>
+	</TABLE>
+
+	<div id="buttons_div_02" class="wizard_buttons_div" align="center">
+		<TABLE width="90%" align=center >
+			<TR><TD align="left">
+			<INPUT  class="short_common_hdd" type='button' name="exit" value='$exit_mark' onClick='click_exit()'></TD>
+			<TD align="right"><INPUT class="short_common_hdd" type='button' name="$next_mark" value='Next >' onClick='click_next()'>
+			</TD></TR>
+		</TABLE>
+	</div>
+</div>
+
+<script>
+function hdd_info_show(n)
+{
+for( i=(have_reserved==1?1:0); i<sata_vol_num; i++){	
+	if((n%2)==0)
+	{
+		document.getElementById("hdinfo0"+i).style.display="none";
+		document.getElementById("hdinfo1"+i).style.display="none";
+		document.getElementById("hdinfo2"+i).style.display="none";
+		document.getElementById("hdinfo3"+i).style.display="none";
+		document.getElementById("hdline"+i).style.display="none";
+		document.getElementById("hdlinetop").style.display="none";
+		document.getElementById("hdinfo4").style.display="none";
+		//because we moved the picture for hdd, so moved here 2 in all . this for 1
+		//document.getElementById("HDpic").style.display="none";
+		document.getElementById("hdd_header").className="header_close";
+	}
+	else
+	{
+		document.getElementById("hdinfo0"+i).style.display="";
+		document.getElementById("hdinfo1"+i).style.display="";
+		document.getElementById("hdinfo2"+i).style.display="";
+		document.getElementById("hdinfo3"+i).style.display="";
+		document.getElementById("hdline"+i).style.display="";
+		document.getElementById("hdlinetop").style.display="";
+		document.getElementById("hdinfo4").style.display="";
+		document.getElementById("hdd_header").className="header_open";
+		//because we moved the picture for hdd, so moved here 2 in all . this for 2
+		/*if(exist == 1)
+			document.getElementById("HDpic").style.display="";
+		else
+			document.getElementById("HDpic").style.display="none";*/
+	}
+  }
+  
+  if( sata_vol_num <= (have_reserved==1?1:0))
+  {
+	document.getElementById("hdlinetop").style.display="none";
+	if((n%2)==0)
+	{
+		document.getElementById("hdinfo1").style.display="none";
+		document.getElementById("hdinfo2").style.display="none";
+		document.getElementById("hdinfo3").style.display="none";
+		document.getElementById("hdinfo4").style.display="none";
+		//because we moved the picture for hdd, so moved here 2 in all . this for 1
+		//document.getElementById("HDpic").style.display="none";
+		document.getElementById("hdd_header").className="header_close";
+	}
+	else
+	{
+		document.getElementById("hdinfo1").style.display="";
+		document.getElementById("hdinfo2").style.display="";
+		document.getElementById("hdinfo3").style.display="";
+		document.getElementById("hdinfo4").style.display="";
+		document.getElementById("hdd_header").className="header_open";
+	}
+  }
+  
+}
+
+/*because USB show part is back, so we back the USB show part for temporary. 3 parts in all, here is for 3.*/
+function USB_info_show(n)
+{
+  for( i=0; i < usbinfo_exist; i++)
+  {
+	if((n%2)==0)
+	{
+		document.getElementById("usbinfo0"+i).style.display="none";
+		document.getElementById("usbinfo1"+i).style.display="none";
+		document.getElementById("usbinfo2"+i).style.display="none";
+		document.getElementById("usbinfo3"+i).style.display="none";
+		document.getElementById("usbline"+i).style.display="none";
+		document.getElementById("usblinetop").style.display="none";
+		//because we moved the picture for USB, so moved here 2 in all . this for 1
+		//document.getElementById("USBpic").style.display="none";
+		document.getElementById("usb_header").className="header_close";
+	}
+	else
+	{
+		document.getElementById("usbinfo0"+i).style.display="";
+		document.getElementById("usbinfo1"+i).style.display="";
+		document.getElementById("usbinfo2"+i).style.display="";
+		document.getElementById("usbinfo3"+i).style.display="";
+		document.getElementById("usbline"+i).style.display="";
+		document.getElementById("usblinetop").style.display="";
+		document.getElementById("usb_header").className="header_open";
+		//because we moved the picture for USB, so moved here 2 in all . this for 2
+		/*if(usbinfo_exist == 1)
+			document.getElementById("USBpic").style.display="";
+		else
+			document.getElementById("USBpic").style.display="none";*/
+	}
+  }
+  
+  if( usbinfo_exist == 0)
+  {
+	document.getElementById("usblinetop").style.display="none";
+	if((n%2)==0)
+	{
+		document.getElementById("usbinfo1").style.display="none";
+		document.getElementById("usbinfo2").style.display="none";
+		document.getElementById("usbinfo3").style.display="none";
+		//because we moved the picture for USB, so moved here 2 in all . this for 1
+		//document.getElementById("USBpic").style.display="none";
+		document.getElementById("usb_header").className="header_close";
+	}
+	else
+	{
+		document.getElementById("usbinfo1").style.display="";
+		document.getElementById("usbinfo2").style.display="";
+		document.getElementById("usbinfo3").style.display="";
+		document.getElementById("usb_header").className="header_open";
+		//because we moved the picture for USB, so moved here 2 in all . this for 2
+		/*if(usbinfo_exist == 1)
+			document.getElementById("USBpic").style.display="";
+		else
+			document.getElementById("USBpic").style.display="none";*/
+	}
+  }
+}
+
+function click_exit()
+{
+	location.href="BRS_hdd_success.htm"; 
+}
+
+</script>
+</form>
+</body>
+
+</html>

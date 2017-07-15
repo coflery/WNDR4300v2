@@ -1,0 +1,258 @@
+# ap_example_80211g.conf -- example per-radio file for hostapd
+#
+# Empty lines and lines starting with # are ignored
+
+# ignore_file_errors -- set nonzero to continue even if errors in this file
+ignore_file_errors=1
+
+# Driver interface type (hostap/wired/madwifi/prism54; default: hostap)
+# driver=hostap
+#driver=adf
+
+##### IEEE 802.11 related configuration #######################################
+
+# Country code (ISO/IEC 3166-1).  Used to set regulatory domain.
+# Modify as needed to indicate country in which device is operating.
+# This can limit available channels and transmit power.
+# (default: US)
+#country_code=US
+
+# Enable IEEE 802.11d. This advertises the country_code and the set of allowed
+# channels and transmit power levels based on the regulatory limits. The
+# country_code setting must be configured with the correct country for
+# IEEE 802.11d functions.
+# (default: 0 = disabled)
+#ieee80211d=1
+
+# Enable IEEE 802.11h. This enables the TPC and DFS services when operating
+# in a regulatory domain which requires them.  Once enabled it will be 
+# operational only when working in hw_mode a and in countries where it is
+# required. The end user should not be allowed to disable this.
+# The country_code setting must be configured with the correct country for
+# IEEE 802.11h to function. 
+# When IEEE 802.11h is operational, the channel_policy and configured channel 
+# settings will be ignored but will behave as though the channel_policy is
+# set to "3" (automatic channel selection). When IEEE 802.11h is enabled but
+# not operational (for example, if the radio mode is changed from "a" to "b")
+# the channel_policy and channel settings take effect again. 
+# (default: 1 = enabled)
+#ieee80211h=1
+
+# Operation mode (a = IEEE 802.11a, b = IEEE 802.11b, g = IEEE 802.11g,
+# Default: IEEE 802.11b
+hw_mode=g
+
+# Channel number (IEEE 802.11)
+# (default: 0, i.e., not set, used with channel_policy=2)
+channel=1
+
+# Beacon interval in kus (1.024 ms) (default: 100; range 15..65535)
+beacon_int=100
+
+# RTS/CTS threshold; 2347 = disabled (default); range 0..2347
+# If this field is not included in config file, hostapd will not control
+# RTS threshold and 'iwconfig wlan# rts <val>' can be used to set it.
+rts_threshold=2347
+
+# Fragmentation threshold; 2346 = disabled (default); range 256..2346
+# If this field is not included in config file, hostapd will not control
+# fragmentation threshold and 'iwconfig wlan# frag <val>' can be used to set
+# it.
+fragm_threshold=2346
+
+# Rate configuration
+# Default is to enable all rates supported by the hardware. This configuration
+# item allows this list be filtered so that only the listed rates will be left
+# in the list. If the list is empty, all rates are used. This list can have
+# entries that are not in the list of rates the hardware supports (such entries
+# are ignored). The entries in this list are in 100 kbps, i.e., 11 Mbps = 110.
+# If this item is present, at least one rate have to be matching with the rates
+# hardware supports.
+# default: use the most common supported rate setting for the selected
+# hw_mode (i.e., this line can be removed from configuration file in most
+# cases)
+#supported_rates=10 20 55 110 60 90 120 180 240 360 480 540
+
+# Basic rate set configuration
+# List of rates (in 100 kbps) that are included in the basic rate set.
+# If this item is not included, usually reasonable default set is used.
+#basic_rates=10 20
+#basic_rates=10 20 55 110
+#basic_rates=60 120 240
+
+# TX queue parameters (EDCF / bursting)
+# default for all these fields: not set, use hardware defaults
+# tx_queue_<queue name>_<param>
+# queues: data0, data1, data2, data3, after_beacon, beacon
+#		(data0 is the highest priority queue)
+# parameters:
+#   aifs: AIFS (default 2)
+#   cwmin: cwMin (1, 3, 7, 15, 31, 63, 127, 255, 511, 1023)
+#   cwmax: cwMax (1, 3, 7, 15, 31, 63, 127, 255, 511, 1023); cwMax >= cwMin
+#   burst: maximum length (in milliseconds with precision of up to 0.1 ms) for
+#          bursting
+#
+# Default WMM parameters (IEEE 802.11 draft; 11-03-0504-03-000e):
+# These parameters are used by the access point when transmitting frames
+# to the clients.
+#
+# Low priority / AC_BK = background
+#tx_queue_data3_aifs=7
+#tx_queue_data3_cwmin=15
+#tx_queue_data3_cwmax=1023
+#tx_queue_data3_burst=0
+# Note: for IEEE 802.11b mode: cWmin=31 cWmax=1023 burst=0
+#
+# Normal priority / AC_BE = best effort
+#tx_queue_data2_aifs=3
+#tx_queue_data2_cwmin=15
+#tx_queue_data2_cwmax=63
+#tx_queue_data2_burst=0
+# Note: for IEEE 802.11b mode: cWmin=31 cWmax=127 burst=0
+#
+# High priority / AC_VI = video
+#tx_queue_data1_aifs=1
+#tx_queue_data1_cwmin=7
+#tx_queue_data1_cwmax=15
+#tx_queue_data1_burst=3.0
+# Note: for IEEE 802.11b mode: cWmin=15 cWmax=31 burst=6.0
+#
+# Highest priority / AC_VO = voice
+#tx_queue_data0_aifs=1
+#tx_queue_data0_cwmin=3
+#tx_queue_data0_cwmax=7
+#tx_queue_data0_burst=1.5
+# Note: for IEEE 802.11b mode: cWmin=7 cWmax=15 burst=3.3
+#
+# Special queues; normally not user configurable
+#
+#tx_queue_after_beacon_aifs=2
+#tx_queue_after_beacon_cwmin=15
+#tx_queue_after_beacon_cwmax=1023
+#tx_queue_after_beacon_burst=0
+#
+#tx_queue_beacon_aifs=2
+#tx_queue_beacon_cwmin=3
+#tx_queue_beacon_cwmax=7
+#tx_queue_beacon_burst=1.5
+
+# 802.1D Tag to AC mappings
+# WMM specifies following mapping of data frames to different ACs. This mapping
+# can be configured using Linux QoS/tc and sch_pktpri.o module.
+# 802.1D Tag	802.1D Designation	Access Category	WMM Designation
+# 1		BK			AC_BK		Background
+# 2		-			AC_BK		Background
+# 0		BE			AC_BE		Best Effort
+# 3		EE			AC_VI		Video
+# 4		CL			AC_VI		Video
+# 5		VI			AC_VI		Video
+# 6		VO			AC_VO		Voice
+# 7		NC			AC_VO		Voice
+# Data frames with no priority information: AC_BE
+# Management frames: AC_VO
+# PS-Poll frames: AC_BE
+
+# Default WMM parameters (IEEE 802.11 draft; 11-03-0504-03-000e):
+# for 802.11a or 802.11g networks
+# These parameters are sent to WMM clients when they associate.
+# The parameters will be used by WMM clients for frames transmitted to the
+# access point.
+#
+# note - txop_limit is in units of 32microseconds
+# note - acm is admission control mandatory flag. 0 = admission control not
+# required, 1 = mandatory
+# note - here cwMin and cmMax are in exponent form. the actual cw value used
+# will be (2^n)-1 where n is the value given here
+#
+# Low priority / AC_BK = background
+wme_ac_bk_cwmin=4
+wme_ac_bk_cwmax=10
+wme_ac_bk_aifs=7
+wme_ac_bk_txop_limit=0
+wme_ac_bk_acm=0
+# Note: for IEEE 802.11b mode: cWmin=5 cWmax=10
+#
+# Normal priority / AC_BE = best effort
+wme_ac_be_aifs=3
+wme_ac_be_cwmin=4
+wme_ac_be_cwmax=10
+wme_ac_be_txop_limit=0
+wme_ac_be_acm=0
+# Note: for IEEE 802.11b mode: cWmin=5 cWmax=7
+#
+# High priority / AC_VI = video
+wme_ac_vi_aifs=2
+wme_ac_vi_cwmin=3
+wme_ac_vi_cwmax=4
+wme_ac_vi_txop_limit=94
+wme_ac_vi_acm=0
+# Note: for IEEE 802.11b mode: cWmin=4 cWmax=5 txop_limit=188
+#
+# Highest priority / AC_VO = voice
+wme_ac_vo_aifs=2
+wme_ac_vo_cwmin=2
+wme_ac_vo_cwmax=3
+wme_ac_vo_txop_limit=47
+wme_ac_vo_acm=0
+# Note: for IEEE 802.11b mode: cWmin=3 cWmax=4 burst=102
+
+# Enable/disable internal bridge for packets between associated stations.
+#
+# When IEEE 802.11 is used in managed mode, packets are usually send through
+# the AP even if they are from a wireless station to another wireless station.
+# This functionality requires that the AP has a bridge functionality that sends
+# frames back to the same interface if their destination is another associated
+# station. In addition, broadcast/multicast frames from wireless stations will
+# be sent both to the host system net stack (e.g., to eventually wired network)
+# and back to the wireless interface.
+#
+# The internal bridge is implemented within the wireless kernel module and it
+# bypasses kernel filtering (netfilter/iptables/ebtables). If direct
+# communication between the stations needs to be prevented, the internal
+# bridge can be disabled by setting bridge_packets=0.
+#
+# Note: If this variable is not included in config file, hostapd does not
+# change the configuration and iwpriv can be used to set the value with
+# 'iwpriv wlan# param 10 0' command. If the variable is in config file,
+# hostapd will override possible iwpriv configuration whenever configuration
+# file is reloaded.
+#
+# default: do not control from hostapd (80211.o defaults to 1=enabled)
+#bridge_packets=1
+
+
+
+
+##### Passive scanning ########################################################
+# Scan different channels every N seconds. 0 = disable passive scanning.
+#passive_scan_interval=60
+
+# Listen N usecs on each channel when doing passive scanning.
+# This value plus the time needed for changing channels should be less than
+# 32 milliseconds (i.e. 32000 usec) to avoid interruptions to normal
+# operations. Time needed for channel changing varies based on the used wlan
+# hardware.
+# default: disabled (0)
+#passive_scan_listen=10000
+
+# Passive scanning mode:
+# 0 = scan all supported modes (802.11a/b/g/Turbo) (default)
+# 1 = scan only the mode that is currently used for normal operations
+#passive_scan_mode=1
+
+# Maximum number of entries kept in AP table (either for passive scanning or
+# for detecting Overlapping Legacy BSS Condition). The oldest entry will be
+# removed when adding a new entry that would make the list grow over this
+# limit. Note! Wi-Fi certification for IEEE 802.11g requires that OLBC is
+# enabled, so this field should not be set to 0 when using IEEE 802.11g.
+# default: 255
+#ap_table_max_size=255
+
+# Number of seconds of no frames received after which entries may be deleted
+# from the AP table. Since passive scanning is not usually performed frequently
+# this should not be set to very small value. In addition, there is no
+# guarantee that every scan cycle will receive beacon frames from the
+# neighboring APs.
+# default: 60
+#ap_table_expiration_time=3600
+

@@ -1,0 +1,101 @@
+#!/bin/sh
+
+. /etc/failover/failover.common
+
+# 1.$user 2.$passwd 3.$mtu 4.$ip 5.$dns 6.$gw 7.$WAN_IF
+print_pptp_options(){
+cat <<EOF
+noauth
+noipdefault
+ipparam pptp
+refuse-eap
+mtu $3
+mru $3
+persist
+$5
+detectlink
+lcp-echo-interval 10
+lcp-echo-failure 4
+user $1
+password $2
+plugin dni-pptp.so $4
+$6
+pptp_iface $7
+EOF
+}
+
+
+setup_interface_pptp(){
+	local user passwd mtu dns service route ip gw language staticdns1 staticdns2 pptp_wan_assign
+
+	insert_modules pptp
+	setup_generic_ppp
+	user=$($CONFIG get wan_pptp_username)
+	passwd=$($CONFIG get wan_pptp_password)
+	mtu=$($CONFIG get wan_pptp_mtu)
+	
+	if [ "$($CONFIG get wan_pptp_wan_assign)" != "0" ]; then
+		route=$($CONFIG get pptp_gw_static_route)
+		[ "x$route" != "x" ] && gw="pptp_gateway $route"
+	fi
+
+	if [ "$($CONFIG get wan_pptp_dns_assign)" != "1" ]; then
+		dns="usepeerdns"
+	else
+		echo "nameserver $($CONFIG get wan_ether_dns1)" > $FAILOVER_RESOLVE
+		echo "nameserver $($CONFIG get wan_ether_dns2)" >> $FAILOVER_RESOLVE
+	fi
+
+	if [ "$($CONFIG get wan_pptp_wan_assign)" != "0" ]; then
+	    route=$($CONFIG get pptp_gw_static_route)
+	    [ "x$route" != "x" ] && gw="pptp_gateway $route"
+	fi
+
+	ip=$($CONFIG get wan_pptp_server_ip)
+	language="language $($CONFIG get GUI_Region)"
+	pptp_wan_assign="pptp_wan_assign $($CONFIG get wan_pptp_wan_assign)"
+	if [ "$($CONFIG get wan_pptp_dns_assign)" != "0" ]; then
+		staticdns1="$($CONFIG get wan_ether_dns1)"
+		staticdns2="$($CONFIG get wan_ether_dns2)"
+		[ "x$staticdns1" != "x" ] && staticdns1="pptp_dns1 $staticdns1"
+		[ "x$staticdns2" != "x" ] && staticdns2="pptp_dns2 $staticdns2"
+	fi
+
+	print_pptp_options "$user" "$passwd" "${mtu:-1492}" "$ip" "$dns" "$gw" "$WAN_IF" > $FAILOVER_PPP_DIAL
+
+	if [ "$($CONFIG get GUI_Region)" = "Russian" ]; then
+		echo "$language" >> $FAILOVER_PPP_DIAL
+	fi
+	if [ "$($CONFIG get wan_pptp_wan_assign)" != "0" ]; then
+		echo "$pptp_wan_assign" >> $FAILOVER_PPP_DIAL
+	fi
+	if [ "$($CONFIG get wan_pptp_dns_assign)" != "0" ]; then
+		echo "$staticdns1" >> $FAILOVER_PPP_DIAL
+		echo "$staticdns2" >> $FAILOVER_PPP_DIAL
+	fi
+	pptp_conn_id="pptp_conn_ID $($CONFIG get wan_pptp_connection_id)"
+	if [ "x$($CONFIG get wan_pptp_connection_id)" != "x" ]; then
+		echo "$pptp_conn_id" >> $FAILOVER_PPP_DIAL
+	fi
+	
+	sed -i '/user/ s/\\/\\\\/g' $FAILOVER_PPP_DIAL
+	sed -i '/user/ s/\#/\\#/g'  $FAILOVER_PPP_DIAL
+	sed -i '/password/ s/\\/\\\\/g' $FAILOVER_PPP_DIAL
+	sed -i '/password/ s/\#/\\#/g'  $FAILOVER_PPP_DIAL
+}
+
+if [ "$($CONFIG get wan_pptp_wan_assign)" = "0" ]; then
+	# Confiure the PPP parameters firstly, then started PPPD by UDHCPC
+	setup_interface_pptp
+	udhcpc -b -i $WAN_IF -s $FAILOVER_DHCPC_SCRIPT
+else
+	# Configure the interface address, then started PPPD in `setup_interface_ppp`
+	pptp_netmask=$($CONFIG get wan_pptp_eth_mask)
+	if [ "x$pptp_netmask" != "x" -a "x$pptp_netmask" != "x0.0.0.0" -a "x$pptp_netmask" != "x255.255.255.255" ]; then
+		ifconfig $WAN_IF $($CONFIG get wan_pptp_local_ip) netmask $pptp_netmask
+	else
+		ifconfig $WAN_IF $($CONFIG get wan_pptp_local_ip)
+	fi
+	setup_interface_pptp
+	pppd call dial-provider updetach unit 1
+fi

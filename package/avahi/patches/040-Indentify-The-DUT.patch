@@ -1,0 +1,15 @@
+diff -Nur avahi-0.6.25.bak/avahi-core/server.c avahi-0.6.25/avahi-core/server.c
+--- avahi-0.6.25.bak/avahi-core/server.c	2012-03-23 14:57:22.000000000 +0800
++++ avahi-0.6.25/avahi-core/server.c	2012-03-23 14:57:46.000000000 +0800
+@@ -924,11 +924,6 @@
+     if (avahi_dns_packet_is_query(p)) {
+         int legacy_unicast = 0;
+ 
+-        if (avahi_dns_packet_get_field(p, AVAHI_DNS_FIELD_ARCOUNT) != 0) {
+-            avahi_log_warn("Invalid query packet.");
+-            return;
+-        }
+-
+         if (port != AVAHI_MDNS_PORT) {
+             /* Legacy Unicast */
+ 

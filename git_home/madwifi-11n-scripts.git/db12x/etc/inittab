@@ -1,0 +1,10 @@
+::sysinit:/etc/rc.d/rcS
+#
+# Uncomment the following line if getty
+# has to be spawned on the HSUART port
+# in addition to the normal 8250
+#
+#::respawn:/sbin/getty ttyS1 115200
+::respawn:/sbin/getty ttyS0 115200
+::shutdown:/etc/ath/killVAP all
+::shutdown:/bin/umount -a

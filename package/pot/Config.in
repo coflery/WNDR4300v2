@@ -1,0 +1,22 @@
+# pot configuration
+
+config POT_GIT_TREEISH
+	string "treeish of pot git repository"
+	default "pot-v1.0.5"
+	depends NOR_FLASH 
+	help
+	     Input the treeish of pot git repository which you want to build
+
+config POT_GIT_REPOSITORY
+	string "name of pot git repository"
+	default "pot.git"
+	depends NOR_FLASH
+	help
+	     Input the name of pot git repository which you want to build
+
+config POT_GIT_URL
+	string "url of pot git repository"
+	default "ssh://dniserver/scm/dnigit/common/apps/pot.git"
+	depends NOR_FLASH
+	help
+	     Input the url of pot git repository which you want to build

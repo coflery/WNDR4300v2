@@ -1,0 +1,39 @@
+#!/bin/sh
+
+#
+# modprobe cannot handle more than one module parameter
+#
+# Params for ath_pci:
+#
+# countrycode=0x1ff for demo channels
+# use_eeprom=1 for OB42/MB7x
+# force_11a_channels=1 for 5G mode
+#
+KVER=`uname -r | cut -f 1 -d '-'`
+MODULE_PATH=/lib/modules/$KVER/net
+
+#insmod $MODULE_PATH/atrcm.ko
+insmod $MODULE_PATH/ath_hal.ko
+insmod $MODULE_PATH/wlan.ko
+insmod $MODULE_PATH/ath_rate_atheros.ko
+if [ $AP_CONTROL_CH = 11na ]; then
+	insmod $MODULE_PATH/ath_pci.ko force_11a_channels=1
+elif [ $AP_CONTROL_CH = 11ng ]; then
+	insmod $MODULE_PATH/ath_pci.ko force_11a_channels=0
+elif [ $AP_CONTROL_CH -gt 14 ]; then
+	insmod $MODULE_PATH/ath_pci.ko force_11a_channels=1
+else
+	insmod $MODULE_PATH/ath_pci.ko force_11a_channels=0
+fi
+insmod $MODULE_PATH/wlan_xauth.ko
+insmod $MODULE_PATH/wlan_ccmp.ko
+insmod $MODULE_PATH/wlan_tkip.ko
+insmod $MODULE_PATH/wlan_wep.ko
+insmod $MODULE_PATH/wlan_acl.ko
+insmod $MODULE_PATH/ath_pktlog.ko
+if [ $WDS_MODE = client -o $WDS_MODE = repeater ]; then
+    insmod $MODULE_PATH/wlan_scan_sta.ko
+fi
+if [ $AP_CONTROL_CH = 11na -o $AP_CONTROL_CH = 11ng ]; then
+    insmod $MODULE_PATH/wlan_scan_ap.ko
+fi

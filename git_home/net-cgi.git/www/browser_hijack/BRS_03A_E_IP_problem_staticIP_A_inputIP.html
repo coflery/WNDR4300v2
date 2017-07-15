@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+
+<head>
+<% hijack_title() %>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" href="style/hijack_style.css" />
+<link rel="stylesheet" type="text/css" href="style/hijack_03A_E_IP_problem_staticIP_A_inputIP.css" />
+<script language="javascript" type="text/javascript" src="script/brs_hijack.js"></script>
+<script language="javascript" type="text/javascript" src="script/brs_hijack_03A_E_IP_problem_staticIP_A_inputIP.js"></script>
+<script language="javascript" type="text/javascript" src="script/funcs.js"></script>
+<% hijack_language() %>
+<script language="javascript" type="text/javascript">
+var lan_ip="<% cfg_get("lan_ipaddr") %>";
+var lan_subnet="<% cfg_get("lan_netmask") %>";
+var dns_third_flag=top.dns_third_flag;
+</script>
+
+</head>
+
+<body>
+<% form_submit("apply", "BRS_04_applySettings.html", "hijack_static") %>
+
+<div class="wizard_content_div">
+
+	<div class="wizard_words_div">
+		
+			<h1><!--fix_ip_setting--></h1>
+			<p><script>document.write(bh_enter_ip_setting)</script></p>
+			
+			<div id="mainContent_div">
+				
+				<div id="IP_addr" class="input_left_div" align="right"><!--info_mark_ip--></div>
+				<div class="input_img_div">
+					<input type="text" align="right" id="inputIPaddr" maxlength="15" name="ip_address" class="input_text" />
+				</div>
+				
+				<div id="Sub_mask" class="input_left_div" align="right"><!--info_mark_mask--></div>
+				<div class="input_img_div">
+					<input type="text" align="right" id="inputSubMask" maxlength="15" name="subnet_mask" class="input_text" />
+				</div>
+				
+				<div id="Gateway" class="input_left_div" align="right"><!--constatus_defgtw--></div>
+				<div class="input_img_div">
+					<input type="text" align="right" id="inputGateway" maxlength="15" name="gateway" class="input_text" />
+				</div>
+				
+				<div id="preDNS" class="input_left_div" align="right"><!--preferred_dns--></div>
+				<div class="input_img_div">
+					<input type="text" align="right" id="inputPreDns" maxlength="15" name="preferred_dns" class="input_text" />
+				</div>
+				
+				<div id="alteDNS" class="input_left_div" align="right"><!--alternate_dns--></div>
+				<div class="input_img_div">
+					<input type="text" align="right" id="inputSecDns" maxlength="15" name="alternate_dns" class="input_text" />
+				</div>
+
+                                <div id="thirdDNS" class="input_left_div" align="right"><!--third_dns--></div>
+                                <div id="third_dns_input" class="input_img_div">
+                                        <input type="text" align="right" id="inputThrDns" maxlength="15" name="third_dns" class="input_text" />
+                                </div>
+				
+				<div style="clear:both"></div>
+			</div>
+		
+	</div>
+	
+	<div id="allBtns_div" class="wizard_buttons_div" align="right">
+		<div id="btnsContainer_div" class="buttons_img_div" >
+			<script>
+			var master="<% cfg_get("http_loginname") %>";
+			if( master == "admin" )
+				document.write('<img src="image/ca-little-purple-button.gif" />');
+			else
+				document.write('<img src="image/ca-little-grey-button.png" />');
+			</script>
+			<div id="btn_text_div" class="buttons_words_div" align="center"><!--next_mark--></div>
+		</div>	
+	</div>
+	
+</div>
+
+</form>
+</body>
+
+</html>

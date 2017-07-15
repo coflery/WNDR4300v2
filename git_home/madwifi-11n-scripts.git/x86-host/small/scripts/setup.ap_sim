@@ -1,0 +1,167 @@
+#!/bin/bash
+
+# script to create  a single AP  
+
+HTMODE=ht20
+MODE=11na
+# to avoid a CAC delay during VAP startup, use a non-DFS channel
+CHANNEL=48
+WIFIDEVID=0
+SSID=0
+DHCP=0
+SECURITY="none"
+
+function usage ()  
+{
+ echo usage: $1 [-m mode] [-c channel] [-n 11nhtmode] [-x txmask rxmask] [-s ssid]  
+ echo  -m  valid modes are 11a,11g,11a,11ng,11na. 
+ echo  -c  ieee channel number. 
+ echo "-n  valid htmodes are ht20,ht40+,ht40-."
+ echo  -s  ssid.  
+ echo  "-a  wifidev id (0-4)".  
+ echo  "-d  run dhcpd on the interface".  
+ exit 1;
+} 
+
+args=($*)
+i=0
+while [ $i -lt  $# ] 
+do
+case ${args[$i]} in
+	-c)  let i=$i+1;
+	     if [ $i -eq $# ] 
+	     then
+		usage;
+	     fi
+	     CHANNEL=${args[$i]};;
+	-m)  let i=$i+1;
+	     if [ $i -eq $# ] 
+	     then
+		usage;
+	     fi
+	     MODE=${args[$i]};;
+	-n)  let i=$i+1;
+	     if [ $i -eq $# ] 
+	     then
+		usage;
+	     fi
+	     HTMODE=${args[$i]};;
+	-s)  let i=$i+1;
+	     if [ $i -eq $# ] 
+	     then
+		usage;
+	     fi
+	     SSID=${args[$i]};;
+	-se)  let i=$i+1;
+	     if [ $i -eq $# ] 
+	     then
+		usage;
+	     fi
+	     SECURITY=${args[$i]};;
+	-d)  let i=$i+1;
+	     DHCP=1;;
+	-a)  let i=$i+1;
+	     if [ $i -eq $# ] 
+	     then
+		usage;
+	     fi
+	     WIFIDEVID=${args[$i]};;
+	*)   usage;
+esac
+     let i=$i+1;
+
+done
+
+
+case ${MODE} in 
+	11a | 11na) if [ $CHANNEL -eq  0 ]
+		    then 
+		      CHANNEL=56;
+		    fi;;
+	11g | 11b | 11ng) if [ $CHANNEL -eq  0 ]
+		    then 
+		      CHANNEL=1;
+		    fi;;
+	*) echo "****Invalid -m option";
+	   usage;;
+esac
+case ${HTMODE} in 
+	"ht20" | "ht40+" | "ht40-" );;
+	*) echo "****Invalid -n option";
+	   usage;;
+esac
+
+
+WIFIDEV=wifi-sim$WIFIDEVID
+if [ -z $SSID ]
+then
+SSID=ap-$WIFIDEV
+fi
+echo "MODE   : $MODE"
+echo "HTMODE : $HTMODE"
+echo "CHAN   : $CHANNEL"
+echo "SSID   : $SSID"
+echo "WIFIDEV : $WIFIDEV"
+
+
+# create a vap in host AP mode 
+# it creates a device with name wlan0.
+ 
+WLANDEV=`sudo wlanconfig wlan-sim create wlandev $WIFIDEV wlanmode ap` 
+
+# set the ssid on wlan0 and bring it up
+
+echo wlandev $WLANDEV
+#iwconfig mode $MODE 
+#iwconfig $WLANDEV 11nhtmode $HTMODE 
+
+if [ $CHANNEL -eq  -1 ]
+then
+echo "use the current channel"
+else
+echo "use newchan channel"
+sudo iwconfig $WLANDEV channel $CHANNEL 
+fi
+sudo iwpriv $WLANDEV dbgLVL 0x90e80040
+
+#wlanconfig $WLANDEV wme 1 
+case ${SECURITY} in
+	wep) 
+		iwconfig $WLANDEV ssid $SSID-wep-$WLANDEV 
+		wlanconfig $WLANDEV authmode 1;
+		wlanconfig $WLANDEV wepmode 1;;
+	shared)
+		iwconfig $WLANDEV ssid $SSID-sharedwep-$WLANDEV 
+		wlanconfig $WLANDEV authmode 2;
+		wlanconfig $WLANDEV wepmode 1;;
+	*)
+                sudo iwconfig $WLANDEV essid "$SSID-open-$WLANDEV" ;;
+esac
+if [ "$WLANDEV"="wlan-sim0" ]
+then
+sudo ifconfig $WLANDEV 192.168.13.30  up
+else
+sudo ifconfig $WLANDEV 192.168.14.30  up
+fi
+case ${SECURITY} in
+	wpa1) 
+		cp hostapd.wpa1 /tmp/hostapd.wpa1.$WLANDEV
+		echo "interface=$WLANDEV" >> /tmp/hostapd.wpa1.$WLANDEV
+		echo "ssid=$SSID-wpa1-$WLANDEV" >> /tmp/hostapd.wpa1.$WLANDEV
+		sudo ./hostapd -dd /tmp/hostapd.wpa1.$WLANDEV &;;
+	wpa2) 
+		cp hostapd.wpa2 /tmp/hostapd.wpa2.$WLANDEV
+		echo "interface=$WLANDEV" >> /tmp/hostapd.wpa2.$WLANDEV
+		echo "ssid=$SSID-wpa2-$WLANDEV" >> /tmp/hostapd.wpa2.$WLANDEV
+		sudo ./hostapd /tmp/hostapd.wpa2.$WLANDEV &;;
+	mixed) 
+		cp hostapd.mixed /tmp/hostapd.mixed.$WLANDEV
+		echo "interface=$WLANDEV" >> /tmp/hostapd.mixed.$WLANDEV
+		echo "ssid=$SSID-wpa12-$WLANDEV" >> /tmp/hostapd.mixed.$WLANDEV
+		sudo ./hostapd -dd /tmp/hostapd.mixed.$WLANDEV &;;
+esac
+if [ $DHCP == 1 ]
+then
+sleep 2
+sudo ./dhcp $WLANDEV &
+fi

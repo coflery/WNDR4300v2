@@ -1,0 +1,20 @@
+config DNI_RIPD_GIT_TREEISH
+	string
+	prompt "treeish of dni ripd git repository"
+	default "dni-rip-v1.0-dni25"
+	help
+           Input the treeish of dni ripd git repository which you want to build
+
+config DNI_RIPD_GIT_REPOSITORY
+	string
+	prompt "name of dni ripd git repository"
+	default "dni-ripd.git"
+	help
+	   Input the name of dni ripd git repository which you want to build
+
+config DNI_RIPD_GIT_URL
+	string
+	prompt "url of dni ripd git repository"
+	default "ssh://dniserver/scm/dnigit/common/apps/dni-ripd.git"
+	help
+	   Input the url of dni ripd git repository which you want to build

@@ -1,0 +1,21 @@
+config NAT_GIT_TREEISH
+	string
+	prompt "treeish of dni-nat2.5 git repository"
+	default "nat2.5-dni7"
+	help
+           Input the treeish of dni-nat2.5 git repository which you want to build
+
+config NAT_GIT_REPOSITORY
+	string
+	prompt "name of dni-nat2.5 git repository"
+	default "dni-nat2.5.git"
+	help
+	   Input the name of dni-nat2.5 git repository which you want to build
+
+config NAT_GIT_URL
+	string
+	prompt "url of dni-nat2.5 git repository"
+	default "ssh://dniserver/scm/dnigit/common/kmod/dni-nat2.5.git"
+	help
+	  Input the url of dni-nat2.5 git repository which you want to build
+

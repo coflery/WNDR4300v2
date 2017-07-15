@@ -1,0 +1,21 @@
+Source-Makefile: package/datalib/Makefile
+Package: datalib
+Version: 1.0-1
+Depends: @TARGET_dniwndr3700u2631||TARGET_wndr4500v3
+Provides: 
+Section: utils
+Category: Utilities
+Title: Small application for saving data on embedded system
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: Small application for saving data on embedded system
+@@
+Config:
+	menu "Configurations"
+		depends on PACKAGE_datalib
+		source "package/datalib/Config.in"
+	endmenu
+@@
+
+

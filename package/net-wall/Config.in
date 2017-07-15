@@ -1,0 +1,20 @@
+config NET_WALL_GIT_TREEISH
+	string
+	prompt "treeish of net-wall git repository"
+	default "net-wall-v2.0-dni95"
+	help
+           Input the treeish of net-wall git repository which you want to build
+
+config NET_WALL_GIT_REPOSITORY
+	string
+	prompt "name of net-wall git repository"
+	default "net-wall.git"
+	help
+	   Input the name of net-wall git repository which you want to build
+
+config NET_WALL_GIT_URL
+	string
+	prompt "url of net-wall git repository"
+	default "ssh://dniserver/scm/dnigit/common/apps/net-wall.git"
+	help
+	   Input the url of net-wall git repository which you want to build

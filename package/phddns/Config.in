@@ -1,0 +1,20 @@
+config PHDDNS_GIT_TREEISH
+	string
+	prompt "treeish of phddns git repository"
+	default "phddns-sdk-1.0.4-dni1"
+	help
+           Input the treeish of phddns git repository which you want to build
+
+config PHDDNS_GIT_REPOSITORY
+	string
+	prompt "name of phddns git repository"
+	default "phddns.git"
+	help
+	   Input the name of phddns git repository which you want to build
+
+config PHDDNS_GIT_URL
+	string
+	prompt "url of phddns git repository"
+	default "ssh://dniserver/scm/dnigit/common/apps/phddns.git"
+	help
+	   Input the url of phddns git repository which you want to build

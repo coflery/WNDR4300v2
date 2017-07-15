@@ -1,0 +1,20 @@
+Source-Makefile: package/atheros-aquila-madwifi/Makefile
+Package: kmod-atheros-aquila-madwifi
+Submenu: Wireless Drivers
+Version: <LINUX_VERSION>+--1
+Depends: 
+Provides: 
+Section: kernel
+Category: Kernel modules
+Title: Driver for Atheros wireless chipsets
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: Driver for Atheros wireless chipsets
+http://madwifi.org/
+@@
+Config:
+	source "package/atheros-aquila-madwifi/Config.in"
+@@
+
+

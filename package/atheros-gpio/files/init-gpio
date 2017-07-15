@@ -1,0 +1,7 @@
+#!/bin/sh /etc/rc.common
+#START=20
+
+start() {
+	insmod atherosgpio
+	mknod /dev/atherosgpio c 240 0
+}

@@ -1,0 +1,112 @@
+<% http_header("style/basic.css", "funcs.js", "basic.js", "top.js" ) %>
+<body onload="loadvalue();" onResize="change_size();">
+<!--[if IE 6]>
+<script type="text/javascript">
+document.execCommand("BackgroundImageCache", false, true);
+</script>
+<![endif]-->
+<script>
+var enable_action=1;
+var enabled_wds=<% wds_enable() %>;
+var enabled_wps=<% wps_menu() %>;
+var type="basic";
+var charcount=0;
+var file_version=0;
+var file_region="";
+var netgear_version=0;
+var netgear_region="<% get_firmware_region() %>"
+var help_info="_index";
+var wps_charcount=0;
+var wps_endis_configured=1;     // 1 for unconfigured, 5 for configured
+var wps_an_endis_configured=1;  // 1 for unconfigured, 5 for configured
+var folder_path="";     //save the browser's folder path, and show in USB creat/edit page
+var qos_check_time=0;
+var pin_refresh_time=0;
+var select_basic="<% cfg_get("internet_type") %>";
+var select_type="<% cfg_get("internet_ppp_type") %>";
+var endis_wl_radio='<% enable_ap_orNot("bgn") %>';
+var endis_wla_radio='<% enable_ap_orNot("an") %>';
+var wps_process=0;
+var enable_ap_flag="<% cfg_get("ap_mode") %>";//bug 24666 according to the page 128 of spec 2.0,add AP mode
+var enable_bridge_flag="<% cfg_get("bridge_mode") %>";
+var ParentalControl = "<% cfg_get("ParentalControl") %>";
+var set_wireless_tag = "<% cfg_get("set_wireless_tag") %>";
+var run_green_time=0;
+var green_download_items;
+var green_refresh_time=0;
+var green_download_item_num=0;
+var green_downloading_item_num=0;
+var green_download_item_queuen_num=0;
+<% plc_devs_detection() %>
+<% web_flag() %>
+<% refresh_timestamp("wds") %>
+<% cfg_set("have_click_take_me_to_internet", "0") %>
+<% cfg_set("hijack_language", "0") %>
+<% hijack_success_page() %>
+<% lang_change_status_finish() %>
+
+var gui_region="<% cfg_get("GUI_Region") %>";
+var auto_change_lang = 0;//bug 28482
+<% cfg_set("show_ap", "0") %>
+<% cfg_set("show_bridge", "0") %>
+<% show_devices() %>
+
+var is_ru_version=(((netgear_region.toUpperCase() == "WW" || netgear_region == "") && gui_region == "Russian" ) || netgear_region.toUpperCase() == "RU") ? 1 : 0;
+var is_pr_version=(((netgear_region.toUpperCase() == "WW" || netgear_region == "") && gui_region == "Chinese" ) || netgear_region.toUpperCase() == "PR") ? 1 : 0;
+
+//Failover & Loadbalance
+var multi_wan_mode="none";  // none, multi
+var multi_wan_mode_ether="0";//0:unconfigured, 1:configured
+var multi_wan_mode_mobile="0";//0:unconfigured, 1:configured
+
+var broadband_mode="<% cfg_get("dango_det_wan_type") %>";
+var old_div= "";
+function loadvalue()
+{
+	change_size();
+	/*if((have_broadband ==1) && (is_ru_version==1 || is_pr_version==1))
+		enabledItemsClass_basic();*/
+	if( auto_change_lang == 0 )/* if auto_change_lang == 0, it will show basic home page, else it will go to lang_check.html */
+		goto_formframe("GuestManage_frame.htm");
+}
+</script>
+
+<div id="top">
+	<iframe name="topframe" id="topframe" src="top.html" allowtransparency="true" height="100%" width="100%" frameborder="0"></iframe>
+</div>
+
+<div id="container" class="container_center">
+
+<div id="middle">
+<div id="menu" class="menu_common_words"><!--fix bug 30075-->
+	<div id="home" class="basic_button" onclick="click_action('home');"><b><span>$hom</span></b></div>
+	<% basic_menu_3g()%>
+	<div id="wireless" class="basic_button" onclick="click_action('wireless');"><b><span>$wireless</span></b></div>
+	<div id="attached" class="basic_button" onclick="click_action('attached');"><b><span>$attach_device</span></b></div>
+	<div id="parental" class="basic_button" onclick="click_action('parental');"><b><span>$parental_control</span></b></div>
+	<% basic_menu() %>
+</div>
+<div id="formframe_div">
+	<iframe name="formframe" id="formframe" allowtransparency="true" height="100%" width="100%" scrolling="no" frameborder="0" >
+	</iframe>
+</div>
+
+<div id="footer" class="footer">
+	<img class="footer_img" src="image/footer.gif">
+<div id="support">
+	<b> $help_and_support</b> &nbsp;
+		<a target="_blank" href="http://downloadcenter.netgear.com/">$docu_head</a> |
+		<a target="_blank" href="http://support.netgear.com">$online_support</a> |
+		<a target="_blank" href="http://kb.netgear.com/app/answers/detail/a_id/12923">$router_faq</a>
+		| <a style="cursor:pointer;" onclick="window.open('/GPL_rev1.htm','gpl','width=625,height=400,top=50,left=200,status=yes, scrollbars=yes');">GPL</a>
+</div>
+<div id="search" align=right>
+	<b> $search_help </b>
+	<input type="text" name="search" value="$ent_srh_item" onkeypress="detectEnter('num',event);" onFocus="this.select();" >
+	<input id="search_button" class="search_button" type="button" name="dosearch" value="$go_mark" onClick="do_search();">
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>

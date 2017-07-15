@@ -1,0 +1,46 @@
+From 27dee86bcab04be6c3d9ecf15cba3aaa07131bf6 Mon Sep 17 00:00:00 2001
+From: SpencerChang <spencer@dniserver.dnish.net>
+Date: Mon, 22 Dec 2008 14:53:02 +0800
+Subject: [PATCH 1/1] Added STR_ANY_SSID_HACK to unlimit the SSID string.
+
+There is few SSID string limitation in iwconfig, and this patch is
+just to erase the limitation.
+
+Signed-off-by: SpencerChang <spencer@dniserver.dnish.net>
+---
+ iwconfig.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/iwconfig.c b/iwconfig.c
+index 5ac81fd..7f83b7e 100644
+--- a/iwconfig.c
++++ b/iwconfig.c
+@@ -622,6 +622,7 @@ set_essid_info(int		skfd,
+   char			essid[IW_ESSID_MAX_SIZE + 1];
+   int			we_kernel_version;
+ 
++#ifndef STR_ANY_SSID_HACK
+   if((!strcasecmp(args[0], "off")) ||
+      (!strcasecmp(args[0], "any")))
+     {
+@@ -642,6 +643,7 @@ set_essid_info(int		skfd,
+       }
+     else
+       {
++#endif
+ 	i = 0;
+ 
+ 	/* '-' or '--' allow to escape the ESSID string, allowing
+@@ -677,7 +679,9 @@ set_essid_info(int		skfd,
+ 		++i;
+ 	      }
+ 	  }
++#ifndef STR_ANY_SSID_HACK
+       }
++#endif
+ 
+   /* Get version from kernel, device may not have range... */
+   we_kernel_version = iw_get_kernel_we_version();
+-- 
+1.7.2.1
+

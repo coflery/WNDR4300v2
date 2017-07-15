@@ -1,0 +1,73 @@
+#!/bin/sh
+
+. /www/cgi-bin/functions.sh
+
+info_get_wanproto=$($nvram get wan_proto)
+WANIF=$(get_wanif $info_get_wanproto)
+
+nvram=/usr/sbin/nvram
+DDNS=/usr/sbin/ez-ipupdate
+DDNS_CONF=/tmp/ez-ipupd.conf
+CATCH_FILE=/tmp/ez-ipupdate.cache
+shawk=/www/cgi-bin/shawk.sh
+
+print_ddns_conf()
+{
+cat <<EOF
+#!/usr/sbin/ez-ipupdate -c
+service-type=dyndns
+user=$2:$3
+host=$4
+interface=$1
+max-interval=86400
+cache-file=/tmp/ez-ipupdate.cache
+daemon
+EOF
+}
+
+stop_ddns()
+{
+	local ddns_pid=$(ps | grep ez-ipupdate | grep -v grep | $shawk -F -n1 | $shawk -F -n2)
+	
+	[ "x$ddns_pid" != "x" ] && kill -9 $ddns_pid
+	rm -f $DDNS_CONF >/dev/null 2>&1
+	rm -f $CATCH_FILE >/dev/null 2>&1
+}
+
+start_ddns()
+{
+	local ddns_mode=$($nvram get endis_ddns)
+	local host=$($nvram get sysDNSHost)
+	local user=$($nvram get sysDNSUser)
+	local password=$($nvram get sysDNSPassword)
+	local server=$($nvram get sysDNSProviderlist)
+	local wildcard_mode=$($nvram get endis_wildcards)
+	
+	if [ "$ddns_mode" = "1" ] ; then
+		print_ddns_conf $WANIF $user $password $host > $DDNS_CONF
+		touch $CATCH_FILE
+		
+		if [ "$wildcard_mode" = 1 ] ; then	
+			$DDNS -w wildcard -c $DDNS_CONF
+		else
+			$DDNS -c $DDNS_CONF
+		fi
+	fi
+}
+
+case "$1" in
+	start)
+	start_ddns
+	;;
+	stop)
+	stop_ddns
+	;;
+	restart)
+	stop_ddns
+	start_ddns
+	;;
+	*)
+	echo "Usage: /sbin/ddns {start|stop|restart}"
+	;;
+esac
+		

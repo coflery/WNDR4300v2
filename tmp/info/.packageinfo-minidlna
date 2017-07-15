@@ -1,0 +1,23 @@
+Source-Makefile: package/minidlna/Makefile
+Package: minidlna
+Version: latest-3
+Depends: 
+Provides: 
+Build-Depends: libsqlite3 ffmpeg libexif libflac libid3tag libjpeg libogg libvorbis zlib
+Section: net
+Category: Network
+Title: minidlna server
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: minidlna server
+http://sourceforge.net/projects/minidlna/
+@@
+Config:
+	menu "Configuration"
+		depends on PACKAGE_minidlna
+		source "package/minidlna/Config.in"
+	endmenu
+@@
+
+

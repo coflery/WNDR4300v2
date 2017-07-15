@@ -1,0 +1,16 @@
+#!/bin/sh
+
+CONFIG=/bin/config
+
+killall udhcpd
+#killall dnsmasq
+killall udhcpc
+/sbin/udhcpc -a -f -i br0 -h "$($CONFIG get ap_netbiosname)" -r $($CONFIG get ap_dhcp_ipaddr) &
+[ "$($CONFIG get ap_ether_dns_assign)" = "0" ] && ns_flag=1
+
+if [ "$ns_flag" = "1" ]; then
+	echo "nameserver $($CONFIG get ap_ether_dns1)" > /tmp/resolv_ap.conf
+	echo "nameserver $($CONFIG get ap_ether_dns2)" >> /tmp/resolv_ap.conf
+	echo "nameserver $($CONFIG get ap_ether_dns1)" > /tmp/resolv.conf
+	echo "nameserver $($CONFIG get ap_ether_dns2)" >> /tmp/resolv.conf
+fi

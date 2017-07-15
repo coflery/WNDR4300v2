@@ -1,0 +1,15 @@
+Source-Makefile: package/samba-scripts/Makefile
+Package: samba-scripts
+Version: 1.0.0-1
+Depends: @TARGET_dniwndr3700u2631||TARGET_wndr4500v3 +samba
+Provides: 
+Section: net
+Category: Network
+Title: SAMBA Scripts
+Maintainer: OpenWrt Developers Team <openwrt-devel@openwrt.org>
+Source: 
+Type: ipkg
+Description: SAMBA Scripts
+@@
+
+

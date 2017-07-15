@@ -1,0 +1,20 @@
+config DNI_DETWAN_GIT_TREEISH
+	string
+	prompt "treeish of dni detwan git repository"
+	default "wan-detection-dni27"
+	help
+           Input the treeish of dni detwan git repository which you want to build
+
+config DNI_DETWAN_GIT_REPOSITORY
+	string
+	prompt "name of dni detwan git repository"
+	default "wan-detection.git"
+	help
+	   Input the name of dni detwan git repository which you want to build
+
+config DNI_DETWAN_GIT_URL
+	string
+	prompt "url of dni detwan git repository"
+	default "ssh://dniserver/scm/dnigit/common/apps/wan-detection.git"
+	help
+	   Input the url of dni detwan git repository which you want to build

@@ -1,0 +1,62 @@
+<% http_header("style/form.css", "/funcs.js", "/ipv6.js") %>
+<% body_header("_IPv6", "IPv6_index.htm", "ipv6_con_type") %>
+<div class="page_title">$ipv6_head</div>
+<div class="fix_button">
+<TABLE width=100% border=0 cellpadding=0 cellspacing=2>
+<script>
+var master="<% cfg_get("http_loginname") %>";
+if( master =="admin" )
+	document.write('<TR><TD nowrap colspan=2 align=center><input class="cancel_bt" type="button" name="Cancel" value="$cancel_mark" onClick="location.href=\'IPv6_disabled.htm\';">&nbsp;&nbsp;<input class="apply_bt" type="submit" name="Apply" value="$apply_mark" ></TD></TR>');
+else
+	document.write('<TR><TD nowrap colspan=2 align=center><input class="cancel1_bt" type="button" name="Cancel" value="$cancel_mark" disabled>&nbsp;&nbsp;<input class="apply1_bt" type="button" name="Apply" value="$apply_mark" disabled></TD></TR>');
+</script>
+</TABLE>
+</div>
+<div id="main" class="main_top_button"> 
+<% table_header() %>
+<!--$bluebar-->
+
+<script>
+
+function loadvalue()
+{
+}
+
+</script>
+
+<TR>
+        <TD nowrap>
+        <A tabindex=-1 href="javascript:loadhelp('_IPv6','internet')"><B>$ipv6_internet_con_type</B></A>
+        </TD>
+        <TD nowrap align=right>
+        <select name="con_type" onChange="change_ipv6(document.forms[0].con_type.value)">
+                <option value="disabled" selected>$pppoe2_disable</option>
+                <option value="autoDetect">$ipv6_auto_detect</option>
+		<option value="autoConfig">$ipv6_auto_config</option>
+		<option value="6to4">$ipv6_6to4_tunnel</option>
+		<script>
+		if(top.ipv6_6rd_flag ==1)
+			document.write('<option value="6rd">6rd</option>');
+		</script>
+		<option value="bridge">$ipv6_pass_through</option>
+		<option value="fixed">$ipv6_fixed</option>
+		<option value="dhcp">$router_status_dhcp</option>
+		<option value="pppoe">$basic_intserv_pppoe</option>	
+        </select>
+        </TD>
+</TR>
+$bluebar
+<!--TR>
+	<TD nowrap colspan=2 align=center>
+	<input type='submit' name='Apply' value='$apply_mark'>&nbsp;&nbsp;
+	<input type='button' name='Cancel' value='$cancel_mark' onClick='location.href="IPv6_disabled.htm";'>
+		<input class="cancel_bt" type='button' name='Cancel' value='$cancel_mark' onClick='location.href="IPv6_disabled.htm";'>&nbsp;&nbsp;
+        <input class="apply_bt" type='submit' name='Apply' value='$apply_mark' >
+	</TD>
+</TR-->
+</TABLE>
+</div>
+<% help_box("0","_IPv6") %>
+</FORM>
+</BODY>
+</HTML>

@@ -1,0 +1,124 @@
+
+<% http_header("style/form.css", "/funcs.js", "/wlan.js") %>
+<% body_header("_guestpassw", "GuestManage_frame.htm", "guestpasswd") %>
+
+
+<input type="hidden" name="wl_passphrase">
+<input type="hidden" name="wl_guestenable">
+<script>
+var guestenable1="<% cfg_get("guest_enable") %>";
+var guestepasswd1="<% cfg_get("http_guestpwd") %>";
+var master="<% cfg_get("http_loginname") %>";
+</script>
+<div class="page_title">Guest Management</div>
+<div class="fix_button">
+<TABLE width=100% border=0 cellpadding=0 cellspacing=2>
+<script>
+var master="<% cfg_get("http_loginname") %>";
+if( master == "admin" )
+document.write('<TR><TD nowrap colspan=2 align=center><input class="cancel_bt" type="button" name="Cancel" value="$cancel_mark" onClick="location.href=\'GuestManage.html\';">&nbsp;&nbsp;<input class="apply_bt" type="submit" name="Apply" value="$apply_mark" onClick="return check_wlan();"></TD></TR>');
+else
+document.write('<TR><TD nowrap colspan=2 align=center><input class="cancel1_bt" type="button" name="Cancel" value="$cancel_mark" disabled>&nbsp;&nbsp;<input class="apply1_bt" type="button" name="Apply" value="$apply_mark" disabled></TD></TR>');
+</script>
+
+</TABLE>
+</div>
+<div id="main" class="main_top_button">
+<% table_header() %>
+<script>
+var str_wpa="";
+
+</script>
+<TR id=ssid_bc_bgn>
+	<td nowrap>
+	<input type="checkbox" name="ssid_bc" id="guestenable" value="1" onClick=setguestenable()><B>Enable Guest Management</B>
+	<td>
+</TR>
+</table>
+<div id=view></div>
+<div align="center" ID="wpa" style="position:absolute;top:0;left:0;visibility:hidden">
+	<TABLE cellspacing=5 cellPadding=0 width=45% border=0>
+	<TR>
+		<TD nowrap >
+		<span class="optiondesc" id="wpaPwdPhraseText"><B>Access Password :</B></span>
+		</TD>
+		<TD nowrap >
+		<input type="text" id="textWpaPwdPhrase" maxlength="64" autocomplete="off" size="8" name="passphrase" value="<% cfg_get("http_guestpwd") %>" style="border:0px;" readonly="readonly" />
+		</TD>
+		<TD nowrap >
+		<input class="common_bt" type="button" name="change" value="Change Password" onClick="createnewpass()">
+		</TD>
+	</TR>
+	</TABLE>
+</div>
+<TABLE cellspacing=5 cellPadding=0 width=100% border=0>
+$bluebar
+</TABLE>
+</div>
+</form>
+<script>
+function setguestenable()
+{
+	if(document.getElementById('guestenable').checked==true)
+		setpassword();
+
+}
+function createnewpass()
+{
+	var form=document.forms[0];
+	var pass="";
+	for(var i=0;i<8;i++)
+	{
+		pass+=Math.floor(Math.random()*10);
+	}
+	document.getElementById('textWpaPwdPhrase').value = pass;
+}
+function setpassword()
+{
+	var pass="";
+	getObj("view").innerHTML=str_wpa;
+
+	createnewpass();
+}
+function loadvalue()
+{
+	str_wpa=getObj("wpa").innerHTML;
+	str_wpa=str_wpa.replace(/\`/g, "&#96;");
+	var pass="";
+	var form=document.forms[0];
+	if(guestenable1==1)
+	{
+		document.getElementById('guestenable').checked =true;
+
+		str_wpa=getObj("wpa").innerHTML;
+		str_wpa=str_wpa.replace(/\`/g, "&#96;");
+		getObj("view").innerHTML=str_wpa;
+
+
+	}
+
+}
+function check_wlan()
+{
+	var cf=document.forms[0];
+	var pass_new="";
+	var pass_new = document.getElementById('textWpaPwdPhrase').value;
+	cf.wl_passphrase.value=pass_new;
+	if(document.getElementById('guestenable').checked==true)
+	{
+		cf.wl_guestenable.value=1;
+		alert("The Guest management function is enabled ");
+	}
+	else
+	{
+		cf.wl_guestenable.value=0;
+		alert("The Guest management function is disabled ");
+	}
+	//alert(pass_new);
+
+	return true;
+}
+</script>
+
+</BODY>
+</HTML>

@@ -1,0 +1,12 @@
+########################################################
+# EU830 F2.1
+
+DefaultVendor=  0x20a6
+DefaultProduct= 0x1000
+
+TargetVendor=   0x20a6
+TargetProduct=  0x1105
+
+CheckSuccess=20
+
+MessageContent="5553424312345678000000000000061b000000020000000000000000000000"

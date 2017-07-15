@@ -1,0 +1,15 @@
+# Put your custom commands here that should be executed once
+# the system init finished. By default this file does nothing.
+
+insmod ipt_CONENAT htable_size=`[ -f /sys/module/nf_conntrack/parameters/hashsize ] && cat /sys/module/nf_conntrack/parameters/hashsize || echo 1024`
+insmod ip6t_CONE htable_size=`[ -f /sys/module/nf_conntrack/parameters/hashsize ] && cat /sys/module/nf_conntrack/parameters/hashsize || echo 1024`
+
+# echo 0 > /proc/sys/dni_netfilter/enable_nat_management
+
+# Configure GPIO4 as input
+# mm 0xb8040000 `md 0xb8040000 | awk '{printf("0x%x\n"),or(int($3),0x10)}'`
+
+# When DUT boot up, disable ipv6 firstly. Will enable it in init process of init6 
+[ `/bin/config get endis_ipv6_logo_test` != "1" ] && echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6
+
+exit 0

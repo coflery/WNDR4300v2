@@ -33,6 +33,15 @@ Note:
 		cd WNDR4300v2-V1.0.0.32_gpl_src
 		cp configs/defconfig-wndr4300v2 .config
 		GIT_HOME=`pwd`/git_home make V=99
+edit: 'GIT_HOME=`pwd`/git_home make V=99' does not always work.  I installed ubuntu 10.04 in virtualbox
+and when I ran this command I got an error "no such file or directory" .  pwd is supposed to be replaced
+automatically with the path of the current directory but it does not work, maybe with some missing
+syntax but not like this.  I had to replace pwd with the absolute path name. ./ may work also, such as
+GIT_HOME=./git_home make V=99 .   
+I used GIT_HOME=/home/my_home_directory/WNDR4300v2-V1.0.0.32_gpl_src/git_home make V=99
+
+end edit by Ifishtoo
+
 
 3. the final image is "bin/WNDR4300v2-V1.0.0.32.img".
 
